@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Sunfish yang Percaya Diri",
+  "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop",
+  "desc": "Ikan sunfish bernama Sol belajar untuk percaya pada kemampuannya sendiri.",
+  "moral": "Percaya diri adalah langkah pertama menuju kesuksesan.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["percaya_diri", "pengembangan_diri"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Sol si sunfish memiliki bentuk tubuh yang unik, bulat dan pipih seperti matahari." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Sol merasa berbeda dan tidak percaya diri saat berenang dengan ikan lain." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Setiap kali ada lomba, Sol tidak pernah ikut. Dia terlalu malu dengan bentuk tubunya." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Suatu hari, lomba menyelam diadakan. Sol ragu tapi akhirnya ikut." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Tubuh besar Sol ternyata sangat baik untuk menyelam deep. Dia berenang lebih jauh dari ikan lain!" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Sol menang undian! Semua ikan terkagum dan bertepuk tangan. Sol tersenyum bangga." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Jika aku tidak mencoba, aku tidak akan pernah tahu kelebihan diriku. Terima kasih semua!" }
+  ]
+}

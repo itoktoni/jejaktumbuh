@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Models;
+
+class Product extends BaseModel
+{
+    protected $table = 'product';
+
+    protected $keyType = 'int';
+
+    protected $primaryKey = 'product_id';
+
+    public $timestamps = false;
+
+    public $incrementing = true;
+
+    /**
+     * Columns available for filtering.
+     */
+    public static $filterColumns = [
+        'product_id' => 'Product Id',
+        'product_nama' => 'Product Nama',
+        'product_harga' => 'Product Harga',
+        'product_keterangan' => 'Product Keterangan',
+        'product_id_category' => 'Product Category',
+    ];
+
+    /**
+     * Columns available for sorting.
+     */
+    public static $sortColumns = [
+        'product_nama',
+        'product_harga',
+        'product_keterangan',
+    ];
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'product_id',
+        'product_nama',
+        'product_harga',
+        'product_keterangan',
+        'product_id_category',
+    ];
+
+    /**
+     * Validation rules.
+     */
+    public function rules(): array
+    {
+        return [
+            'product_nama' => 'required|string',
+            'product_harga' => 'required|string',
+            'product_keterangan' => 'string',
+            'product_id_category' => 'required',
+        ];
+    }
+
+    public function toArray() {}
+
+    public static function field_name()
+    {
+        return 'product_nama';
+    }
+
+    public function has_category()
+    {
+        return $this->hasOne(Category::getModel(), Category::field_key(), 'product_id_category');
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(Variant::class, 'product_id', 'product_id');
+    }
+}

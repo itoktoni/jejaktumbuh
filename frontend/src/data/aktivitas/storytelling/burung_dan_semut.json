@@ -1,0 +1,16 @@
+{
+  "title": "Burung dan Semut",
+  "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop",
+  "desc": "Seekor burung menolong semut, dan semut membalas kebaikan burung.",
+  "moral": "Tolong-menolong adalah perbuatan yang baik dan akan dibalas kebaikan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["peduli_sesama", "berbagi"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop", "text": "Di tepi sungai, seekor semut hampir tenggelam dalam air." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Seekor burung melihat semut itu dan segera menjatuhkan daun untuk ditumpangi semut." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Semut berhasil naik ke daun dan selamat. 'Terima kasih, burung!'" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Beberapa hari kemudian, seorang pemburu datang hendak menangkap burung." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Semut melihatnya dan menggigit kaki pemburu. Pemburu kaget dan burung terbang selamat." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Sejak itu, burung dan semut menjadi sahabat baik selamanya." }
+  ]
+}

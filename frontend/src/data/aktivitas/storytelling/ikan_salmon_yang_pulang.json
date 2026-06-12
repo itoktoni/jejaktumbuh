@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Salmon yang Pulang",
+  "image": "https://images.unsplash.com/photo-1534043464124-3be32fe000c7?w=400&h=600&fit=crop",
+  "desc": "Ikan salmon bernama Sally kembali ke tempat lahirnya untuk bertelur.",
+  "moral": "Pulang ke akar kita adalah hal yang penting.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["ketekunan", "pantang_menyerah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1534043464124-3be32fe000c7?w=400&h=600&fit=crop", "text": "Sally si ikan salmon lahir di sungai kecil di pegunungan yang indah." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Setelah dewasa, Sally berenang ke laut yang luas bersama teman-temannya." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Bertahun-tahun berlalu. Sally tumbuh besar dan kuat di lautan yang luas." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Suatu hari, Sally ingat bahwa salmon harus pulang ke tempat lahir mereka untuk bertelur." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1534043464124-3be32fe000c7?w=400&h=600&fit=crop", "text": "Sally memulai perjalanan jauh melawan arus ke hulu sungai. Perjalanannya sangat sulit." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Sally melompat melewati air terjun dan menghindari predator. Dia sangat lelah tapi terus maju." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Akhirnya Sally sampai di sungai kecil tempat dia lahir. Air matanya menetes bahagia." }
+  ]
+}

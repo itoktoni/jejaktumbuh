@@ -1,0 +1,16 @@
+{
+  "title": "Rusa dan Singa",
+  "image": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400&h=600&fit=crop",
+  "desc": "Rusa yang sombong dengan tanduknya justru tersesat di hutan.",
+  "moral": "Jangan sombong dengan penampilan luar, rendah hati itu lebih penting.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["bersyukur", "memecahkan_masalah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400&h=600&fit=crop", "text": "Seekor rusa memiliki tanduk yang sangat indah dan besar." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Ia membanggakan tanduknya dan meremehkan kaki-kakinya yang kurus." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Suatu hari, singa datang mengejar rusa." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Rusa berlari cepat berkat kakinya yang kuat." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Tapi tanduknya tersangkut di dahan pohon! Rusa tidak bisa bergerak." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Rusa lolos berkat kakinya. Ia sadar: kakilah yang menyelamatkannya, bukan tanduk." }
+  ]
+}

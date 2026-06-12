@@ -1,0 +1,17 @@
+{
+  "title": "Paus Orca yang Adil",
+  "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop",
+  "desc": "Paus orca bernama Orion memimpin dengan adil dan mendengarkan semua anggotanya.",
+  "moral": "Seorang pemimpin yang baik selalu mendengarkan.",
+  "ages": [5, 6, 7, 8],
+  "skills": ["kepemimpinan", "keadilan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Orion si paus orca adalah pemimpin skup kecil di lautan. Dia sangat bijaksana." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Orion selalu mendengarkan semua anggota skup, besar maupun kecil." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Suatu hari, ikan kecil bernama Nuri maju ke depan. Pemimpin, makanan tidak adil!" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Orion tidak marah. Dia mendengarkan dengan seksama semua keluh kesah Nuri." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Setelah mendengar, Orion memanggil semua anggota skup untuk bermusyawarah." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Mereka membuat sistem pembagian yang merata untuk semua. Semua setuju." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Nuri tersenyum, Orion pemimpin yang adil. Mereka hidup harmonis sejak saat itu." }
+  ]
+}

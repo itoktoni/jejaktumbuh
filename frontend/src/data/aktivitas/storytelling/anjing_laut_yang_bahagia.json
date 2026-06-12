@@ -1,0 +1,17 @@
+{
+  "title": "Anjing Laut yang Bahagia",
+  "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop",
+  "desc": "Anjing laut bernama Selly bersyukur atas hidupnya yang sederhana dan bahagia.",
+  "moral": "Syukur membuat hidup lebih bahagia.",
+  "ages": [2, 3, 4, 5, 6, 7],
+  "skills": ["syukur", "kebahagiaan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Selly si anjing laut tinggal di pantai yang cerah. Setiap pagi dia bersyukur bisa melihat matahari." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Selly bermain dengan ikan-ikan kecil dan berbicara dengan burung camar yang lewat." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Suatu hari, Selly bertemu ikan besar yang sangat sedih. Kenapa kau sedih? tanyanya." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Ikan besar itu berkata, Aku punya banyak tapi tidak pernah bahagia. Selly mengangguk." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Selly menjawab, Aku tidak punya banyak, tapi aku bahagia. Lihat matahari terbenam itu! Bukankah indah?" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Ikan besar melihat matahari terbenam dan mulai tersenyum untuk pertama kali." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Mereka berdua menikmati pemandangan bersama. Kebahagiaan tidak tergantung pada harta, tapi pada rasa syukur." }
+  ]
+}

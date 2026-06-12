@@ -1,0 +1,16 @@
+{
+  "title": "Gajah dan Semut",
+  "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop",
+  "desc": "Gajah besar meremehkan semut kecil, tapi semut membuktikan kekuatannya.",
+  "moral": "Jangan meremehkan orang lain, karena setiap orang punya kelebihan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["menghormati_ortu", "bersyukur"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop", "text": "Gajah besar selalu membanggakan dirinya karena tubuhnya yang sangat besar." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Ia menertawakan semut yang kecil. 'Kamu sangat lemah!'" },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Semut tidak marah. Ia berkata, 'Setiap makhluk punya kelebihan.'" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Suatu hari, gajah terperangkap dalam lubang. Tidak ada yang bisa menolong." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Semut memanggil ribuan temannya untuk menggali tanah dan membebaskan gajah." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Gajah malu dan berterima kasih. Ia belajar untuk tidak meremehkan siapapun." }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Kucing dan Anjing",
+  "image": "https://images.unsplash.com/photo-1425082661507-d6d2f01487ce?w=400&h=600&fit=crop",
+  "desc": "Kucing dan anjing yang awalnya bertengkar, akhirnya menjadi sahabat.",
+  "moral": "Persahabatan sejati bisa terjadi meskipun kita berbeda.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["kerja_sama", "empati"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1425082661507-d6d2f01487ce?w=400&h=600&fit=crop", "text": "Di sebuah rumah, tinggal seekor kucing bernama Kiki dan anjing bernama Bono." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Mereka selalu bertengkar memperebutkan makanan dan tempat tidur." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Suatu hari, Kiki tersesat di hutan dan menangis ketakutan." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Bono mendengar suara Kiki dan bergegas mencarinya di hutan." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Bono menemukan Kiki dan membawanya pulang dengan selamat." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Sejak itu, Kiki dan Bono menjadi sahabat baik dan saling melindungi." }
+  ]
+}

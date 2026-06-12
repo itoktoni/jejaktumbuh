@@ -1,0 +1,16 @@
+{
+  "title": "Menghormati Guru",
+  "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop",
+  "desc": "Siswa-siswa belajar menghormati guru yang sudah berjuang mengajar mereka.",
+  "moral": "Menghormati guru adalah tanda orang yang berbudi baik.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["menghormati_ortu", "mendengarkan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Pak Budi adalah guru yang sangat baik dan sabar di SD Nusantara." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Setiap hari ia mengajar dengan penuh semangat meskipun kadang lelah." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Beberapa siswa sering tidak mendengarkan dan bermain saat pelajaran." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Suatu hari Pak Budi sakit dan tidak masuk. Anak-anak merasa kehilangan." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Mereka sadar betapa berharganya Pak Budi. Mereka membuat kartu ucapan." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&h=600&fit=crop", "text": "Saat Pak Budi sembuh, anak-anak menyambutnya dengan senyum dan lebih menghormati." }
+  ]
+}

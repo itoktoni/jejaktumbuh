@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Nemo yang Pencari",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan badut bernama Nemo menemukan bahwa mencari itu seru dan menyenangkan.",
+  "moral": "Petualangan adalah guru terbaik.",
+  "ages": [3, 4, 5, 6, 7, 8],
+  "skills": ["petualangan", "keingintahuan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Nemo si ikan badut tinggal di anemone yang aman dan nyaman." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Ayah Nemo selalu khawatir dan tidak ingin Nemo pergi jauh." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Tapi Nemo penasaran dengan dunia luar. Dia ingin tahu apa yang ada di luar terumbu." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, Nemo berenang jauh dan bertemu ikan-ikan dari berbagai tempat." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Nemo belajar banyak hal baru dan mendapat teman dari berbagai penjuru." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Saat pulang, Nemo menceritakan semua pengalamannya kepada ayahnya." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Ayah Nemo akhirnya mengerti. Petualangan membuat Nemo lebih bijak dan berani." }
+  ]
+}

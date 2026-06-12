@@ -1,0 +1,16 @@
+{
+  "title": "Ikan Mas dan Katak",
+  "image": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400&h=600&fit=crop",
+  "desc": "Ikan mas dan katak bersahabat meskipun hidup di tempat berbeda.",
+  "moral": "Persahabatan sejati tidak dibatasi oleh perbedaan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["kerja_sama", "berbagi"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400&h=600&fit=crop", "text": "Di sebuah kolam, hidup seekor ikan mas yang cantik dan seekor katak." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Mereka bermain bersama setiap hari meskipun ikan di air dan katak di darat." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Suatu hari, kolam mulai mengering karena kemarau panjang." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Katak menggali lubang untuk menampung air agar ikan mas tetap hidup." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Ikan mas berkata, Terima kasih, kau sahabat terbaikku." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Hujan akhirnya turun dan kolam penuh kembali. Mereka bermain dengan gembira." }
+  ]
+}

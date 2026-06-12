@@ -1,0 +1,16 @@
+{
+  "title": "Rajin Mencuci Tangan",
+  "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=600&fit=crop",
+  "desc": "Lina belajar pentingnya mencuci tangan untuk menjaga kesehatan.",
+  "moral": "Mencuci tangan secara teratur adalah kebiasaan baik untuk kesehatan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["kebersihan_diri", "makan_sehat"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=600&fit=crop", "text": "Lina suka bermain di taman. Ia bermain tanah, pasir, dan daun-daunan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Setelah bermain, Lina langsung makan tanpa cuci tangan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Malamnya, perut Lina sakit. Ibu membawanya ke dokter." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Dokter berkata, 'Kuman masuk karena tangan tidak dicuci sebelum makan.'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Lina menyesal. Ia berjanji akan selalu mencuci tangan dengan sabun." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=600&fit=crop", "text": "Sekarang Lina selalu cuci tangan sebelum makan dan setelah bermain. Ia tidak pernah sakit lagi." }
+  ]
+}

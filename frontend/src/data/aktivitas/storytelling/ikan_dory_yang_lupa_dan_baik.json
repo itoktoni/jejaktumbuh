@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Dory yang Lupa dan Baik",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan biru bernama Dory memiliki masalah memori tapi hatinya sangat baik.",
+  "moral": "Kebaikan hati lebih penting dari ingatan sempurna.",
+  "ages": [3, 4, 5, 6, 7, 8],
+  "skills": ["kebaikan", "pertolongan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Dory si ikan biru tinggal di lautan yang luas." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Dory memiliki masalah memori. Dia sering melupakan apa yang baru saja terjadi." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Tapi Dory tidak pernah lupa untuk selalu tersenyum dan menyapa." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, Dory bertemu ikan kecil yang tersesat dan sedih." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Dory membantu ikan kecil itu dan meski lupa jalan, dia tetap mencari solusi." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Ikan kecil itu senang dan bertanya, Mengapa kau begitu baik?" },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Dory menjawab, Aku mungkin lupa, tapi aku tidak pernah lupa untuk baik." }
+  ]
+}

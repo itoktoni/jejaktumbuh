@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Koi yang Pandai",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan koi bernama Kenzie memecahkan teka-teki untuk membuka gerbang dan menyelamatkan teman-temannya.",
+  "moral": "Pengetahuan adalah senjata terhebat.",
+  "ages": [5, 6, 7, 8],
+  "skills": ["kecerdikan", "pemecahan_masalah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Kenzo si ikan koi tinggal di taman yang indah dengan kolam besar. Dia sangat suka belajar." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=400&h=600&fit=crop", "text": "Setiap hari, Kenzo membaca buku di perpustakaan sungai. Dia belajar matematika dan logika." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Suatu hari, gerbang kolam tertutup dan semua ikan tidak bisa keluar." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=400&h=600&fit=crop", "text": "Gerbang itu memiliki kunci angka. Jika salah, air akan berhenti mengalir." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Kenzo mengingat pelajaran matematika. Dia menghitung kombinasi yang benar: 3 kali 7 dikurangi 5." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Kenzo menekan tombol dengan siripnya. 3... 7... 5... Gerbang terbuka! Air mengalir kembali." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Semua ikan bisa keluar. Terima kasih, Kenzo! Belajar itu berguna sekali!" }
+  ]
+}

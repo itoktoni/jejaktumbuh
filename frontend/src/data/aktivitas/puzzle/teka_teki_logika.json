@@ -1,0 +1,5 @@
+{ "title": "Teka-Teki Logika", "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=600&fit=crop", "ages": [4, 5, 6, 7, 8, 9, 10, 11], "skills": ["memecahkan_masalah", "fokus"], "questions": [
+  { "q": "Aku punya kepala tapi tidak punya badan. Siapa aku?", "a": "Koin!", "hint": "Benda kecil di dompet, ada gambar kepala di salah satu sisi", "emoji": "🪙" },
+  { "q": "Semakin diambil, semakin besar. Apakah itu?", "a": "Lubang!", "hint": "Bayangkan menggali tanah, makin dikeruk makin lebar", "emoji": "🕳️" },
+  { "q": "Aku bisa terbang tanpa sayap. Aku bisa menangis tanpa mata. Siapa aku?", "a": "Awan!", "hint": "Lihat ke atas saat hujan, dari situlah air turun", "emoji": "☁️" }
+]}

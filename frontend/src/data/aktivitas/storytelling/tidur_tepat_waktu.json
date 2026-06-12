@@ -1,0 +1,16 @@
+{
+  "title": "Tidur Tepat Waktu",
+  "image": "https://images.unsplash.com/photo-1476703993599-23765e68e53b?w=400&h=600&fit=crop",
+  "desc": "Rendi belajar pentingnya tidur tepat waktu untuk kesehatan.",
+  "moral": "Tidur yang cukup dan tepat waktu penting untuk tubuh yang sehat.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["tidur_cukup", "atur_waktu"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1476703993599-23765e68e53b?w=400&h=600&fit=crop", "text": "Rendi suka begadang menonton TV sampai larut malam." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Setiap pagi, Rendi susah bangun dan sering terlambat ke sekolah." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Di sekolah, Rendi mengantuk dan tidak bisa fokus belajar." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Ibu berkata, 'Tubuhmu butuh istirahat yang cukup, Nak.'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Rendi mulai tidur jam 8 malam setiap hari. Ia merasa lebih segar." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476703993599-23765e68e53b?w=400&h=600&fit=crop", "text": "Nilai Rendi membaik dan ia punya energi untuk bermain. Tidur tepat waktu itu penting!" }
+  ]
+}

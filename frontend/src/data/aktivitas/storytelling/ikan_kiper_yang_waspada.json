@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Kiper yang Waspada",
+  "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop",
+  "desc": "Ikan kiper bernama Kipper menjaga keamanan kelompoknya dengan selalu waspada.",
+  "moral": "Kewaspadaan adalah kunci keselamatan.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["kewaspadaan", "tanggung_jawab"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Kipper si ikan kiper selalu waspada. Dia tinggal di bagian depan skup." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Setiap pagi, Kipper memeriksa keamanan seluruh area sebelum ikan lain bangun." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Ikan lain sering melupakan Kipper karena dia tidak pernah terlihat santai." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Suatu hari, Kipper mencium bau aneh. Itu tanda predator sedang mendekat." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Kipper segera berenang ke belakang dan memperingatkan semua ikan, Predator datang! Segera pergi!" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Beberapa ikan ragu, tapi Kipper tetap menegaskan. Percayalah padaku!" },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Hiu muncul sesaat kemudian, tapi semua ikan sudah pergi. Kipper menyelamatkan semuanya!" }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Anglerfish yang Dermawan",
+  "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop",
+  "desc": "Ikan anglerfish bernama Angel menggunakan cahayanya untuk membantu ikan lain di kegelapan.",
+  "moral": "Kebaikan hati lebih penting dari penampilan.",
+  "ages": [5, 6, 7, 8],
+  "skills": ["kebaikan", "pertolongan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Angel si anglerfish tinggal di laut dalam yang sangat gelap. Dia punya lampu kecil di kepalanya." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Penampilan Angel menakutkan bagi ikan-ikan di sana. Dia kesepian." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, Angel melihat ikan kecil bernama Pip yang tersesat dalam kegelapan." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Angel menyalakan lampunya untuk menerangi Pip. Jangan takut, aku akan membantumu." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Pip tidak takut dengan penampilan Angel. Terima kasih, kau sangat baik." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Angel mengantar Pip menemukan jalan pulang. Sejak itu, banyak ikan datang ke Angel saat butuh bantuan." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Angel tersenyum. Keindahan sejati ada di dalam hati. Semua ikan sekarang menghargai Angel." }
+  ]
+}

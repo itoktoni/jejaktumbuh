@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Blobfish yang Optimis",
+  "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop",
+  "desc": "Blobfish bernama Blobi mengajarkan bahwa optimisme bisa membuat hidup lebih baik.",
+  "moral": "Optimis dalam menghadapi segala situasi.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["optimisme", "kebahagiaan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Blobi si blobfish tinggal di laut dalam yang gelap dan bertekanan tinggi." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Lingkungan itu sulit, tapi Blobi selalu bersemangat dan menemukan keindahan dalam gelap." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Ikan lain kadang mengeluh. Blobi berkata, Tapi lihat betapa indahnya bakteri bercahaya di sini!" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Suatu hari, makanan mereka menipis. Ikan lain mulai panik dan cemas." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Blobi berkata, Tenang! Kita pasti menemukan makanan. Masih banyak tempat yang belum kita jelajahi." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Blobi memimpin semua mencari sumber makanan baru. Dia tidak pernah menunjukkan keputusasaan." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Mereka menemukan persediaan makanan baru! Semua belajar dari Blobi bahwa optimisme mengubah segalanya." }
+  ]
+}

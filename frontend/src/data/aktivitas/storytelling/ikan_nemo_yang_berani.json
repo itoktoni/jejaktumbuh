@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Nemo yang Berani",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan badut bernama Nemo pemberani meskipun ayahnya sangat khawatir.",
+  "moral": "Petualangan membuat kita lebih bijak dan berani.",
+  "ages": [3, 4, 5, 6, 7, 8],
+  "skills": ["keberanian", "petualangan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Nemo si ikan badut tinggal di anemone yang aman bersama ayahnya, Marlin." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Ayah Marlin selalu khawatir dan tidak pernah membiarkan Nemo pergi jauh." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Tapi Nemo penasaran dengan dunia luar. Dia ingin sekali melihat sekolah ikan." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, Nemo memberanikan diri mengikuti sekolah ikan di luar terumbu." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Di sekolah, Nemo belajar banyak hal baru dan mendapat teman-teman dari berbagai tempat." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Saat pulang, Nemo menceritakan semua pengalamannya. Ayah Marlin tersenyum bangga." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Nemo pemberani! Ayah belajar untuk tidak terlalu khawatir. Setiap petualangan membuat kita lebih kuat." }
+  ]
+}

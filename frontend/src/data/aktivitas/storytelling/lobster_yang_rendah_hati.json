@@ -1,0 +1,17 @@
+{
+  "title": "Lobster yang Rendah Hati",
+  "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop",
+  "desc": "Lobster bernama Larry memiliki capit yang kuat tapi tidak pernah sombong.",
+  "moral": "Kekuatan sejati adalah kerendahan hati.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["kerendahan_hati", "kebaikan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Larry si lobster memiliki capit yang sangat besar dan kuat. Dia tinggal di gua karang." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Larry bisa saja menakuti ikan lain, tapi dia tidak pernah. Dia lebih suka membantu." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Setiap hari, Larry menggunakan capitnya untuk mengangkat batu-batu besar yang menghalangi jalan." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Suatu hari, karang besar runtuh dan menimpa rumah ikan kecil. Mereka terjebak!" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Larry mendengar teriakan minta tolong. Dia segera berenang ke lokasi." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Dengan capitnya, Larry mengangkat karang satu per satu. Semua ikan kecil berhasil dikeluarkan." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Terima kasih, Larry si Kuat! Larry menjawab, Capit saya besar, tapi hati saya lebih besar." }
+  ]
+}

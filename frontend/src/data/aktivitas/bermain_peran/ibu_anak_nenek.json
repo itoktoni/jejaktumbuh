@@ -1,0 +1,40 @@
+{
+  "title": "Ibu, Anak & Nenek",
+  "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=600&fit=crop",
+  "desc": "Keluarga kecil mengunjungi nenek di desa.",
+  "ages": [3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["menghormati_ortu", "quality_time", "empati"],
+  "roles": [
+    { "name": "Ibu", "emoji": "👩", "desc": "Mengajarkan anak untuk menghormati nenek." },
+    { "name": "Anak", "emoji": "🧒", "desc": "Belajar sopan dan menyayangi nenek." },
+    { "name": "Nenek", "emoji": "👵", "desc": "Menerima cucu dengan penuh kasih sayang." }
+  ],
+  "moral": "Menghormati orang tua dan kakek-nenek adalah cerminan akhlak yang baik.",
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=600&fit=crop", "narrator": "Pagi yang cerah. Ibu dan Rina bersiap-siap mengunjungi Nenek di desa.", "dialog": [
+      { "role": "Ibu", "text": "Rina, hari ini kita jenguk Nenek ya. Jangan lupa salam ya kalau sampai." },
+      { "role": "Anak", "text": "Yeay! Aku kangen Nenek! Aku mau bawa buah untuk Nenek." }
+    ]},
+    { "num": 2, "image": "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=400&h=600&fit=crop", "narrator": "Setelah perjalanan 1 jam, mereka tiba di rumah Nenek yang asri.", "dialog": [
+      { "role": "Anak", "text": "Neeeek! Rina datang!" },
+      { "role": "Nenek", "text": "Rinaku sayang! Sini, Nenek kangen banget. Cipika cipiki dulu." },
+      { "role": "Ibu", "text": "Assalamualaikum, Bu. Sehat-sehat ya?" }
+    ]},
+    { "num": 3, "image": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400&h=600&fit=crop", "narrator": "Rina memberikan buah yang dibawanya kepada Nenek.", "dialog": [
+      { "role": "Anak", "text": "Nek, ini buah untuk Nenek. Rina pilih sendiri di pasar tadi." },
+      { "role": "Nenek", "text": "Wah, terima kasih, sayang. Nenek senang sekali. Anak yang baik." },
+      { "role": "Ibu", "text": "Nak, kalau memberi itu harus ikhlas ya, seperti Nenek yang selalu memberi kita." }
+    ]},
+    { "num": 4, "image": "https://images.unsplash.com/photo-1476703993599-23765e68e53b?w=400&h=600&fit=crop", "narrator": "Nenek menceritakan dongeng masa kecil Ibu kepada Rina.", "dialog": [
+      { "role": "Nenek", "text": "Dulu, Mamamu itu paling suka minta cerita sebelum tidur." },
+      { "role": "Anak", "text": "Hahaha! Ibu juga suka cerita, Nek?" },
+      { "role": "Ibu", "text": "Iya, Nenek ceritanya paling bagus. Makanya Ibu selalu rindu ke sini." }
+    ]},
+    { "num": 5, "image": "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&h=600&fit=crop", "narrator": "Sore hari, saat pulang, Rina memeluk Nenek erat-erat.", "dialog": [
+      { "role": "Anak", "text": "Nenek, Rina sayang Nenek. Besok Rina datang lagi ya!" },
+      { "role": "Nenek", "text": "Nenek juga sayang Rina. Jadi anak yang baik ya, sayang." },
+      { "role": "Ibu", "text": "Ayo, Rin. Pamit dulu sama Nenek. Assalamualaikum, Bu." },
+      { "role": "Anak", "text": "Assalamualaikum, Nek!" }
+    ]}
+  ]
+}

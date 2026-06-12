@@ -1,0 +1,16 @@
+{
+  "title": "Main Bersama",
+  "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop",
+  "desc": "Anak-anak dari berbagai latar belakang bermain bersama dengan gembira.",
+  "moral": "Perbedaan bukanlah penghalang untuk berteman dan bermain bersama.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["kerja_sama", "empati"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Di taman bermain, anak-anak dari berbagai daerah berkumpul." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Ada yang dari kota, ada yang dari desa. Semuanya berbeda-beda." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Awalnya mereka malu dan tidak saling menyapa." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Seorang anak mengajak yang lain bermain kelereng. Semua tertarik." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Mereka bermain, tertawa, dan saling mengenal satu sama lain." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Sore itu, mereka pulang dengan senyum dan janji bertemu lagi besok." }
+  ]
+}

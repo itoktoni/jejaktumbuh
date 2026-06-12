@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview - Mewarnai Alfabet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: #e8e8e8; font-family: 'Fredoka', sans-serif; }
+    .ws-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; }
+    .ws-page {
+      width: 210mm; min-height: 297mm; padding: 12mm 15mm;
+      background: white; display: flex; flex-direction: column;
+      font-family: 'Fredoka', sans-serif;
+      outline: 4px solid #000;
+      box-shadow: inset 0 0 0 4px #000;
+      box-sizing: border-box;
+    }
+    .ws-header { display: flex; gap: 8px; margin-bottom: 6mm; }
+    .ws-header-box {
+      flex: 1; border: 2.5px solid #222; border-radius: 12px;
+      padding: 10px 16px; display: flex; align-items: center;
+    }
+    .title-box { justify-content: center; }
+    .ws-title { font-size: 20px; font-weight: 700; color: #222; }
+    .name-box { gap: 10px; }
+    .ws-label { font-size: 18px; font-weight: 700; color: #222; white-space: nowrap; }
+    .ws-name-line { flex: 1; border-bottom: 2.5px dashed #aaa; min-height: 22px; }
+    .ws-letter-area {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10mm;
+    }
+    .ws-letter {
+      font-weight: 900; color: white;
+      -webkit-text-stroke: 3px #222; paint-order: stroke fill;
+      line-height: 1; user-select: none;
+    }
+    .ws-upper { font-size: 220px; }
+    .ws-lower { font-size: 180px; }
+    .ws-footer { text-align: center; padding-top: 4mm; border-top: 1.5px solid #ddd; }
+    .ws-page-num { font-size: 10px; color: #999; }
+    .toolbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #176c33, #2E7D32);
+      color: white; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .toolbar button {
+      background: white; color: #176c33; border: none;
+      padding: 8px 20px; border-radius: 10px;
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      font-family: 'Fredoka', sans-serif;
+    }
+    @media print {
+      html, body { background: white; }
+      .toolbar { display: none; }
+      .ws-container { padding: 0; gap: 0; }
+      .ws-page {
+        box-shadow: inset 0 0 0 4px #000;
+        outline: 4px solid #000;
+      }
+      .ws-header-box {
+        outline: 2.5px solid #222;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span>📝 Preview: Mewarnai Alfabet (A-Z)</span>
+    <div style="display:flex;gap:8px;">
+      <button onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </div>
+  <div class="ws-container" style="margin-top:60px;" id="pages"></div>
+  <script>
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const container = document.getElementById('pages');
+    letters.forEach((letter, i) => {
+      container.innerHTML += `
+        <div class="ws-page">
+          <div class="ws-header">
+            <div class="ws-header-box title-box"><span class="ws-title">Mewarnai Huruf</span></div>
+            <div class="ws-header-box name-box"><span class="ws-label">Nama:</span><div class="ws-name-line"></div></div>
+          </div>
+          <div class="ws-letter-area">
+            <span class="ws-letter ws-upper">${letter}</span>
+            <span class="ws-letter ws-lower">${letter.toLowerCase()}</span>
+          </div>
+          <div class="ws-footer"><span class="ws-page-num">${i+1} / 26</span></div>
+        </div>`;
+    });
+  </script>
+</body>
+</html>

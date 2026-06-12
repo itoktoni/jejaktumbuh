@@ -1,0 +1,11 @@
+{
+  "title": "Teka-Teki Buah",
+  "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=600&fit=crop",
+  "ages": [3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["berpikir_kreatif", "mengenali_emosi"],
+  "questions": [
+    { "q": "Aku berwarna merah, manis, dan sering dijadikan jus. Siapa aku?", "a": "Apel!", "hint": "Buah bulat merah yang sering dimakan langsung atau dibuat jus", "emoji": "🍎" },
+    { "q": "Aku berwarna kuning dan berbentuk panjang. Aku sering menjadi makanan monyet. Siapa aku?", "a": "Pisang!", "hint": "Buah kuning melengkung yang mudah dikupas", "emoji": "🍌" },
+    { "q": "Aku punya kulit hijau, daging merah, dan biji hitam. Siapa aku?", "a": "Semangka!", "hint": "Buah besar dan segar, cocok dimakan saat cuaca panas", "emoji": "🍉" }
+  ]
+}

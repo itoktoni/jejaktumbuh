@@ -1,0 +1,17 @@
+{
+  "title": "Kuda Laut yang Setia",
+  "image": "https://images.unsplash.com/photo-1545671913-b89ac1b4ac10?w=400&h=600&fit=crop",
+  "desc": "Kuda laut bernama Hipo menunggu pasangannya yang pergi ke lautan dalam.",
+  "moral": "Kesetiaan adalah tanda cinta yang sejati.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["kesetiaan", "kesabaran"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1545671913-b89ac1b4ac10?w=400&h=600&fit=crop", "text": "Hipo si kuda laut tinggal di terumbu karang yang berwarna-warni. Dia sangat menyayangi pasangannya, Hailey." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Suatu pagi, Hailey harus pergi ke lautan dalam untuk menjamu anak-anaknya yang jauh." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Hailey akan pergi selama beberapa minggu. Hipo berjanji untuk menunggu." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Minggu pertama berlalu. Hipo setia menunggu di rumah, menjaga karang tetap bersih." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Minggu kedua. Beberapa ikan bilang Hailey tidak akan kembali. Hipo tidak peduli dan tetap percaya." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Pada minggu ketiga, seekor kuda laut kecil muncul di kejauhan. Itu Hailey!" },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Hipo berlari menghampiri Hailey. Mereka berpelukan erat. Menunggu itu worth it!" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Katak dan Kebohongan",
+  "image": "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&h=600&fit=crop",
+  "desc": "Katak kecil yang suka berbohong akhirnya kehilangan kepercayaan teman-temannya.",
+  "moral": "Berbohong akan membuat orang lain tidak percaya lagi pada kita.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["jujur", "mengenali_emosi"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&h=600&fit=crop", "text": "Katak kecil bernama Koko suka berbohong untuk menarik perhatian." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "'Aku melihat naga raksasa!' kata Koko. Padahal itu hanya awan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Temannya percaya pertama kali, tapi lama-lama tahu Koko berbohong." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Suatu hari Koko benar-benar melihat bahaya, tapi tidak ada yang percaya." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Koko menangis. Ia menyesal sudah sering berbohong." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&h=600&fit=crop", "text": "Koko berjanji untuk selalu jujur. Perlahan, teman-temannya percaya lagi." }
+  ]
+}

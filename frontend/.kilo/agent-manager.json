@@ -1,0 +1,25 @@
+{
+  "worktrees": {
+    "wt-1780919471924-1": {
+      "branch": "excellent-shade",
+      "path": "d:\\vuejs\\family\\.kilo\\worktrees\\excellent-shade",
+      "parentBranch": "fredoka",
+      "createdAt": "2026-06-08T11:51:11.924Z",
+      "remote": "origin"
+    }
+  },
+  "sessions": {
+    "ses_158ed6f8fffesXVpLC60f9Y1lz": {
+      "worktreeId": "wt-1780919471924-1",
+      "createdAt": "2026-06-08T11:51:14.366Z"
+    }
+  },
+  "tabOrder": {
+    "local": [
+      "pending:1"
+    ]
+  },
+  "worktreeOrder": [
+    "wt-1780919471924-1"
+  ]
+}

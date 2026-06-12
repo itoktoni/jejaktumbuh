@@ -1,0 +1,16 @@
+{
+  "title": "Olahraga Pagi",
+  "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop",
+  "desc": "Keluarga Pak Joko rutin berolahraga pagi setiap akhir pekan.",
+  "moral": "Olahraga teratur membuat tubuh sehat dan kuat.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["olahraga_teratur", "quality_time"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Setiap hari Minggu pagi, keluarga Pak Joko pergi ke taman kota." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Mereka berlari, bersepeda, dan senam bersama." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Anak-anak, Dimas dan Dina, sangat menikmati waktu olahraga." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Setelah olahraga, mereka sarapan bersama di taman." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Dimas berkata, 'Badan segar dan perut kenyang!'" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Olahraga rutin membuat keluarga Pak Joko sehat dan bahagia." }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Guru yang Baik",
+  "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop",
+  "desc": "Bu Guru Ayu membantu murid yang kesulitan belajar dengan penuh kesabaran.",
+  "moral": "Guru yang baik akan mengubah hidup muridnya menjadi lebih baik.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["mendengarkan", "tidak_mudah_menyerah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Bu Guru Ayu mengajar di kelas 3 SD. Ia sangat sabar dan perhatian." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Di kelasnya ada Budi yang kesulitan membaca. Teman-temannya menertawakan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Bu Ayu tidak memarahi Budi. Ia mengajarnya dengan sabar setiap hari." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Bu Ayu menggunakan gambar dan cerita untuk membuat Budi tertarik belajar." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Perlahan tapi pasti, Budi mulai bisa membaca dengan lancar." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&h=600&fit=crop", "text": "Budi berkata, 'Terima kasih, Bu. Ibu guru terbaikku!'" }
+  ]
+}

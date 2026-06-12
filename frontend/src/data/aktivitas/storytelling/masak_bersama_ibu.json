@@ -1,0 +1,16 @@
+{
+  "title": "Masak Bersama Ibu",
+  "image": "https://images.unsplash.com/photo-1559253575-cee21c9481db?w=400&h=600&fit=crop",
+  "desc": "Cika belajar memasak sederhana bersama ibunya di dapur.",
+  "moral": "Belajar memasak adalah keterampilan hidup yang penting dan menyenangkan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["masak_sederhana", "quality_time"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1559253575-cee21c9481db?w=400&h=600&fit=crop", "text": "Cika suka membantu Ibu di dapur. Hari ini mereka akan membuat kue." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Ibu mengajarkan Cika cara mengocok telur dan mencampur tepung." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Cika juga belajar menimbang gula dan mentega dengan timbangan." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Adonan dicetak dan dimasukkan ke dalam oven. Mereka menunggu dengan sabar." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Ding! Kue sudah matang. Wanginya harum sekali!" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1559253575-cee21c9481db?w=400&h=600&fit=crop", "text": "Cika dan Ibu menikmati kue buatan mereka bersama. 'Enak sekali!'" }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Penyu Cilik yang Pantang Menyerah",
+  "image": "https://images.unsplash.com/photo-1591025207163-942350e47db2?w=400&h=600&fit=crop",
+  "desc": "Penyu cilik bernama Shelly berenang perlahan tapi tidak pernah menyerah sampai tiba di lautan.",
+  "moral": "Jangan pernah menyerah, karena usaha keras akan selalu berbuah hasil.",
+  "ages": [3, 4, 5, 6, 7, 8],
+  "skills": ["ketekunan", "pantang_menyerah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1591025207163-942350e47db2?w=400&h=600&fit=crop", "text": "Di pantai yang indah, telur-telur penyu mulai menetas. Salah satu anak penyu bernama Shelly." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Shelly melihat laut yang luas dan ingin sekali sampai di sana. Tapi kakinya masih sangat kecil." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Saudara-saudaranya sudah sampai duluan. Shelly terus merangkak perlahan dengan penuh semangat." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Burung laut ingin menciduk Shelly, tapi ibunya menjaga dengan keras. Shelly tetap merangkak." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Setelah berjuang keras, Shelly sampai di batas air. Dia merasa sangat senang." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Shelly berenang ke dalam air untuk pertama kalinya. Air laut terasa dingin tapi indah." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Shelly tersenyum dalam air. Dia belajar bahwa yang penting bukan kecepatan, tapi ketidakputusasaan." }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Archer yang Cerdik",
+  "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop",
+  "desc": "Ikan pemanah bernama Arsy menggunakan kecerdikannya untuk mendapatkan makanan.",
+  "moral": "Kecerdikan lebih bermakna daripada kekerasan.",
+  "ages": [5, 6, 7, 8],
+  "skills": ["kecerdikan", "kreativitas"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Arsy si ikan pemanah tinggal di sungai bakau yang penuh dengan serangga." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Arsy punya kemampuan unik: dia bisa menembak air dari mulut untuk menjatuhkan serangga." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, ikan besar bernama Gede ingin merebut makanan Arsy dengan paksa." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Arsy tidak melawan atau berbohong. Dia berpikir cerdik untuk selesaikan masalah." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Arsy berkata, Gede, aku bisa membagi makanan denganmu. Tapi bantu aku kumpulkan serangga lebih banyak." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Gede setuju. Dengan kerja sama, mereka dapat lebih banyak serangga daripada biasanya." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Mereka berbagi makanan bersama. Arsy tersenyum, Kecerdikan lebih baik dari kekuatan." }
+  ]
+}

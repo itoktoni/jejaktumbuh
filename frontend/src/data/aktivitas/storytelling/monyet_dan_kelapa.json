@@ -1,0 +1,16 @@
+{
+  "title": "Monyet dan Kelapa",
+  "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop",
+  "desc": "Seekor monyet belajar memanjat pohon kelapa untuk pertama kalinya.",
+  "moral": "Kegagalan adalah bagian dari proses belajar, jangan takut gagal.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["tidak_mudah_menyerah", "berani_mencoba"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop", "text": "Milo adalah monyet muda yang belum pernah memanjat pohon kelapa." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Monyet-monyet lain sudah pandai memanjat dan mengambil kelapa." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Milo mencoba memanjat tapi terjatuh. Ia mencoba lagi dan jatuh lagi." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Ibu monyet berkata, 'Terus coba, Nak. Gagal itu biasa.'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Milo berlatih setiap hari. Perlahan ia bisa memanjat lebih tinggi." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Akhirnya Milo berhasil mengambil kelapa! Semua monyet bertepuk tangan." }
+  ]
+}

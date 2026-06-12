@@ -1,0 +1,16 @@
+{
+  "title": "Kancil dan Buaya",
+  "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop",
+  "desc": "Cerita tentang kancil cerdik yang menyeberangi sungai dengan akalnya.",
+  "moral": "Kita harus cerdik dan tidak boleh menipu orang lain.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["berpikir_kreatif", "memecahkan_masalah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Pada zaman dahulu, hiduplah seekor kancil yang sangat cerdik di tepi hutan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Suatu hari, kancil ingin menyeberangi sungai yang lebar untuk mencari makanan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Di sungai, banyak buaya yang lapar menunggu mangsa." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1504006833117-8886a355efbf?w=400&h=600&fit=crop", "text": "Kancil berkata, 'Hai buaya, Raja mengundang kalian semua ke pesta!'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Para buaya percaya dan berbaris di permukaan air. Kancil melompat dari satu buaya ke buaya lain." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Dengan cerdik, kancil berhasil menyeberang dan tertawa, 'Terima kasih tumpangannya!'" }
+  ]
+}

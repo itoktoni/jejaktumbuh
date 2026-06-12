@@ -1,0 +1,36 @@
+{
+  "title": "Dokter & Pasien Kecil",
+  "image": "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=400&h=600&fit=crop",
+  "desc": "Anak kecil belajar tidak takut ke dokter.",
+  "ages": [3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["berani_bicara", "mengelola_marah"],
+  "roles": [
+    { "name": "Dokter", "emoji": "👨‍⚕️", "desc": "Memeriksa pasien dengan sabar dan menjelaskan dengan baik." },
+    { "name": "Pasien", "emoji": "🧒", "desc": "Menceritakan keluhan dengan jujur dan tidak takut." }
+  ],
+  "moral": "Jangan takut ke dokter. Komunikasi yang baik membantu proses penyembuhan.",
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=400&h=600&fit=crop", "narrator": "Raka, anak berusia 7 tahun, sakit perut sejak semalam. Ibu membawanya ke dokter.", "dialog": [
+      { "role": "Pasien", "text": "Bu, aku takut ke dokter..." },
+      { "role": "Ibu", "text": "Tidak apa, Nak. Dokternya baik. Nanti bilang sakitnya di mana ya." }
+    ]},
+    { "num": 2, "image": "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=600&fit=crop", "narrator": "Di ruang praktik, dokter menyapa Raka dengan ramah.", "dialog": [
+      { "role": "Dokter", "text": "Halo, Raka! Namanya bagus. Ayo duduk sini. Cerita dong, sakitnya di mana?" },
+      { "role": "Pasien", "text": "Perut saya sakit, Dok. Semalam mual terus." }
+    ]},
+    { "num": 3, "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=600&fit=crop", "narrator": "Dokter memeriksa perut Raka dengan lembut dan sabar.", "dialog": [
+      { "role": "Dokter", "text": "Saya tekan perutnya pelan-pelan ya. Bilang kalau sakit." },
+      { "role": "Pasien", "text": "Aduh, di situ Dok sakitnya!" },
+      { "role": "Dokter", "text": "Oke, tidak apa-apa. Ini cuma masuk angin. Nanti minum obat ya." }
+    ]},
+    { "num": 4, "image": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=600&fit=crop", "narrator": "Dokter memberikan obat dan menjelaskan cara minumnya.", "dialog": [
+      { "role": "Dokter", "text": "Ini obatnya diminum 3 kali sehari setelah makan. Jangan lupa ya!" },
+      { "role": "Pasien", "text": "Baik, Dok. Terima kasih! Ternyata tidak menakutkan." },
+      { "role": "Dokter", "text": "Betul, Raka! Kalau sakit lagi, langsung bilang Ibu ya. Jangan ditahan." }
+    ]},
+    { "num": 5, "image": "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&h=600&fit=crop", "narrator": "Raka pulang dengan senyuman. Ia belajar bahwa ke dokter tidak perlu ditakuti.", "dialog": [
+      { "role": "Pasien", "text": "Bu, besok kalau sakit lagi, aku mau ke dokter yang tadi ya. Dokternya baik!" },
+      { "role": "Dokter", "text": "Anak yang berani! Semoga cepat sembuh ya, Raka!" }
+    ]}
+  ]
+}

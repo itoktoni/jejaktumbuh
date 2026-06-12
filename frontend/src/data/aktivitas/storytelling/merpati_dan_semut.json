@@ -1,0 +1,16 @@
+{
+  "title": "Merpati dan Semut",
+  "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop",
+  "desc": "Merpati dan semut saling menolong dalam bahaya.",
+  "moral": "Tolong-menolong akan menciptakan persahabatan yang indah.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["peduli_sesama", "empati"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Di tepi sungai, seekor semut hampir hanyut terbawa arus." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Merpati melihatnya dan menjatuhkan daun besar ke air." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Semut naik ke daun dan selamat. 'Terima kasih, Merpati!'" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Kemudian, seorang pemburu menambak merpati dengan sumpit." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Semut menggigit kaki pemburu. Pemburu kaget dan sumpit meleset." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Merpati terbang selamat. Mereka menjadi sahabat sejati." }
+  ]
+}

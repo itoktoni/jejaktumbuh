@@ -1,0 +1,16 @@
+{
+  "title": "Perpustakaan Mini",
+  "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop",
+  "desc": "Anak-anak membuat perpustakaan kecil di kampung mereka.",
+  "moral": "Membaca adalah jendela dunia dan berbagi ilmu adalah kebaikan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["rutin_belajar", "berbagi"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Di kampung Sukamaju, anak-anak suka membaca tapi tidak punya perpustakaan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Kak Rudi mengajak teman-temannya mengumpulkan buku bekas." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Mereka membersihkan gudang kosong dan menjadikannya perpustakaan mini." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Buku-buku disusun rapi di rak. Anak-anak mendaftar sebagai anggota." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Setiap sore, perpustakaan penuh dengan anak-anak yang membaca." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&h=600&fit=crop", "text": "Kampung Sukamaju menjadi kampung yang cerdas dan penuh ilmu." }
+  ]
+}

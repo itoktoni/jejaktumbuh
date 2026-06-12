@@ -1,0 +1,16 @@
+{
+  "title": "Pelangi Setelah Hujan",
+  "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop",
+  "desc": "Anak-anak menemukan pelangi indah setelah hujan badai.",
+  "moral": "Setelah kesulitan, akan ada keindahan. Kita harus selalu optimis.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["mengenali_emosi", "bersyukur"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Hujan badai mengguyur desa seharian. Anak-anak tidak bisa bermain." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Mereka sedih dan bosan di dalam rumah." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Ibu berkata, 'Sabar ya, setelah hujan pasti ada yang indah.'" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Hujan berhenti. Matahari muncul dari balik awan." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Di langit muncul pelangi yang sangat indah dengan tujuh warna!" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop", "text": "Anak-anak berlari keluar dan kagum. 'Setelah badai, pasti ada pelangi!'" }
+  ]
+}

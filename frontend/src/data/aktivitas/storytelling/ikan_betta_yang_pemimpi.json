@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Betta yang Pemimpi",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan betta bernama Bella bermimpi menjadi pelukis terhebat di lautan.",
+  "moral": "Jangan takut untuk bermimpi besar.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["imajinasi", "pantang_menyerah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Bella si ikan betta memiliki sirip yang indah seperti lukisan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Bella bermimpi menjadi pelukis terkenal di seluruh lautan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Dia mulai melukis dengan siripnya di atas pasir putih." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Ikan lain menertawakan Bella. 'Ikan tidak bisa melukis!'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Bella tidak patah semangat. Dia terus berlatih setiap hari." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Lukisan Bella越来越 indah. Ikan-ikan mulai terkagum-kagum." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Bella akhirnya举办画展. Semua ikan datang dan kagum. Mimpinya terwujud!" }
+  ]
+}

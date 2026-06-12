@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Salmon yang Pantang Menyerah",
+  "image": "https://images.unsplash.com/photo-1534043464124-3be32fe000c7?w=400&h=600&fit=crop",
+  "desc": "Ikan salmon bernama Sally berenang jauh untuk sampai ke tempat lahirnya.",
+  "moral": "Pulang ke akar kita adalah hal yang penting.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["ketekunan", "pantang_menyerah"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1534043464124-3be32fe000c7?w=400&h=600&fit=crop", "text": "Sally si ikan salmon lahir di sungai kecil di pegunungan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Setelah besar, Sally berenang ke laut yang luas bersama teman-temannya." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Bertahun-tahun berlalu. Sally grew up dan menjadi kuat di laut." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Suatu hari, Sally ingat bahwa salmon harus pulang ke tempat lahir mereka." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Sally memulai perjalanan jauh melawan arus ke hulu sungai." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Perjalanannya sangat sulit. Sally hampir menyerah tapi dia terus maju." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Akhirnya Sally sampai di sungai kecil tempat dia lahir. Air matanya menetes bahagia." }
+  ]
+}

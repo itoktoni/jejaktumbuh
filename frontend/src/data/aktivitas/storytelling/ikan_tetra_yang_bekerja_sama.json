@@ -1,0 +1,17 @@
+{
+  "title": "Ikan Tetra yang Bekerja Sama",
+  "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop",
+  "desc": "Ikan tetra bernama Tia bekerja sama dengan ikan lain untuk membangun rumah baru.",
+  "moral": "Bersatu kita kuat, bercerai kita lemah.",
+  "ages": [3, 4, 5, 6, 7, 8],
+  "skills": ["kerja_sama", "persatuan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=400&h=600&fit=crop", "text": "Tia si ikan tetra tinggal di sungai yang rumah karangnya hancur karena banjir." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=400&h=600&fit=crop", "text": "Tia melihat semua ikan kehabisan tempat tinggal. Dia punya ide, Ayo kita bangun rumah baru bersama!" },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Beberapa ikan malas dan tidak mau ikut. Tapi Tia tidak menyerah dan mulai bekerja sendiri." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Melihat Tia bekerja keras, ikan-ikan lain mulai merasa malu dan ikut membantu." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Mereka dibagi dalam kelompok: beberapa mengangkat batu, beberapa membawa rumput laut, beberapa membuat fondasi." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Dengan kerja sama, mereka membangun rumah karang yang lebih indah dari sebelumnya." },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Tia tersenyum, Lihat, bersama kita bisa melakukan hal luar biasa! Semua ikan bahagia." }
+  ]
+}

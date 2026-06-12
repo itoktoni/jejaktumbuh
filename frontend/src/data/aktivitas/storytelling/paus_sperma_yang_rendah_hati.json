@@ -1,0 +1,17 @@
+{
+  "title": "Paus Sperma yang Rendah Hati",
+  "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop",
+  "desc": "Paus Sperma bernama Moby tidak sombong meski ukurannya sangat besar.",
+  "moral": "Kekuatan yang besar harus digunakan untuk kebaikan.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["kerendahan_hati", "kebaikan"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Moby si Paus Sperma memiliki tubuh yang sangat besar di lautan." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1516683671899-65b6d5b9e3e9?w=400&h=600&fit=crop", "text": "Tapi Moby tidak pernah sombong. Dia sangat rendah hati kepada semua ikan kecil." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1498038432885-c6f11f7e3c10?w=400&h=600&fit=crop", "text": "Suatu hari, badai besar datang dan kapal kecil terbalik di permukaan laut." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Nelayan jatuh ke air dan tidak bisa berenang jauh. Moby melihat kejadian itu." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Moby berenang ke dekat nelayan dan dengan hati-hati menahan tubuhnya agar nelayan bisa naik." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1568430462989-ee9f1b93e3fb?w=400&h=600&fit=crop", "text": "Nelayan sangat bersyukur dan memanjat ke atas tubuh Moby. Dia diselamatkan!" },
+    { "num": 7, "image": "https://images.unsplash.com/photo-1505881502353-a1986add3762?w=400&h=600&fit=crop", "text": "Moby berenang ke pantai. Terima kasih, Paus besar! Moby tersenyum dan berenang kembali." }
+  ]
+}

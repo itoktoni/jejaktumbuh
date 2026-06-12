@@ -1,0 +1,16 @@
+{
+  "title": "Berbagi dengan Teman",
+  "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop",
+  "desc": "Ani belajar berbagi bekal makanannya dengan teman yang tidak punya makanan.",
+  "moral": "Berbagi dengan sesama adalah perbuatan yang mulia dan membawa kebahagiaan.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["berbagi", "peduli_sesama"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=600&fit=crop", "text": "Setiap hari Ani membawa bekal yang lezat ke sekolah." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Suatu hari, temannya Budi duduk sendirian tanpa makanan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Ani bertanya, 'Budi, kenapa kamu tidak makan?' Budi menjawab, 'Bekalku tertinggal.'" },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Tanpa ragu, Ani membagi bekalnya menjadi dua. 'Ini untukmu!'" },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Budi sangat senang. 'Terima kasih, Ani! Kamu baik sekali.'" },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&h=600&fit=crop", "text": "Sejak itu, mereka berdua selalu berbagi dan menjadi sahabat baik." }
+  ]
+}

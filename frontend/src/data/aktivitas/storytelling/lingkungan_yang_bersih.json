@@ -1,0 +1,16 @@
+{
+  "title": "Lingkungan yang Bersih",
+  "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop",
+  "desc": "Warga desa bergotong royong membersihkan lingkungan mereka.",
+  "moral": "Menjaga kebersihan lingkungan adalah tanggung jawab kita bersama.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["kebersihan_lingkungan", "kerja_sama"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=400&h=600&fit=crop", "text": "Desa Mawar dipenuhi sampah. Sungainya kotor dan bau." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Kepala desa mengajak semua warga untuk gotong royong membersihkan desa." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Semua warga datang dengan membawa sapu, sekop, dan kantong sampah." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Anak-anak mengambil sampah, orang dewasa membersihkan sungai." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Setelah seharian bekerja, desa menjadi bersih dan indah." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=400&h=600&fit=crop", "text": "Warga berjanji akan menjaga kebersihan desa setiap hari." }
+  ]
+}

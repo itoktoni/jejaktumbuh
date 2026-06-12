@@ -1,0 +1,16 @@
+{
+  "title": "Gurita yang Malin",
+  "image": "https://images.unsplash.com/photo-1545671913-b89ac1b4ac10?w=400&h=600&fit=crop",
+  "desc": "Gurita bernama Guru menggunakan kecerdikannya untuk mengeluarkan teman dari jaring ikan.",
+  "moral": "Kecerdikan dan kreativitas lebih berharga dari kekuatan.",
+  "ages": [4, 5, 6, 7, 8],
+  "skills": ["kecerdikan", "kreativitas"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1545671913-b89ac1b4ac10?w=400&h=600&fit=crop", "text": "Guru si gurita tinggal di gua karang yang indah. Dia terkenal sangat cerdas." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=600&fit=crop", "text": "Suatu hari, teman gurita bernama Kiki si kepiting tertangkap dalam jaring ikan." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=600&fit=crop", "text": "Guru ingin membantu. Dia memang kecil, tapi memiliki delapan lengan yang lentur." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=600&fit=crop", "text": "Guru memperhatikan jaring dengan seksama. Dia menemukan titik lemahnya." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&h=600&fit=crop", "text": "Dengan lengannya, Guru mengurai simpul-simpul jaring satu per satu dengan sangat hati-hati." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop", "text": "Kiki berhasil keluar dari jaring! Terima kasih, Guru! Otakmu lebih hebat dari ototku!" }
+  ]
+}

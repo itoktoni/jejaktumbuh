@@ -1,0 +1,16 @@
+{
+  "title": "Kreativitas Anak",
+  "image": "https://images.unsplash.com/photo-1535241749838-299070b57e71?w=400&h=600&fit=crop",
+  "desc": "Anak-anak membuat mainan dari barang bekas di sekitar mereka.",
+  "moral": "Kreativitas bisa muncul dari mana saja, bahkan dari barang yang tidak terpakai.",
+  "ages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "skills": ["berpikir_kreatif", "berimajinasi"],
+  "pages": [
+    { "num": 1, "image": "https://images.unsplash.com/photo-1535241749838-299070b57e71?w=400&h=600&fit=crop", "text": "Di kampung Kenanga, anak-anak tidak punya mainan mahal." },
+    { "num": 2, "image": "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400&h=600&fit=crop", "text": "Mereka melihat botol plastik, kardus, dan kain perca di sekitar rumah." },
+    { "num": 3, "image": "https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop", "text": "Kak Rina mengajak semua anak membuat robot dari kardus bekas." },
+    { "num": 4, "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=600&fit=crop", "text": "Mereka juga membuat mobil-mobilan dari botol plastik dan roda tutup botol." },
+    { "num": 5, "image": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=600&fit=crop", "text": "Semua anak gembira bermain dengan mainan buatan mereka sendiri." },
+    { "num": 6, "image": "https://images.unsplash.com/photo-1535241749838-299070b57e71?w=400&h=600&fit=crop", "text": "Mainan dari barang bekas ternyata lebih seru karena dibuat sendiri!" }
+  ]
+}
