@@ -355,7 +355,7 @@
     </section>
 
     {#if sortedItems.length > 0}
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {#each sortedItems as item (item.title)}
           {@const Card = cardMap[selectedType?.key]}
           {#if Card}

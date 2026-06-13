@@ -128,34 +128,30 @@
   }
 </script>
 
-<button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+<button class="bento-card group bg-canvas-cream rounded-[20px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
   onclick={openReader}>
-  <div class="h-48 overflow-hidden relative shrink-0 flex items-center justify-center" style="background: {bg}">
-    <span class="text-6xl">{item.emoji || '📖'}</span>
-    <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+  <div class="aspect-[4/5] overflow-hidden relative shrink-0 flex items-center justify-center" style="background: {bg}">
+    {#if item.image}
+      <img src={item.image} alt={item.title} class="w-full h-full object-cover" />
+    {:else}
+      <span class="text-5xl">{item.emoji || '📖'}</span>
+    {/if}
+    <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
     {#if totalPages > 0}
-      <div class="absolute top-3 right-3 bg-white/90 rounded-full px-3 py-1 text-xs font-bold text-primary border border-[#B7D9BC]">
-        {totalPages} halaman
+      <div class="absolute top-2 right-2 bg-white/90 rounded-full px-2 py-0.5 text-[10px] font-bold text-primary border border-[#B7D9BC]">
+        {totalPages} hal
       </div>
     {/if}
   </div>
-  <div class="p-5 flex flex-col flex-1">
-    <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
+  <div class="p-3 flex flex-col shrink-0">
+    <h3 class="text-xs font-bold text-text-main mb-0.5 line-clamp-1">{item.title}</h3>
     {#if item.desc}
-      <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">{item.desc}</p>
+      <p class="text-[10px] text-on-surface-variant line-clamp-2">{item.desc}</p>
     {/if}
-    {#if item.moral}
-      <div class="bg-success-soft rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
-        <p class="text-xs text-primary font-bold">
-          <span class="w-5 h-5 rounded-full bg-white border border-[#B7D9BC] inline-flex items-center justify-center text-[10px] align-middle mr-1">💬</span>
-          {item.moral}
-        </p>
-      </div>
-    {/if}
-    <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
-      <span class="material-symbols-outlined text-xl">auto_stories</span>
-      Baca Cerita{#if totalPages > 0} ({totalPages} halaman){/if}
-      <span class="material-symbols-outlined text-xl ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
+    <div class="flex items-center gap-1.5 text-primary text-[10px] font-bold mt-1.5 pt-1.5 border-t border-[#B7D9BC]/50">
+      <span class="material-symbols-outlined text-sm">auto_stories</span>
+      Baca
+      <span class="material-symbols-outlined text-sm ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
     </div>
   </div>
 </button>
