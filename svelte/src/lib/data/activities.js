@@ -40,6 +40,8 @@ function normalizeItem(item, type) {
     moral: item.moral,
     ages,
     skills: item.skills || [],
+    agama: item.agama || [],
+    plans: item.plans || [],
   }
 
   if (contentKey && contentKey === 'stories') {
@@ -102,13 +104,16 @@ export function setAktivitasData(data) {
   aktivitasData.set(data)
 }
 
-export function filterActivities(childAge, skillKey) {
+export function filterActivities({ childAge, childAgama, planId, skillKey, pilarKey } = {}) {
   return get(aktivitasData).map(a => {
     const contentKey = contentKeyMap[a.key]
     const items = (a[contentKey] || []).filter(item => {
       const ageOk = childAge == null || (item.ages && item.ages.includes(childAge))
+      const agamaOk = !childAgama || !item.agama || !item.agama.length || item.agama.includes(childAgama)
+      const planOk = !planId || !item.plans || !item.plans.length || item.plans.includes(planId)
       const skillOk = !skillKey || !item.skills || item.skills.includes(skillKey)
-      return ageOk && skillOk
+      const pilarOk = !pilarKey || !item.skills || !item.skills.length || true
+      return ageOk && agamaOk && planOk && skillOk && pilarOk
     })
     return { ...a, [contentKey]: items }
   }).filter(a => {

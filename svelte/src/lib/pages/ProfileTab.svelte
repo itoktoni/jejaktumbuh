@@ -129,6 +129,11 @@
   let saving = $state(false)
   let error = $state('')
 
+  let showConfirm = $state(false)
+  let confirmTitle = $state('')
+  let confirmMessage = $state('')
+  let confirmAction = $state(null)
+
   const emojiOptions = ['👶', '👦', '👧', '🧒', '👦🏻', '👧🏻', '👦🏽', '👧🏽']
 
   function resetForm() {
@@ -178,46 +183,68 @@
 
   async function handleAdd() {
     if (!nama.trim()) { error = 'Nama wajib diisi'; return }
-    saving = true; error = ''
-    try {
-      await addAnak({ nama: nama.trim(), gender, agama, tanggal, bulan, tahun, emoji })
-      showAddModal = false
-      resetForm()
-    } catch (e) { error = e.message }
-    saving = false
+    showConfirm = true
+    confirmTitle = 'Simpan Data Anak?'
+    confirmMessage = 'Pastikan data anak sudah benar karena data ini tidak dapat diubah di kemudian hari.'
+    confirmAction = async () => {
+      showConfirm = false
+      saving = true; error = ''
+      try {
+        await addAnak({ nama: nama.trim(), gender, agama, tanggal, bulan, tahun, emoji })
+        showAddModal = false
+        resetForm()
+      } catch (e) { error = e.message }
+      saving = false
+    }
   }
 
   async function handleEditAnak() {
     if (!nama.trim()) { error = 'Nama wajib diisi'; return }
-    saving = true; error = ''
-    try {
-      editingAnak.nama = nama.trim()
-      editingAnak.gender = gender
-      editingAnak.agama = agama
-      editingAnak.tanggal = tanggal
-      editingAnak.bulan = bulan
-      editingAnak.tahun = tahun
-      editingAnak.emoji = emoji
-      await updateAnak(editingAnak)
-      anakList.update(list => list)
-      showEditAnakModal = false
-    } catch (e) { error = e.message }
-    saving = false
+    showConfirm = true
+    confirmTitle = 'Simpan Perubahan?'
+    confirmMessage = 'Pastikan perubahan data anak sudah benar karena data anak tidak bisa diubah lagi dikemudian hari.'
+    confirmAction = async () => {
+      showConfirm = false
+      saving = true; error = ''
+      try {
+        editingAnak.nama = nama.trim()
+        editingAnak.gender = gender
+        editingAnak.agama = agama
+        editingAnak.tanggal = tanggal
+        editingAnak.bulan = bulan
+        editingAnak.tahun = tahun
+        editingAnak.emoji = emoji
+        await updateAnak(editingAnak)
+        anakList.update(list => list)
+        showEditAnakModal = false
+      } catch (e) { error = e.message }
+      saving = false
+    }
   }
 
   async function handleDelete(anak) {
-    if (!confirm(`Hapus data ${anak.nama}?`)) return
-    await deleteAnak(anak.id)
+    showConfirm = true
+    confirmTitle = `Hapus ${anak.nama}?`
+    confirmMessage = 'Data anak dan semua aktivitasnya akan dihapus permanen.'
+    confirmAction = async () => {
+      showConfirm = false
+      await deleteAnak(anak.id)
+    }
   }
 
   function handleLogout() {
-    if (!confirm('Yakin ingin keluar?')) return
-    anakList.set([])
-    anakToolsData.set({})
-    toolsAnakId.set(null)
-    selectedAnakId.set(null)
-    appReady.set(false)
-    authLogout()
+    showConfirm = true
+    confirmTitle = 'Keluar?'
+    confirmMessage = 'Yakin ingin keluar dari akun?'
+    confirmAction = () => {
+      showConfirm = false
+      anakList.set([])
+      anakToolsData.set({})
+      toolsAnakId.set(null)
+      selectedAnakId.set(null)
+      appReady.set(false)
+      authLogout()
+    }
   }
 
   function getAvatarEmoji(gender) {
@@ -581,6 +608,30 @@
           </button>
           <button class="flex-1 py-3 rounded-2xl text-sm font-bold text-white btn-pop-green" onclick={() => { showUpgradePopup = false; switchTab('billing') }}>
             Lihat Paket
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showConfirm}
+  <div class="fixed inset-0 z-[110] flex items-end justify-center lg:items-center">
+    <div class="absolute inset-0 bg-black/50" onclick={() => showConfirm = false}></div>
+    <div class="relative bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] w-full max-w-sm p-6 pb-8 lg:mb-0 border-4 border-[#B7D9BC] shadow-xl">
+      <div class="w-10 h-1 bg-outline-variant rounded-full mx-auto mb-5 lg:hidden"></div>
+      <div class="text-center">
+        <div class="w-16 h-16 rounded-full bg-warning-soft flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+          <span class="material-symbols-outlined text-3xl text-warm-bonding">help</span>
+        </div>
+        <h3 class="font-headline-md text-text-main mb-2">{confirmTitle}</h3>
+        <p class="text-sm text-on-surface-variant mb-6">{confirmMessage}</p>
+        <div class="flex gap-3">
+          <button class="flex-1 py-3 rounded-2xl text-sm font-bold text-on-surface-variant btn-pop-gray" onclick={() => showConfirm = false}>
+            Batal
+          </button>
+          <button class="flex-1 py-3 rounded-2xl text-sm font-bold text-white btn-pop-green" onclick={confirmAction}>
+            Ya, Lanjutkan
           </button>
         </div>
       </div>

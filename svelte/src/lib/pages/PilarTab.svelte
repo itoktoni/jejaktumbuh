@@ -1,24 +1,56 @@
 <script>
   import { get } from 'svelte/store'
+  import { onMount } from 'svelte'
   import { pilars, filterPilars } from '../data/pilars.js'
   import { getSkillsByPilar } from '../data/skills.js'
+  import { buildAktivitasDataFromAPI, setAktivitasData } from '../data/activities.js'
   import { calcAge } from '../utils/age.js'
   import { anakList, addSkill, addActivity } from '../stores/anakStore.js'
-  import { selectedAnakId, selectedPilar, openPilarSub, closePilarSub, switchTab } from '../stores/appStore.js'
-  import { userPlan } from '../stores/authStore.js'
-  import AnakSelector from '../components/AnakSelector.svelte'
+  import { activitiesCache } from '../stores/activityStore.js'
+  import * as authStore from '../stores/authStore.js'
+  import { selectedAnakId, selectedPilar, selectedSkillKey, selectedAge, selectedAgama, selectedPlanId, openPilarSub, closePilarSub, activeTab, switchCounter, switchTab } from '../stores/appStore.js'
+  import { userPlan, plans as planList } from '../stores/authStore.js'
+  import * as api from '../services/api.js'
+  import AnakDropdown from '../components/AnakDropdown.svelte'
 
   let anakListVal = $state([])
   let selectedAnakIdVal = $state(null)
   let selectedPilarVal = $state(null)
   let userPlanVal = $state(null)
+  let planListVal = $state([])
+  let selectedAgeVal = $state(null)
+  let selectedAgamaVal = $state(null)
+  let selectedPlanIdVal = $state(null)
+  let searchQuery = $state('')
 
   $effect(() => {
     const u1 = anakList.subscribe(v => anakListVal = v)
     const u2 = selectedAnakId.subscribe(v => selectedAnakIdVal = v)
     const u3 = selectedPilar.subscribe(v => selectedPilarVal = v)
     const u4 = userPlan.subscribe(v => userPlanVal = v)
-    return () => { u1(); u2(); u3(); u4() }
+    const u5 = selectedAge.subscribe(v => selectedAgeVal = v)
+    const u6 = selectedAgama.subscribe(v => selectedAgamaVal = v)
+    const u7 = selectedPlanId.subscribe(v => selectedPlanIdVal = v)
+    const u8 = planList.subscribe(v => planListVal = v)
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8() }
+  })
+
+  onMount(async () => {
+    try {
+      const pilarData = await api.getPilarsAndSkills()
+      if (pilarData.pilars) authStore.pilars.set(pilarData.pilars)
+      if (pilarData.skills) authStore.skills.set(pilarData.skills)
+    } catch (e) { console.warn('Failed to refresh pilars/skills:', e) }
+
+    try {
+      const { saveSetting } = await import('$lib/db.js')
+      const serverData = await api.getActivitiesGrouped()
+      if (serverData && typeof serverData === 'object') {
+        await saveSetting('activities_cache', serverData)
+        activitiesCache.set(serverData)
+        setAktivitasData(buildAktivitasDataFromAPI(serverData))
+      }
+    } catch (e) { console.warn('Failed to refresh activities:', e) }
   })
 
   $effect(() => {
@@ -31,7 +63,16 @@
   const childAge = $derived(selectedChild ? calcAge(selectedChild.tahun, selectedChild.bulan, selectedChild.tanggal) : null)
   const childAgama = $derived(selectedChild?.agama || null)
   const planId = $derived(userPlanVal?.plan_id || null)
-  const filteredPilars = $derived(filterPilars(childAge, planId))
+  const planName = $derived(() => {
+    if (!selectedPlanIdVal) return null
+    const found = planListVal.find(p => p.id === selectedPlanIdVal)
+    return found?.name || null
+  })
+  const filteredPilars = $derived(filterPilars(childAge, childAgama, planId).filter(p => {
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return p.title.toLowerCase().includes(q) || (p.subtitle && p.subtitle.toLowerCase().includes(q))
+  }))
 
   function getSubData(key) {
     const pilar = pilars.find(p => p.key === key)
@@ -48,15 +89,32 @@
     }
   }
 
-  function openAktivitas(item, pilarKey) {
+  async function openAktivitas(item, pilarKey) {
+    const skillKey = item.key || item.title.toLowerCase().replace(/\s+/g, '_')
     if (selectedAnakIdVal) {
-      const skillKey = item.title.toLowerCase().replace(/\s+/g, '_')
       addSkill(selectedAnakIdVal, {
         key: skillKey, emoji: item.emoji, title: item.title, pilar: pilarKey,
         color: getSubData(pilarKey).color
       })
     }
-    switchTab('activity')
+
+    selectedSkillKey.set(skillKey)
+
+    try {
+      const { saveSetting } = await import('$lib/db.js')
+      const serverData = await api.getActivitiesGrouped()
+      if (serverData && typeof serverData === 'object') {
+        await saveSetting('activities_cache', serverData)
+        activitiesCache.set(serverData)
+        setAktivitasData(buildAktivitasDataFromAPI(serverData))
+      }
+    } catch (e) {
+      console.warn('Failed to refresh activities:', e)
+    }
+
+    activeTab.set('activity')
+    switchCounter.update(n => n + 1)
+    if (typeof window !== 'undefined') window.scrollTo(0, 0)
   }
 </script>
 
@@ -67,7 +125,47 @@
     </h2>
     <p class="font-body-md text-body-md text-on-surface-variant mb-3">Pilih area yang ingin dikembangkan bersama si kecil.</p>
     {#if anakListVal.length}
-      <AnakSelector anakList={anakListVal} bind:value={selectedAnakIdVal} />
+      <AnakDropdown anakList={anakListVal} value={selectedAnakIdVal} onselect={(id) => selectedAnakId.set(id)} />
+    {/if}
+    <div class="relative mt-3">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+      <input
+        type="text"
+        placeholder="Cari pilar..."
+        bind:value={searchQuery}
+        class="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white text-sm"
+      />
+    </div>
+    {#if selectedAnakIdVal && (selectedAgeVal != null || selectedAgamaVal || selectedPlanIdVal)}
+      <div class="mt-3">
+        <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Filter Aktif</p>
+        <div class="bg-white rounded-2xl p-3 border-2 border-[#B7D9BC] flex flex-wrap gap-2">
+          {#if selectedAgeVal != null}
+            <button onclick={() => selectedAge.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <span class="material-symbols-outlined text-sm">cake</span>
+              Umur {selectedAgeVal} th
+              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+            </button>
+          {/if}
+          {#if selectedAgamaVal}
+            <button onclick={() => selectedAgama.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <span class="material-symbols-outlined text-sm">diversity_3</span>
+              {selectedAgamaVal}
+              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+            </button>
+          {/if}
+          {#if selectedPlanIdVal}
+            <button onclick={() => selectedPlanId.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <span class="material-symbols-outlined text-sm">workspace_premium</span>
+              {planName() || 'Plan'}
+              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+            </button>
+          {/if}
+        </div>
+      </div>
     {/if}
   </section>
 

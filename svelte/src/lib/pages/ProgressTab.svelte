@@ -6,11 +6,14 @@
   import { anakList, resetSkill, deleteSkill } from '../stores/anakStore.js'
   import { user } from '../stores/authStore.js'
   import { selectedAnakId } from '../stores/appStore.js'
+  import { toolsAnakId } from '../stores/toolsStore.js'
   import * as api from '../services/api.js'
   import AppModal from '../components/AppModal.svelte'
+  import AnakDropdown from '../components/AnakDropdown.svelte'
 
   let anakListVal = $state([])
   let selectedAnakIdVal = $state(null)
+  let toolsAnakIdVal = $state(null)
   let userVal = $state(null)
   let openId = $state(null)
   let showCompleted = $state(null)
@@ -33,7 +36,8 @@
     const u1 = anakList.subscribe(v => anakListVal = v)
     const u2 = selectedAnakId.subscribe(v => selectedAnakIdVal = v)
     const u3 = user.subscribe(v => userVal = v)
-    return () => { u1(); u2(); u3() }
+    const u4 = toolsAnakId.subscribe(v => toolsAnakIdVal = v)
+    return () => { u1(); u2(); u3(); u4() }
   })
 
   $effect(() => {
@@ -48,6 +52,8 @@
       if (!evaluationsData[a.id]) fetchEvaluations(a.id)
     }
   })
+
+  const filteredAnakList = $derived(toolsAnakIdVal ? anakListVal.filter(a => a.id === toolsAnakIdVal) : anakListVal)
 
   function toggle(id) {
     if (openId === id) { openId = null }
@@ -191,6 +197,8 @@
   </h2>
 
   <div class="space-y-4">
+    <AnakDropdown anakList={anakListVal} value={toolsAnakIdVal} onselect={(id) => toolsAnakId.set(id)} />
+
     {#if !anakListVal.length}
       <div class="bg-canvas-cream rounded-[32px] border-4 border-dashed border-[#B7D9BC] p-8 text-center">
         <div class="text-5xl mb-3">👶</div>
@@ -199,7 +207,7 @@
       </div>
     {/if}
 
-    {#each anakListVal as anak (anak.id)}
+    {#each filteredAnakList as anak (anak.id)}
       <div class="bg-canvas-cream rounded-[28px] border-4 border-[#B7D9BC] shadow-md overflow-hidden">
         <button class="w-full flex items-center gap-4 p-5 text-left hover:bg-white/50 transition-colors"
           onclick={() => toggle(anak.id)}>

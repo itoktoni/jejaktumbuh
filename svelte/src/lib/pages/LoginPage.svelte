@@ -4,12 +4,12 @@
   import * as api from '../services/api.js'
   import { token, applyServerData } from '../stores/authStore.js'
 
-  let { onsuccess } = $props()
+  let { onsuccess, initialRegister = false, initialReferralCode = '' } = $props()
 
   const appName = import.meta.env.VITE_APP_NAME || 'Jejak Tumbuh'
   const appTagline = import.meta.env.VITE_APP_TAGLINE || 'Pendamping Anak'
 
-  let isLogin = $state(true)
+  let isLogin = $state(!initialRegister)
   let loading = $state(false)
   let error = $state('')
   let validationErrors = $state(null)
@@ -19,7 +19,7 @@
   let phone = $state('')
   let password = $state('')
   let passwordConfirmation = $state('')
-  let referralCode = $state('')
+  let referralCode = $state(initialReferralCode || (typeof localStorage !== 'undefined' ? localStorage.getItem('lk_ref_code') || '' : ''))
   let showPassword = $state(false)
   let showPasswordConfirm = $state(false)
   let showForgotPassword = $state(false)
@@ -27,7 +27,6 @@
   let forgotLoading = $state(false)
   let forgotMessage = $state('')
   let forgotError = $state('')
-  let forgotWaLink = $state('')
   let forgotGateway = $state('email')
 
   let needsVerify = $state(false)
@@ -71,14 +70,19 @@
     timerSeconds = 0
   }
 
-  onMount(() => {
+  onMount(async () => {
     const savedToken = localStorage.getItem('lk_pending_token')
-    const savedGateway = localStorage.getItem('lk_verify_gateway')
     if (savedToken) {
       pendingToken = savedToken
-      verifyGateway = savedGateway || 'email'
       needsVerify = true
       verifyCodeSent = localStorage.getItem('lk_verify_code_sent') === 'true'
+      try {
+        const config = await api.getConfig()
+        verifyGateway = config.verification_gateway || 'email'
+        localStorage.setItem('lk_verify_gateway', verifyGateway)
+      } catch {
+        verifyGateway = localStorage.getItem('lk_verify_gateway') || 'email'
+      }
     }
   })
 
@@ -200,7 +204,6 @@
     forgotEmail = email
     forgotMessage = ''
     forgotError = ''
-    forgotWaLink = ''
     try {
       const config = await api.getConfig()
       forgotGateway = config.forgot_gateway || 'email'
@@ -214,14 +217,10 @@
     forgotLoading = true
     forgotMessage = ''
     forgotError = ''
-    forgotWaLink = ''
     try {
       const body = forgotGateway === 'whatsapp' ? { phone: forgotEmail } : { email: forgotEmail }
       const data = await api.forgotPassword(body)
       forgotMessage = data.message || 'Link reset password telah dikirim.'
-      if (data.wa_link) {
-        forgotWaLink = data.wa_link
-      }
     } catch (err) {
       forgotError = err.message || 'Gagal mengirim link reset password'
     } finally {
@@ -531,12 +530,6 @@
 
       {#if forgotMessage}
         <div transition:slide={{ duration: 200 }} class="bg-primary-container text-black rounded-xl px-4 py-3 mb-4 text-xs">{forgotMessage}</div>
-      {/if}
-      {#if forgotWaLink}
-        <a href={forgotWaLink} target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] text-white font-bold active:scale-95 transition-transform mb-4">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Kirim via WhatsApp
-        </a>
       {/if}
       {#if forgotError}
         <div transition:slide={{ duration: 200 }} class="bg-error-container text-on-error-container rounded-xl px-4 py-3 mb-4 text-sm">{forgotError}</div>

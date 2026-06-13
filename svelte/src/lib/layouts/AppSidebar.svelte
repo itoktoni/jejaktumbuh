@@ -49,20 +49,10 @@
       <button onclick={() => oninstall?.()}
         class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 bg-white text-on-surface-variant border-2 border-[#B7D9BC] hover:shadow-md hover:border-primary/30">
         <span class="material-symbols-outlined text-xl">download</span>
-        <span class="font-label-lg">Install App</span>
+        <span class="font-label-lg">Install</span>
       </button>
     </div>
   {/if}
-
-  <div class="p-4 mx-3 mb-4 bg-success-soft rounded-[20px] border-4 border-[#B7D9BC]">
-    <div class="flex items-center gap-3">
-      <span class="w-8 h-8 rounded-full bg-white border-2 border-[#B7D9BC] flex items-center justify-center text-base">💡</span>
-      <div>
-        <p class="text-xs font-bold text-primary">Tips Hari Ini</p>
-        <p class="text-xs text-on-surface-variant leading-snug mt-0.5">Fokus pada satu hal kecil untuk dampak besar.</p>
-      </div>
-    </div>
-  </div>
 </aside>
 
 {#if showMobileMenu}
@@ -89,14 +79,14 @@
         </button>
       {/each}
     </nav>
-    <div class="p-4 mx-3 mb-4 bg-success-soft rounded-[20px] border-4 border-[#B7D9BC]">
-      <div class="flex items-center gap-3">
-        <span class="w-8 h-8 rounded-full bg-white border-2 border-[#B7D9BC] flex items-center justify-center text-base">💡</span>
-        <div>
-          <p class="text-xs font-bold text-primary">Tips Hari Ini</p>
-          <p class="text-xs text-on-surface-variant leading-snug mt-0.5">Fokus pada satu hal kecil untuk dampak besar.</p>
-        </div>
+    {#if canInstallProp}
+      <div class="p-4 mx-3 mb-4">
+        <button onclick={() => oninstall?.()}
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 bg-white text-on-surface-variant border-2 border-[#B7D9BC] hover:shadow-md hover:border-primary/30">
+          <span class="material-symbols-outlined text-xl">download</span>
+          <span class="font-label-lg">Install</span>
+        </button>
       </div>
-    </div>
+    {/if}
   </div>
 {/if}

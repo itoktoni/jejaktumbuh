@@ -1,0 +1,304 @@
+<script>
+  import { onMount, onDestroy } from 'svelte'
+
+  let { item, bg, onclick } = $props()
+
+  let showReader = $state(false)
+  let currentPage = $state(0)
+  let isFinished = $state(false)
+  let isSpeaking = $state(false)
+  let isSpeakingMoral = $state(false)
+  let autoPlay = $state(false)
+  let utterance = null
+  let naratorVoice = null
+
+  const pages = $derived(item.pages || [])
+  const totalPages = $derived(pages.length)
+  const currentPageData = $derived(pages[currentPage] || {})
+
+  onMount(() => {
+    loadVoices()
+    if ('speechSynthesis' in window) {
+      speechSynthesis.onvoiceschanged = loadVoices
+    }
+  })
+
+  onDestroy(() => stopSpeech())
+
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return
+    const voices = speechSynthesis.getVoices()
+    naratorVoice = voices.find(v => v.lang === 'id-ID') || voices.find(v => v.lang.startsWith('id')) || null
+  }
+
+  function createUtterance(text) {
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'id-ID'
+    u.rate = 0.9
+    u.pitch = 1.1
+    if (naratorVoice) u.voice = naratorVoice
+    return u
+  }
+
+  function openReader() {
+    currentPage = 0
+    isFinished = false
+    showReader = true
+  }
+
+  function closeReader() {
+    stopSpeech()
+    showReader = false
+  }
+
+  function prevPage() {
+    if (isFinished) {
+      isFinished = false
+      stopSpeech()
+      return
+    }
+    if (currentPage > 0) {
+      autoPlay = false
+      stopSpeech()
+      currentPage--
+    }
+  }
+
+  function nextPage() {
+    if (isFinished) {
+      closeReader()
+      return
+    }
+    autoPlay = false
+    stopSpeech()
+    if (currentPage < totalPages - 1) {
+      currentPage++
+    } else {
+      isFinished = true
+    }
+  }
+
+  function toggleSpeech() {
+    if (isSpeaking) {
+      autoPlay = false
+      stopSpeech()
+    } else {
+      autoPlay = true
+      speak()
+    }
+  }
+
+  function speak() {
+    if (!('speechSynthesis' in window)) return
+    stopSpeech()
+    utterance = createUtterance(currentPageData.text)
+    utterance.onend = () => {
+      isSpeaking = false
+      if (autoPlay && currentPage < totalPages - 1) {
+        currentPage++
+        setTimeout(() => speak(), 400)
+      } else {
+        autoPlay = false
+      }
+    }
+    utterance.onerror = () => { isSpeaking = false; autoPlay = false }
+    speechSynthesis.speak(utterance)
+    isSpeaking = true
+  }
+
+  function speakMoral() {
+    if (!('speechSynthesis' in window)) return
+    if (isSpeakingMoral) {
+      speechSynthesis.cancel()
+      isSpeakingMoral = false
+      return
+    }
+    speechSynthesis.cancel()
+    const u = createUtterance(item.moral)
+    u.onend = () => { isSpeakingMoral = false }
+    u.onerror = () => { isSpeakingMoral = false }
+    speechSynthesis.speak(u)
+    isSpeakingMoral = true
+  }
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) speechSynthesis.cancel()
+    isSpeaking = false
+    isSpeakingMoral = false
+  }
+</script>
+
+<button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+  onclick={openReader}>
+  <div class="h-48 overflow-hidden relative shrink-0 flex items-center justify-center" style="background: {bg}">
+    <span class="text-6xl">{item.emoji || '📖'}</span>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+    {#if totalPages > 0}
+      <div class="absolute top-3 right-3 bg-white/90 rounded-full px-3 py-1 text-xs font-bold text-primary border border-[#B7D9BC]">
+        {totalPages} halaman
+      </div>
+    {/if}
+  </div>
+  <div class="p-5 flex flex-col flex-1">
+    <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
+    {#if item.desc}
+      <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">{item.desc}</p>
+    {/if}
+    {#if item.moral}
+      <div class="bg-success-soft rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
+        <p class="text-xs text-primary font-bold">
+          <span class="w-5 h-5 rounded-full bg-white border border-[#B7D9BC] inline-flex items-center justify-center text-[10px] align-middle mr-1">💬</span>
+          {item.moral}
+        </p>
+      </div>
+    {/if}
+    <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
+      <span class="material-symbols-outlined text-xl">auto_stories</span>
+      Baca Cerita{#if totalPages > 0} ({totalPages} halaman){/if}
+      <span class="material-symbols-outlined text-xl ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
+    </div>
+  </div>
+</button>
+
+{#if showReader}
+  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4">
+    <div class="w-full max-w-md bg-canvas-cream rounded-[40px] shadow-2xl border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative">
+
+      <div class="px-4 pt-4 pb-2 flex items-center gap-3 z-10 shrink-0">
+        <div class="bg-primary text-on-primary w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center text-xs font-bold shrink-0">
+          {isFinished ? '✓' : `${currentPage + 1}/${totalPages}`}
+        </div>
+        <div class="flex-1 min-w-0 bg-primary text-on-primary px-4 py-2 rounded-2xl border-4 border-white shadow-md">
+          <p class="text-base font-semibold truncate">{item.title}</p>
+        </div>
+        <button onclick={closeReader}
+          class="w-11 h-11 bg-error border-4 border-white text-white rounded-full flex items-center justify-center text-xl shadow-md hover:scale-105 active:scale-95 transition-all shrink-0">
+          ✕
+        </button>
+      </div>
+
+      {#if !isFinished}
+        <div class="flex-1 flex flex-col justify-center px-4 gap-4 overflow-hidden">
+
+          <div class="w-full aspect-[4/3] bg-success-soft rounded-[32px] border-4 border-white shadow-lg overflow-hidden relative floating-illustration">
+            {#if currentPageData.image}
+              <img src={currentPageData.image} alt={currentPageData.text || item.title}
+                class="w-full h-full object-cover" />
+            {:else}
+              <div class="w-full h-full flex items-center justify-center text-7xl">{item.emoji || '📖'}</div>
+            {/if}
+            <div class="absolute top-3 right-3 bg-primary text-on-primary border-2 border-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold shadow">
+              {currentPage + 1}
+            </div>
+          </div>
+
+          <div class="bg-white rounded-[32px] border-4 border-[#B7D9BC] p-5 shadow-md relative">
+
+            <p class="text-text-main text-base lg:text-lg text-center leading-relaxed font-medium">
+              {currentPageData.text || 'Konten belum tersedia'}
+            </p>
+          </div>
+
+          <div class="flex justify-center">
+            <button onclick={toggleSpeech}
+              class="border-4 border-white px-5 py-2.5 rounded-full flex items-center gap-2 text-base font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all"
+              class:bg-error={isSpeaking}
+              class:text-on-error={isSpeaking}
+              class:bg-primary={!isSpeaking}
+              class:text-on-primary={!isSpeaking}>
+              <span class="material-symbols-outlined text-xl" class:animate-pulse={!isSpeaking}>
+                {isSpeaking ? 'stop' : 'volume_up'}
+              </span>
+              {isSpeaking ? 'Berhenti' : 'Dengarkan'}
+            </button>
+          </div>
+        </div>
+      {:else}
+        <div class="flex-1 flex flex-col justify-center px-5 gap-5 overflow-y-auto py-6">
+          <div class="flex flex-col items-center">
+            <div class="w-20 h-20 bg-primary rounded-full border-4 border-white flex items-center justify-center text-5xl shadow-lg floating-illustration mb-1">
+              🎉
+            </div>
+            <p class="text-primary text-xs mt-2 font-bold">Cerita Selesai!</p>
+          </div>
+
+          {#if item.moral}
+            <div class="bg-white rounded-[32px] border-4 border-[#B7D9BC] p-5 shadow-md relative">
+  
+              <div class="flex items-center gap-2 mb-3 justify-center">
+                <span class="w-8 h-8 rounded-full bg-success-soft border-2 border-[#B7D9BC] flex items-center justify-center text-base">💬</span>
+                <p class="text-primary text-base font-bold">Pelajaran</p>
+              </div>
+              <p class="text-text-main text-base text-center leading-relaxed font-medium" style="font-style: italic;">
+                {item.moral}
+              </p>
+            </div>
+
+            <div class="flex justify-center">
+              <button onclick={speakMoral}
+                class="border-4 border-white px-5 py-2.5 rounded-full flex items-center gap-2 text-base font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all"
+                class:bg-error={isSpeakingMoral}
+                class:text-on-error={isSpeakingMoral}
+                class:bg-primary={!isSpeakingMoral}
+                class:text-on-primary={!isSpeakingMoral}>
+                <span class="material-symbols-outlined text-xl">
+                  {isSpeakingMoral ? 'stop' : 'volume_up'}
+                </span>
+                {isSpeakingMoral ? 'Berhenti' : 'Dengarkan Pelajaran'}
+              </button>
+            </div>
+          {/if}
+        </div>
+      {/if}
+
+      <div class="p-4 bg-success-soft rounded-t-[40px] border-t-4 border-[#B7D9BC] flex flex-col gap-3 items-center shrink-0">
+        <div class="w-full flex gap-3">
+          <button onclick={prevPage} disabled={!isFinished && currentPage === 0}
+            class="flex-1 py-3 px-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 transition-all
+              {!isFinished && currentPage === 0 ? 'text-on-surface-variant btn-pop-gray opacity-60 cursor-not-allowed' : 'text-text-main btn-pop-gray'}">
+            <span class="material-symbols-outlined text-xl">arrow_back</span>
+            {isFinished ? 'Baca Lagi' : 'Kembali'}
+          </button>
+
+          <button onclick={nextPage}
+            class="flex-1 py-3 px-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 transition-all btn-pop-green">
+            {isFinished ? 'Tutup' : currentPage === totalPages - 1 ? 'Selesai ✨' : 'Lanjut'}
+            <span class="material-symbols-outlined text-xl">
+              {isFinished ? 'close' : currentPage === totalPages - 1 ? 'check' : 'arrow_forward'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{/if}
+
+<style>
+  .btn-pop-green {
+    background-color: #6DBE7B;
+    box-shadow: 0 6px 0 #176c33;
+    transition: all 0.1s ease;
+  }
+  .btn-pop-green:active {
+    transform: translateY(6px);
+    box-shadow: 0 0px 0 #176c33;
+  }
+  .btn-pop-gray {
+    background-color: #E5E7EB;
+    box-shadow: 0 6px 0 #9CA3AF;
+    transition: all 0.1s ease;
+  }
+  .btn-pop-gray:active {
+    transform: translateY(6px);
+    box-shadow: 0 0px 0 #9CA3AF;
+  }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+  }
+  .floating-illustration {
+    animation: float 4s ease-in-out infinite;
+  }
+</style>

@@ -1,10 +1,29 @@
 <script>
   import { get } from 'svelte/store'
   import { onMount } from 'svelte'
-  import { aktivitasData, buildAktivitasDataFromAPI, setAktivitasData } from '../data/activities.js'
+  import { aktivitasData, buildAktivitasDataFromAPI, setAktivitasData, filterActivities } from '../data/activities.js'
   import { activitiesCache, serverCount, localCount, downloading, downloadMessage, loadFromCache, checkServer, downloadActivities } from '../stores/activityStore.js'
-  import { isAuthenticated } from '../stores/authStore.js'
-  import { switchCounter, activeTab } from '../stores/appStore.js'
+  import { isAuthenticated, userPlan, plans as planList } from '../stores/authStore.js'
+  import { switchCounter, activeTab, selectedAnakId, selectedSkillKey, selectedAge, selectedAgama, selectedPlanId } from '../stores/appStore.js'
+  import * as api from '../services/api.js'
+  import { anakList } from '../stores/anakStore.js'
+  import { calcAge } from '../utils/age.js'
+  import AnakDropdown from '../components/AnakDropdown.svelte'
+  import { StoryCard, RoleplayCard, GameCard, ScriptCard, ProjectCard, SongCard, PuzzleCard, ExerciseCard, OutdoorCard, ExperimentCard, WorksheetCard } from './activity/index.js'
+
+  const cardMap = {
+    storytelling: StoryCard,
+    bermain_peran: RoleplayCard,
+    permainan: GameCard,
+    monolog: ScriptCard,
+    proyek_kreatif: ProjectCard,
+    musik_gerak: SongCard,
+    puzzle: PuzzleCard,
+    mindfulness: ExerciseCard,
+    outdoor: OutdoorCard,
+    ilmu_pengetahuan: ExperimentCard,
+    worksheet: WorksheetCard,
+  }
 
   let aktData = $state([])
   let isAuth = $state(false)
@@ -18,6 +37,13 @@
   let activeProject = $state(null)
   let activePuzzle = $state(null)
   let switchCount = $state(0)
+  let anakListVal = $state([])
+  let selectedAnakIdVal = $state(null)
+  let selectedSkillKeyVal = $state(null)
+  let selectedAgeVal = $state(null)
+  let selectedAgamaVal = $state(null)
+  let selectedPlanIdVal = $state(null)
+  let searchQuery = $state('')
 
   $effect(() => {
     const u1 = aktivitasData.subscribe(v => aktData = v)
@@ -27,7 +53,13 @@
     const u5 = serverCount.subscribe(v => srvCount = v)
     const u6 = localCount.subscribe(v => locCount = v)
     const u7 = switchCounter.subscribe(v => switchCount = v)
-    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7() }
+    const u8 = anakList.subscribe(v => anakListVal = v)
+    const u9 = selectedAnakId.subscribe(v => selectedAnakIdVal = v)
+    const u10 = selectedSkillKey.subscribe(v => selectedSkillKeyVal = v)
+    const u11 = selectedAge.subscribe(v => selectedAgeVal = v)
+    const u12 = selectedAgama.subscribe(v => selectedAgamaVal = v)
+    const u13 = selectedPlanId.subscribe(v => selectedPlanIdVal = v)
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8(); u9(); u10(); u11(); u12(); u13() }
   })
 
   $effect(() => {
@@ -41,14 +73,100 @@
   })
 
   const contentKeyMap = {
-    story: 'stories', roleplay: 'roles', game: 'games',
-    monolog: 'scripts', project: 'projects', music: 'songs',
+    storytelling: 'stories', bermain_peran: 'roles', permainan: 'games',
+    monolog: 'scripts', proyek_kreatif: 'projects', musik_gerak: 'songs',
     puzzle: 'puzzles', mindfulness: 'exercises', outdoor: 'activities',
     ilmu_pengetahuan: 'experiments', worksheet: 'worksheets'
   }
 
+  const selectedChild = $derived(anakListVal.find(a => a.id === selectedAnakIdVal))
+  const childAge = $derived(selectedChild ? calcAge(selectedChild.tahun, selectedChild.bulan, selectedChild.tanggal) : null)
+  const childAgama = $derived(selectedChild?.agama || null)
+
+  $effect(() => {
+    if (childAge != null) selectedAge.set(childAge)
+    else selectedAge.set(null)
+  })
+
+  $effect(() => {
+    if (childAgama) selectedAgama.set(childAgama)
+    else selectedAgama.set(null)
+  })
+
+  let userPlanVal = $state(null)
+  let planListVal = $state([])
+
+  $effect(() => {
+    const u14 = userPlan.subscribe(v => userPlanVal = v)
+    const u15 = planList.subscribe(v => planListVal = v)
+    return () => { u14(); u15() }
+  })
+
+  $effect(() => {
+    if (userPlanVal?.plan_id) selectedPlanId.set(userPlanVal.plan_id)
+    else selectedPlanId.set(null)
+  })
+
+  const planName = $derived(() => {
+    if (!selectedPlanIdVal) return null
+    const found = planListVal.find(p => p.id === selectedPlanIdVal)
+    return found?.name || null
+  })
+
+  const filteredAktData = $derived.by(() => {
+    const data = aktData
+    if (!data || !data.length) return []
+
+    let result = data
+
+    if (selectedAnakIdVal) {
+      result = result.map(a => {
+        const contentKey = contentKeyMap[a.key]
+        const items = (a[contentKey] || []).filter(item => {
+          const ageOk = selectedAgeVal == null || (item.ages && item.ages.includes(selectedAgeVal))
+          const agamaOk = !selectedAgamaVal || !item.agama || !item.agama.length || item.agama.includes(selectedAgamaVal)
+          const skillOk = !selectedSkillKeyVal || !item.skills || !item.skills.length || item.skills.includes(selectedSkillKeyVal)
+          const planOk = !selectedPlanIdVal || !item.plans || !item.plans.length || item.plans.includes(selectedPlanIdVal)
+          return ageOk && agamaOk && skillOk && planOk
+        })
+        return { ...a, [contentKey]: items }
+      })
+
+      const hasFilter = selectedAgeVal != null || selectedAgamaVal || selectedSkillKeyVal || selectedPlanIdVal
+      if (hasFilter) {
+        result = result.filter(a => {
+          if (a.key === 'worksheet') return true
+          const contentKey = contentKeyMap[a.key]
+          return (a[contentKey] || []).length > 0
+        })
+      }
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(a => {
+        if (a.title?.toLowerCase().includes(q) || a.desc?.toLowerCase().includes(q)) return true
+        if (a.key === 'worksheet') return true
+        const contentKey = contentKeyMap[a.key]
+        return (a[contentKey] || []).some(item =>
+          item.title?.toLowerCase().includes(q) || item.desc?.toLowerCase().includes(q)
+        )
+      }).map(a => {
+        if (a.title?.toLowerCase().includes(q) || a.desc?.toLowerCase().includes(q)) return a
+        if (a.key === 'worksheet') return a
+        const contentKey = contentKeyMap[a.key]
+        const items = (a[contentKey] || []).filter(item =>
+          item.title?.toLowerCase().includes(q) || item.desc?.toLowerCase().includes(q)
+        )
+        return { ...a, [contentKey]: items }
+      })
+    }
+
+    return result
+  })
+
   function getItems(type) {
-    return type[contentKeyMap[type.feature]] || []
+    return type[contentKeyMap[type.key]] || []
   }
 
   function getItemCount(type) {
@@ -61,9 +179,21 @@
     return [...items].sort((a, b) => (a.title || '').localeCompare(b.title || ''))
   })
 
-  onMount(() => {
+  onMount(async () => {
     loadFromCache()
     checkServer()
+
+    try {
+      const { saveSetting } = await import('$lib/db.js')
+      const serverData = await api.getActivitiesGrouped()
+      if (serverData && typeof serverData === 'object') {
+        const count = Object.values(serverData).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
+        serverCount.set(count)
+        await saveSetting('activities_cache', serverData)
+        activitiesCache.set(serverData)
+        setAktivitasData(buildAktivitasDataFromAPI(serverData))
+      }
+    } catch (e) { console.warn('Failed to refresh activities from server:', e) }
   })
 
   async function doDownload() {
@@ -98,36 +228,81 @@
 </script>
 
 <div class="px-margin-mobile md:px-margin-desktop pt-5 max-w-6xl mx-auto pb-8">
-  {#if isAuth && !selectedType}
-    <div class="mb-4 bg-canvas-cream rounded-2xl p-4 border-4 border-[#B7D9BC] shadow-md flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-[#B7D9BC] shadow-sm shrink-0">
-        <span class="material-symbols-outlined text-lg text-primary">cloud_download</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold text-text-main">
-          {locCount > 0 ? `${locCount} aktivitas di perangkat` : 'Belum ada aktivitas'}
-        </p>
-        <p class="text-[10px] text-on-surface-variant">Download dari server untuk mendapatkan konten terbaru</p>
-      </div>
-      <button onclick={doDownload} disabled={dl}
-        class="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all active:scale-95"
-        style="background: {(srvCount - locCount) > 0 ? '#176c33' : '#999'}">
-        <span class="material-symbols-outlined text-sm align-middle" class:animate-spin={dl}>cloud_download</span>
-        {dl ? '...' : ((srvCount - locCount) > 0 ? `+${srvCount - locCount} Baru` : 'Sync')}
-      </button>
-    </div>
-  {/if}
-
   {#if !selectedType}
     <section class="mb-stack-lg">
       <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-text-main leading-tight mb-2 flex items-center gap-2">
         <span class="w-10 h-10 rounded-full bg-success-soft border-2 border-[#B7D9BC] flex items-center justify-center text-xl">🎨</span> Semua Aktivitas
       </h2>
-      <p class="font-body-md text-body-md text-on-surface-variant">Pilih jenis aktivitas untuk melihat seluruh konten.</p>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-3">
+        Pilih jenis aktivitas untuk melihat seluruh konten.
+        {#if isAuth}
+          <span class="text-xs text-on-surface-variant/70">Download dari server untuk mendapatkan konten terbaru.</span>
+        {/if}
+      </p>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="flex-1 min-w-0">
+          <AnakDropdown anakList={anakListVal} value={selectedAnakIdVal} onselect={(id) => selectedAnakId.set(id)} />
+        </div>
+        {#if isAuth}
+          <button onclick={doDownload} disabled={dl}
+            class="flex items-center gap-2 py-3 rounded-2xl text-sm text-white shrink-0 transition-all active:scale-95 soft-shadow border-2 border-white bg-primary px-4 lg:px-5">
+            <span class="material-symbols-outlined text-lg" class:animate-spin={dl}>cloud_download</span>
+            <span class="hidden lg:inline">{dl ? '...' : 'Download Content'}</span>
+          </button>
+        {/if}
+      </div>
+      <div class="relative mt-3">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+        <input
+          type="text"
+          placeholder="Cari aktivitas..."
+          bind:value={searchQuery}
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white text-sm"
+        />
+      </div>
+      {#if selectedAgeVal != null || selectedAgamaVal || selectedSkillKeyVal || selectedPlanIdVal}
+        <div class="mt-3">
+          <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Filter Aktif</p>
+          <div class="bg-white rounded-2xl p-3 border-2 border-[#B7D9BC] flex flex-wrap gap-2">
+            {#if selectedAgeVal != null}
+              <button onclick={() => selectedAge.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+                <span class="material-symbols-outlined text-sm">cake</span>
+                Umur {selectedAgeVal} th
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              </button>
+            {/if}
+            {#if selectedAgamaVal}
+              <button onclick={() => selectedAgama.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+                <span class="material-symbols-outlined text-sm">diversity_3</span>
+                {selectedAgamaVal}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              </button>
+            {/if}
+            {#if selectedSkillKeyVal}
+              <button onclick={() => selectedSkillKey.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+                <span class="material-symbols-outlined text-sm">psychology</span>
+                {selectedSkillKeyVal.replace(/_/g, ' ')}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              </button>
+            {/if}
+            {#if selectedPlanIdVal}
+              <button onclick={() => selectedPlanId.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+                <span class="material-symbols-outlined text-sm">workspace_premium</span>
+                {planName() || 'Plan'}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/if}
     </section>
 
     <div class="grid grid-cols-2 gap-3">
-      {#each aktData as item (item.key)}
+      {#each filteredAktData as item (item.key)}
         <button
           class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden cursor-pointer transition-all hover:shadow-lg flex flex-col border-4 border-[#B7D9BC] shadow-md text-left"
           onclick={() => { selectedType = item }}>
@@ -180,22 +355,32 @@
     </section>
 
     {#if sortedItems.length > 0}
-      <div class="space-y-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {#each sortedItems as item (item.title)}
-          <button
-            class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC] shadow-sm flex items-center gap-3 w-full text-left hover:shadow-md transition-shadow"
-            onclick={() => handleItemClick(item)}>
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center text-2xl shrink-0" style="background: {selectedType.bg}">
-              {item.emoji || selectedType.emoji}
-            </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-label-lg text-label-lg text-primary">{item.title}</h3>
-              {#if item.desc}
-                <p class="text-xs text-on-surface-variant mt-0.5 line-clamp-2">{item.desc}</p>
-              {/if}
-            </div>
-            <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
-          </button>
+          {@const Card = cardMap[selectedType?.key]}
+          {#if Card}
+            <Card {item} bg={selectedType.bg} onclick={() => handleItemClick(item)} />
+          {:else}
+            <button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+              onclick={() => handleItemClick(item)}>
+              <div class="p-5 flex flex-col flex-1">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="w-12 h-12 rounded-[16px] flex items-center justify-center text-2xl border-2 border-white shadow-sm" style="background: {selectedType.bg}">
+                    {item.emoji || selectedType.emoji}
+                  </div>
+                </div>
+                <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
+                {#if item.desc}
+                  <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">{item.desc}</p>
+                {/if}
+                <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
+                  <span class="material-symbols-outlined text-xl">chevron_right</span>
+                  Lihat Detail
+                  <span class="material-symbols-outlined text-xl ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </div>
+              </div>
+            </button>
+          {/if}
         {/each}
       </div>
     {:else}

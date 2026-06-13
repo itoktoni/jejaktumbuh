@@ -36,10 +36,15 @@
   let copiedId = $state(null)
 
   const bankOptions = [
-    { code: 'bca', name: 'BCA' }, { code: 'bni', name: 'BNI' }, { code: 'bri', name: 'BRI' },
-    { code: 'mandiri', name: 'Mandiri' }, { code: 'bsi', name: 'BSI' }, { code: 'cimb', name: 'CIMB Niaga' },
-    { code: 'danamon', name: 'Danamon' }, { code: 'permata', name: 'Permata' }, { code: 'btn', name: 'BTN' },
-    { code: 'gopay', name: 'GoPay' }, { code: 'ovo', name: 'OVO' }, { code: 'dana', name: 'DANA' },
+    { group: 'Bank', items: [
+      { code: 'bca', name: 'BCA' }, { code: 'bni', name: 'BNI' }, { code: 'bri', name: 'BRI' },
+      { code: 'mandiri', name: 'Mandiri' }, { code: 'bsi', name: 'BSI' }, { code: 'cimb', name: 'CIMB Niaga' },
+      { code: 'danamon', name: 'Danamon' }, { code: 'permata', name: 'Permata' }, { code: 'btn', name: 'BTN' },
+    ]},
+    { group: 'E-Wallet', items: [
+      { code: 'gopay', name: 'GoPay' }, { code: 'ovo', name: 'OVO' }, { code: 'dana', name: 'DANA' },
+      { code: 'shopeepay', name: 'ShopeePay' }, { code: 'linkaja', name: 'LinkAja' },
+    ]},
   ]
 
   $effect(() => {
@@ -480,7 +485,7 @@
       <div class="bg-canvas-cream rounded-[24px] p-5 border-4 border-primary shadow-md">
         <p class="text-xs text-on-surface-variant mb-1">Saldo Tersedia</p>
         <p class="font-bold text-3xl text-primary">{formatRp(saldoTersedia)}</p>
-        <p class="text-xs text-on-surface-variant">Komisi bersih {rates.commission_rate}% · Bisa dicairkan sekarang</p>
+        <p class="text-xs text-on-surface-variant">Minimum pencairan {formatRp(cashoutConfig.minimum)} · Diproses maksimal {cashoutConfig.processing_time || '1 hari kerja'}</p>
       </div>
       <p class="text-[11px] text-on-surface-variant text-center px-4">
         Saldo outstanding baru bisa dicairkan jika terdapat komisi dari upgrade referral.
@@ -550,21 +555,28 @@
       </div>
 
       <div class="mb-3">
-        <label class="text-xs text-on-surface-variant font-bold mb-1 block">Bank</label>
-        <select bind:value={rekeningForm.rekening_bank}
-          class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] text-sm focus:outline-none focus:border-primary bg-white">
-          <option value="" disabled>Pilih bank</option>
-          {#each bankOptions as b}
-            <option value={b.name}>{b.name}</option>
-          {/each}
-        </select>
+        <label class="text-xs text-on-surface-variant font-bold mb-1 block">Bank / E-Wallet</label>
+        <div class="relative">
+          <select bind:value={rekeningForm.rekening_bank}
+            class="w-full pl-4 pr-10 py-3 rounded-xl border-2 border-[#B7D9BC] text-sm focus:outline-none focus:border-primary bg-white appearance-none">
+            <option value="" disabled>Pilih bank atau e-wallet</option>
+            {#each bankOptions as group}
+              <optgroup label={group.group}>
+                {#each group.items as b}
+                  <option value={b.name}>{b.name}</option>
+                {/each}
+              </optgroup>
+            {/each}
+          </select>
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg pointer-events-none">expand_more</span>
+        </div>
       </div>
 
       <div class="mb-3">
-        <label class="text-xs text-on-surface-variant font-bold mb-1 block">Nomor Rekening</label>
+        <label class="text-xs text-on-surface-variant font-bold mb-1 block">Nomor Rekening / E-Wallet</label>
         <input bind:value={rekeningForm.rekening_nomor}
           class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] text-sm focus:outline-none focus:border-primary bg-white"
-          placeholder="Nomor rekening" />
+          placeholder="Nomor rekening atau e-wallet" />
       </div>
 
       {#if editDataError}
@@ -634,7 +646,7 @@
         </div>
       {/if}
 
-      <p class="text-[11px] text-on-surface-variant mb-4">Pencairan diproses maksimal <span class="font-bold">1 hari kerja</span>.</p>
+      <p class="text-[11px] text-on-surface-variant mb-4">Pencairan diproses maksimal <span class="font-bold">{cashoutConfig.processing_time || '1 hari kerja'}</span>.</p>
 
       {#if cashoutError}
         <p class="text-xs text-error font-medium mb-3">{cashoutError}</p>

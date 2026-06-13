@@ -1,6 +1,6 @@
 export const sidebarNav = [
-  { id: 'pilar', icon: 'home', label: 'Home' },
-  { id: 'activity', icon: 'local_activity', label: 'Activity' },
+  { id: 'activity', icon: 'home', label: 'Home' },
+  { id: 'pilar', icon: 'local_activity', label: 'Soft Skills' },
   { id: 'progress', icon: 'auto_graph', label: 'Progress' },
   { id: 'challenge', icon: 'emoji_events', label: 'Challenge' },
   { id: 'jadwal', icon: 'schedule', label: 'Jadwal' },

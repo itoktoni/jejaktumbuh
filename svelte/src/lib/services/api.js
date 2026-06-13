@@ -135,6 +135,10 @@ export async function getConfig() {
   return apiFetch('/config')
 }
 
+export async function getPilarsAndSkills() {
+  return apiFetch('/pilars')
+}
+
 export async function resetPassword(token, email, password, passwordConfirmation) {
   return apiFetch('/reset-password', { method: 'POST', body: JSON.stringify({ token, email, password, password_confirmation: passwordConfirmation }) })
 }

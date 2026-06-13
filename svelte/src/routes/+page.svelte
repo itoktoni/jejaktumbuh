@@ -14,9 +14,12 @@
   import AppHeader from '$lib/layouts/AppHeader.svelte'
   import DesktopHeader from '$lib/layouts/DesktopHeader.svelte'
   import AppSidebar from '$lib/layouts/AppSidebar.svelte'
+
+  initInstall()
   import BottomNav from '$lib/layouts/BottomNav.svelte'
   import SyncModal from '$lib/components/SyncModal.svelte'
   import LoginPage from '$lib/pages/LoginPage.svelte'
+  import ReferralPage from '$lib/pages/ReferralPage.svelte'
   import VerificationPage from '$lib/pages/VerificationPage.svelte'
   import PilarTab from '$lib/pages/PilarTab.svelte'
   import ActivityTab from '$lib/pages/ActivityTab.svelte'
@@ -24,7 +27,7 @@
   import ProfileTab from '$lib/pages/ProfileTab.svelte'
   import SettingsTab from '$lib/pages/SettingsTab.svelte'
   import BillingTab from '$lib/pages/BillingTab.svelte'
-  import ReferralTab from '$lib/pages/AffiliateTab.svelte'
+  import AffiliateTab from '$lib/pages/AffiliateTab.svelte'
   import ChallengeTab from '$lib/pages/ChallengeTab.svelte'
   import JadwalTab from '$lib/pages/JadwalTab.svelte'
   import ChecklistTab from '$lib/pages/ChecklistTab.svelte'
@@ -39,6 +42,8 @@
   let showSyncModal = $state(false)
   let ready = $state(false)
   let isReferral = $state(false)
+  let referralCode = $state('')
+  let initialRegister = $state(false)
   let currentToolsAnakId = $state(null)
   let toolsAnakList = $state([])
   let canInstallVal = $state(false)
@@ -110,7 +115,7 @@
     return Date.now() - Number(ts) < 60000
   })
 
-  const noSubscribe = $derived((!userPlanVal || userPlanVal?.expired) && isAuth && !justPaid)
+  const noSubscribe = $derived(isAuth && ready && (!userPlanVal || userPlanVal?.expired) && !justPaid)
   const noAnak = $derived(isAuth && toolsAnakList.length === 0 && ready)
 
   function handleTrialGuard() {
@@ -118,7 +123,7 @@
       appStore.switchTab('billing')
       return true
     }
-    if (noAnak && currentTab !== 'profile') {
+    if (noAnak && currentTab !== 'profile' && currentTab !== 'billing' && currentTab !== 'referral') {
       appStore.switchTab('profile')
       return true
     }
@@ -130,14 +135,18 @@
     const urlParams = new URLSearchParams(window.location.search)
     isReferral = urlParams.has('ref')
     if (urlParams.has('ref')) {
-      localStorage.setItem('lk_ref_code', urlParams.get('ref'))
+      referralCode = urlParams.get('ref')
+      localStorage.setItem('lk_ref_code', referralCode)
+    }
+    if (urlParams.has('action') && urlParams.get('action') === 'register') {
+      initialRegister = true
     }
   }
 
   async function onLoginSuccess(data) {
     if (get(authStore.needsVerification)) return
 
-    appStore.switchTab('pilar')
+    appStore.switchTab('activity')
     const serverList = get(authStore.serverAnakList)
     if (serverList.length) {
       await dbSyncServerData(serverList)
@@ -146,7 +155,7 @@
   }
 
   async function onVerificationSuccess(data) {
-    appStore.switchTab('pilar')
+    appStore.switchTab('activity')
     const serverList = get(authStore.serverAnakList)
     if (serverList.length) {
       await dbSyncServerData(serverList)
@@ -189,6 +198,27 @@
       setAktivitasData(aktivitas)
     }
 
+    try {
+      const serverData = await api.getActivitiesGrouped()
+      if (serverData && typeof serverData === 'object') {
+        const { saveSetting } = await import('$lib/db.js')
+        await saveSetting('activities_cache', serverData)
+        activityStore.activitiesCache.set(serverData)
+        const aktivitas = buildAktivitasDataFromAPI(serverData)
+        setAktivitasData(aktivitas)
+      }
+    } catch (e) {
+      console.warn('Failed to refresh activities from server:', e)
+    }
+
+    try {
+      const pilarData = await api.getPilarsAndSkills()
+      if (pilarData.pilars) authStore.pilars.set(pilarData.pilars)
+      if (pilarData.skills) authStore.skills.set(pilarData.skills)
+    } catch (e) {
+      console.warn('Failed to load pilars/skills:', e)
+    }
+
     if (!get(appStore.selectedAnakId) && list.length) {
       appStore.selectedAnakId.set(list[0].id)
     }
@@ -210,8 +240,6 @@
   }
 
   onMount(() => {
-    initInstall()
-
     if (get(authStore.isAuthenticated)) {
       api.getMe().then(me => {
         authStore.applyServerData(me)
@@ -233,15 +261,9 @@
 </script>
 
 {#if isReferral}
-  <div class="min-h-screen bg-canvas-cream flex items-center justify-center p-8">
-    <div class="text-center">
-      <h1 class="text-3xl font-bold text-primary mb-4">Jejak Tumbuh</h1>
-      <p class="text-on-surface-variant mb-6">Undangan referral diterima! Silakan daftar untuk melanjutkan.</p>
-      <a href="/" class="btn-primary inline-block">Mulai Daftar</a>
-    </div>
-  </div>
+  <ReferralPage referralCode={referralCode} />
 {:else if !isAuth}
-  <LoginPage onsuccess={onLoginSuccess} />
+  <LoginPage onsuccess={onLoginSuccess} initialRegister={initialRegister} initialReferralCode={referralCode} />
 {:else}
   <div class="bg-canvas-cream text-text-main min-h-screen">
     <AppSidebar
@@ -291,7 +313,7 @@
     <main class="content-wrapper pb-24 lg:pb-8" onclick={handleTrialGuard} role="presentation">
       {#if (trialExpired || noSubscribe) && currentTab !== 'billing'}
         <div class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6" onclick={(e) => { e.stopPropagation(); appStore.switchTab('billing') }}>
-          <div class="bg-canvas-cream rounded-[28px] p-6 border-4 border-error/30 shadow-xl max-w-sm w-full text-center">
+          <div class="bg-canvas-cream rounded-[28px] p-6 border-4 border-error/30 shadow-xl max-w-sm w-full text-center" onclick={(e) => e.stopPropagation()}>
             <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
               <span class="material-symbols-outlined text-4xl text-error">{noSubscribe ? 'workspace_premium' : 'timer_off'}</span>
             </div>
@@ -317,7 +339,7 @@
       {:else if currentTab === 'billing'}
         <BillingTab />
       {:else if currentTab === 'referral'}
-        <ReferralTab />
+        <AffiliateTab />
       {:else if currentTab === 'challenge'}
         <ChallengeTab />
       {:else if currentTab === 'jadwal'}
