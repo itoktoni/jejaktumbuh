@@ -1,5 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
+  import { trackActivityView } from '../../services/api.js'
+
 
   let { item, bg, onclick } = $props()
 
@@ -44,6 +46,7 @@
     currentPage = 0
     isFinished = false
     showReader = true
+    if (item.id) trackActivityView(item.id).catch(() => {})
   }
 
   function closeReader() {
@@ -128,37 +131,53 @@
   }
 </script>
 
-<button class="bento-card group bg-canvas-cream rounded-[20px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+<button class="group cursor-pointer w-full text-left"
   onclick={openReader}>
-  <div class="aspect-[4/5] overflow-hidden relative shrink-0 flex items-center justify-center" style="background: {bg}">
-    {#if item.image}
-      <img src={item.image} alt={item.title} class="w-full h-full object-cover" />
-    {:else}
-      <span class="text-5xl">{item.emoji || '📖'}</span>
-    {/if}
-    <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-    {#if totalPages > 0}
-      <div class="absolute top-2 right-2 bg-white/90 rounded-full px-2 py-0.5 text-[10px] font-bold text-primary border border-[#B7D9BC]">
-        {totalPages} hal
+  <div class="relative transition-all duration-300 group-hover:-translate-y-1 group-hover:rotate-[-1deg]">
+    <div class="bg-white rounded-[24px] overflow-hidden shadow-lg border-4 border-[#B7D9BC] relative">
+      <div class="aspect-[3/4] overflow-hidden relative rounded-t-[20px]">
+        {#if item.image}
+          <img src={item.image} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+        {:else}
+          <div class="w-full h-full flex items-center justify-center" style="background: {bg}">
+            <span class="text-6xl">{item.emoji || '📖'}</span>
+          </div>
+        {/if}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
+        <div class="absolute top-0 left-0 right-0 flex justify-between p-2">
+          {#if totalPages > 0}
+            <div class="bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 text-[10px] font-bold text-primary shadow-sm">
+               {totalPages} Halaman
+            </div>
+          {/if}
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 bg-primary/30 backdrop-blur-sm p-3 space-y-1">
+          <h3 class="text-sm text-white line-clamp-2 leading-tight">{item.title}</h3>
+          {#if item.moral}
+            <p class="text-[10px] text-white/80 line-clamp-1">💬 {item.moral}</p>
+          {/if}
+        </div>
       </div>
-    {/if}
-  </div>
-  <div class="p-3 flex flex-col shrink-0">
-    <h3 class="text-xs font-bold text-text-main mb-0.5 line-clamp-1">{item.title}</h3>
-    {#if item.desc}
-      <p class="text-[10px] text-on-surface-variant line-clamp-2">{item.desc}</p>
-    {/if}
-    <div class="flex items-center gap-1.5 text-primary text-[10px] font-bold mt-1.5 pt-1.5 border-t border-[#B7D9BC]/50">
-      <span class="material-symbols-outlined text-sm">auto_stories</span>
-      Baca
-      <span class="material-symbols-outlined text-sm ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      <div class="px-3 py-2.5 flex items-center justify-between bg-success-soft">
+        <div class="flex items-center gap-1.5 text-xs text-text-secondary">
+          <span class="material-symbols-outlined text-sm text-primary">visibility</span>
+          <span class="font-medium">{item.views || 0}</span>
+        </div>
+
+        {#if totalPages > 0}
+          <div class="flex items-center gap-1.5 text-xs text-text-secondary">
+            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
+            <span class="font-medium">+{Math.ceil(totalPages * 0.5)} menit</span>
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 </button>
 
 {#if showReader}
   <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4">
-    <div class="w-full max-w-md bg-canvas-cream rounded-[40px] shadow-2xl border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative">
+    <div class="w-full max-w-md bg-canvas-cream lg:rounded-[40px] lg:shadow-2xl lg:border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative">
 
       <div class="px-4 pt-4 pb-2 flex items-center gap-3 z-10 shrink-0">
         <div class="bg-primary text-on-primary w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center text-xs font-bold shrink-0">
@@ -176,16 +195,13 @@
       {#if !isFinished}
         <div class="flex-1 flex flex-col justify-center px-4 gap-4 overflow-hidden">
 
-          <div class="w-full aspect-[4/3] bg-success-soft rounded-[32px] border-4 border-white shadow-lg overflow-hidden relative floating-illustration">
+          <div class="w-full max-h-[50vh] aspect-[3/4] bg-success-soft rounded-[32px] border-4 border-white shadow-lg overflow-hidden relative floating-illustration">
             {#if currentPageData.image}
               <img src={currentPageData.image} alt={currentPageData.text || item.title}
                 class="w-full h-full object-cover" />
             {:else}
               <div class="w-full h-full flex items-center justify-center text-7xl">{item.emoji || '📖'}</div>
             {/if}
-            <div class="absolute top-3 right-3 bg-primary text-on-primary border-2 border-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold shadow">
-              {currentPage + 1}
-            </div>
           </div>
 
           <div class="bg-white rounded-[32px] border-4 border-[#B7D9BC] p-5 shadow-md relative">
@@ -220,7 +236,7 @@
 
           {#if item.moral}
             <div class="bg-white rounded-[32px] border-4 border-[#B7D9BC] p-5 shadow-md relative">
-  
+
               <div class="flex items-center gap-2 mb-3 justify-center">
                 <span class="w-8 h-8 rounded-full bg-success-soft border-2 border-[#B7D9BC] flex items-center justify-center text-base">💬</span>
                 <p class="text-primary text-base font-bold">Pelajaran</p>
@@ -250,14 +266,14 @@
       <div class="p-4 bg-success-soft rounded-t-[40px] border-t-4 border-[#B7D9BC] flex flex-col gap-3 items-center shrink-0">
         <div class="w-full flex gap-3">
           <button onclick={prevPage} disabled={!isFinished && currentPage === 0}
-            class="flex-1 py-3 px-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 transition-all
+            class="flex-1 py-3 px-4 rounded-2xl border border-stone-400 font-semibold text-base flex items-center justify-center gap-2 transition-all
               {!isFinished && currentPage === 0 ? 'text-on-surface-variant btn-pop-gray opacity-60 cursor-not-allowed' : 'text-text-main btn-pop-gray'}">
             <span class="material-symbols-outlined text-xl">arrow_back</span>
             {isFinished ? 'Baca Lagi' : 'Kembali'}
           </button>
 
           <button onclick={nextPage}
-            class="flex-1 py-3 px-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 transition-all btn-pop-green">
+            class="flex-1 py-3 px-4 rounded-2xl border border-primary-400 text-white font-semibold text-base flex items-center justify-center gap-2 transition-all btn-pop-green">
             {isFinished ? 'Tutup' : currentPage === totalPages - 1 ? 'Selesai ✨' : 'Lanjut'}
             <span class="material-symbols-outlined text-xl">
               {isFinished ? 'close' : currentPage === totalPages - 1 ? 'check' : 'arrow_forward'}

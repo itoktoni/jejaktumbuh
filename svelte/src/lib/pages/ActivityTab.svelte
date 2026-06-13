@@ -6,6 +6,7 @@
   import { isAuthenticated, userPlan, plans as planList } from '../stores/authStore.js'
   import { switchCounter, activeTab, selectedAnakId, selectedSkillKey, selectedAge, selectedAgama, selectedPlanId } from '../stores/appStore.js'
   import * as api from '../services/api.js'
+  import { trackActivityView } from '../services/api.js'
   import { anakList } from '../stores/anakStore.js'
   import { calcAge } from '../utils/age.js'
   import AnakDropdown from '../components/AnakDropdown.svelte'
@@ -211,6 +212,7 @@
   function openPuzzle(pz) { activePuzzle = pz }
 
   function handleItemClick(item) {
+    if (item.id) trackActivityView(item.id).catch(() => {})
     const feature = selectedType?.feature
     if (feature === 'story') openStory(item)
     else if (feature === 'roleplay') openRoleplay(item)

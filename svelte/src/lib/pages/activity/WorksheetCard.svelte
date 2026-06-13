@@ -1,4 +1,5 @@
 <script>
+
   let { item, bg, onclick } = $props()
 </script>
 
@@ -13,6 +14,12 @@
     <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
     {#if item.desc}
       <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">{item.desc}</p>
+    {/if}
+    {#if item.views}
+      <span class="flex items-center gap-1 text-[11px] text-on-surface-variant">
+        <span class="material-symbols-outlined text-sm">visibility</span>
+        {item.views}
+      </span>
     {/if}
     <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
       <span class="material-symbols-outlined text-xl">edit_note</span>

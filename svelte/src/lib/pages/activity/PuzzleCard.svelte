@@ -1,4 +1,5 @@
 <script>
+
   let { item, bg, onclick } = $props()
 </script>
 
@@ -25,6 +26,12 @@
           <span class="font-bold text-primary">Contoh:</span> {item.questions[0].q || item.questions[0]}
         </p>
       </div>
+    {/if}
+    {#if item.views}
+      <span class="flex items-center gap-1 text-[11px] text-on-surface-variant">
+        <span class="material-symbols-outlined text-sm">visibility</span>
+        {item.views}
+      </span>
     {/if}
     <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
       <span class="material-symbols-outlined text-xl">psychology</span>

@@ -34,6 +34,7 @@ function normalizeItem(item, type) {
   const ages = item.ages || []
 
   const normalized = {
+    id: item.id,
     title: item.title,
     image: item.image,
     desc: item.desc,
@@ -42,6 +43,7 @@ function normalizeItem(item, type) {
     skills: item.skills || [],
     agama: item.agama || [],
     plans: item.plans || [],
+    views: item.views || 0,
   }
 
   if (contentKey && contentKey === 'stories') {

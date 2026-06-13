@@ -59,7 +59,9 @@ Route::get('/plans', function () {
 
 Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
 Route::get('/activities/types', [ActivityController::class, 'types'])->name('activities.types');
+Route::get('/activities/popular', [ActivityController::class, 'popular'])->name('activities.popular');
 Route::get('/activities/{slug}', [ActivityController::class, 'show'])->name('activities.show');
+Route::post('/activities/{id}/view', [ActivityController::class, 'trackView'])->name('activities.view');
 
 Route::get('/pilars', [PilarController::class, 'index'])->name('pilars.index');
 

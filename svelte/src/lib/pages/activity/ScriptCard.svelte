@@ -1,4 +1,5 @@
 <script>
+
   let { item, bg, onclick } = $props()
 </script>
 
@@ -23,6 +24,12 @@
       <div class="bg-white rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
         <p class="text-xs text-on-surface-variant line-clamp-3 italic">"{item.script}"</p>
       </div>
+    {/if}
+    {#if item.views}
+      <span class="flex items-center gap-1 text-[11px] text-on-surface-variant">
+        <span class="material-symbols-outlined text-sm">visibility</span>
+        {item.views}
+      </span>
     {/if}
     <div class="flex items-center gap-2 text-primary font-label-lg mt-auto pt-3 border-t-2 border-[#B7D9BC]/50">
       <span class="material-symbols-outlined text-xl">mic</span>

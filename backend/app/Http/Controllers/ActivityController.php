@@ -15,9 +15,10 @@ class ActivityController extends Controller
     {
         $this->model = $model::getModel();
     }
+
     public function index(Request $request)
     {
-        $query = Activity::active()->orderBy('sort_order');
+        $query = Activity::active()->approved()->orderBy('sort_order');
 
         if ($request->has('type')) {
             $query->ofType($request->type);
@@ -30,6 +31,25 @@ class ActivityController extends Controller
         }
 
         return response()->json($activities);
+    }
+
+    public function popular(Request $request)
+    {
+        $limit = $request->input('limit', 10);
+        $activities = Activity::active()->approved()
+            ->orderByDesc('views')
+            ->limit($limit)
+            ->get();
+
+        return response()->json($activities);
+    }
+
+    public function trackView(Request $request, $id)
+    {
+        $activity = Activity::findOrFail($id);
+        $views = $activity->incrementView();
+
+        return response()->json(['views' => $views]);
     }
 
     public function show($slug)
@@ -52,10 +72,12 @@ class ActivityController extends Controller
             'data' => 'nullable|array',
             'sort_order' => 'nullable|integer',
             'active' => 'nullable|boolean',
+            'status' => 'nullable|in:pending,review,approved,rejected',
         ]);
 
         $data['slug'] = Str::slug($data['title']).'-'.Str::random(5);
         $data['active'] = $data['active'] ?? true;
+        $data['status'] = $data['status'] ?? 'approved';
 
         $activity = Activity::create($data);
 
@@ -76,6 +98,7 @@ class ActivityController extends Controller
             'data' => 'nullable|array',
             'sort_order' => 'nullable|integer',
             'active' => 'nullable|boolean',
+            'status' => 'nullable|in:pending,review,approved,rejected',
         ]);
 
         $activity->update($data);

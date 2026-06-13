@@ -19,6 +19,8 @@ class Activity extends BaseModel
         'title' => 'Title',
         'slug' => 'Slug',
         'active' => 'Active',
+        'status' => 'Status',
+        'views' => 'Views',
     ];
 
     public static $sortColumns = [
@@ -28,6 +30,8 @@ class Activity extends BaseModel
         'slug',
         'sort_order',
         'active',
+        'views',
+        'status',
     ];
 
     protected $fillable = [
@@ -44,6 +48,8 @@ class Activity extends BaseModel
         'active',
         'plans',
         'agama',
+        'views',
+        'status',
     ];
 
     protected function casts(): array
@@ -55,6 +61,7 @@ class Activity extends BaseModel
             'plans' => 'array',
             'agama' => 'array',
             'active' => 'boolean',
+            'views' => 'integer',
         ];
     }
 
@@ -80,5 +87,16 @@ class Activity extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('active', true);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function incrementView()
+    {
+        $this->increment('views');
+        return $this->views;
     }
 }

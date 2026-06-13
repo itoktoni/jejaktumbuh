@@ -220,3 +220,5 @@ export async function getActivities(params = {}) {
 }
 export async function getActivitiesGrouped() { return apiFetch('/activities?grouped=1') }
 export async function getActivityTypes() { return apiFetch('/activities/types') }
+export async function trackActivityView(id) { return apiFetch(`/activities/${id}/view`, { method: 'POST' }) }
+export async function getPopularActivities(limit = 10) { return apiFetch(`/activities/popular?limit=${limit}`) }
