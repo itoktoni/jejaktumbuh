@@ -11,28 +11,3 @@
 <link rel="manifest" href="/manifest.json">
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-<script>
-    window.PUSH_API_URL = @js(config('push.api_url', ''));
-    window.PUSH_AUTH_TOKEN = @js(session('push_auth_token') ?? '');
-</script>
-<script src="/js/push-notification.js" defer></script>
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-            try {
-                const reg = await navigator.serviceWorker.register('/sw.js');
-                console.log('SW registered:', reg.scope);
-                if (reg.active) {
-                    if (window.PUSH_API_URL) {
-                        reg.active.postMessage({ type: 'SET_API_URL', apiUrl: window.PUSH_API_URL });
-                    }
-                    if (window.PUSH_AUTH_TOKEN) {
-                        reg.active.postMessage({ type: 'SET_AUTH_TOKEN', token: window.PUSH_AUTH_TOKEN });
-                    }
-                }
-            } catch (e) {
-                console.error('SW registration failed:', e);
-            }
-        });
-    }
-</script>

@@ -108,10 +108,10 @@
             <h1 class="font-semibold text-lg text-[#00288e]">{{ $headerTitle ?? 'WMS Portal' }}</h1>
         </div>
         <nav class="hidden md:flex items-center gap-8">
-            <a class="text-[#00288e] text-xs font-semibold uppercase tracking-wider border-b-2 border-[#00288e] pb-1" href="{{ route('warehouse.dashboard') }}">Dashboard</a>
+            <a class="text-[#00288e] text-xs font-semibold uppercase tracking-wider border-b-2 border-[#00288e] pb-1" href="{{ route('dashboard') }}">Dashboard</a>
             <a class="text-[#444653] text-xs font-semibold uppercase tracking-wider hover:text-[#0058be] transition-colors" href="#">Inbound</a>
             <a class="text-[#444653] text-xs font-semibold uppercase tracking-wider hover:text-[#0058be] transition-colors" href="#">Outbound</a>
-            <a class="text-[#444653] text-xs font-semibold uppercase tracking-wider hover:text-[#0058be] transition-colors" href="{{ route('warehouse.stock') }}">Inventory</a>
+            <a class="text-[#444653] text-xs font-semibold uppercase tracking-wider hover:text-[#0058be] transition-colors" href="{{ route('dashboard') }}">Inventory</a>
         </nav>
         <div class="flex items-center gap-4">
             <button class="material-symbols-outlined text-[#444653] hover:bg-[#eceef0] p-2 rounded-full transition-colors cursor-pointer">notifications</button>
@@ -123,7 +123,7 @@
 
     <!-- BottomNavBar (Mobile Only) -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 pb-safe bg-[#f2f4f6] border-t border-[#c4c5d5] shadow-lg z-50">
-        <a class="flex flex-col items-center justify-center text-[#00288e] group active:scale-95 transition-all" href="{{ route('warehouse.dashboard') }}">
+        <a class="flex flex-col items-center justify-center text-[#00288e] group active:scale-95 transition-all" href="{{ route('dashboard') }}">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span class="text-[10px] font-semibold uppercase">Dashboard</span>
         </a>
@@ -135,7 +135,7 @@
             <span class="material-symbols-outlined">output</span>
             <span class="text-[10px] font-semibold uppercase">Outbound</span>
         </a>
-        <a class="flex flex-col items-center justify-center text-[#444653] hover:text-[#0058be] active:scale-95 transition-all" href="{{ route('warehouse.stock') }}">
+        <a class="flex flex-col items-center justify-center text-[#444653] hover:text-[#0058be] active:scale-95 transition-all" href="{{ route('dashboard') }}">
             <span class="material-symbols-outlined">inventory_2</span>
             <span class="text-[10px] font-semibold uppercase">Inventory</span>
         </a>

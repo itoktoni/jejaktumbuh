@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\ProcessPaidPayment;
 use App\Models\Payment;
+use App\PaymentStatusEnum;
 use Illuminate\Console\Command;
 
 class CheckPaidPayments extends Command
@@ -13,7 +14,8 @@ class CheckPaidPayments extends Command
 
     public function handle(): int
     {
-        $payments = Payment::where('payment_status', 'paid')
+        $payments = Payment::where('payment_status', PaymentStatusEnum::PAID->value)
+            ->where('payment_created_at', '>=', now()->addMinute(-10))
             ->get();
 
         $dispatched = 0;

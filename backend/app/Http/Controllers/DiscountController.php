@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\ControllerTrait;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 
 class DiscountController extends Controller
 {
+    use ControllerTrait;
+
+    public function __construct(Discount $model)
+    {
+        $this->model = $model::getModel();
+    }
     public function index(Request $request)
     {
         $discounts = Discount::where('discount_created_by', $request->user()->id)

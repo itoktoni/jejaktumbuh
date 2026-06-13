@@ -97,13 +97,36 @@ function nominalQRIS($qris_data, $amount)
     $amountLength = strlen($amountStr);
     $amountField = '54'.str_pad($amountLength, 2, '0', STR_PAD_LEFT).$amountStr;
 
-    // Hilangkan field 54 (nominal) yang lama
-    $qris_data = preg_replace('/54\d{2}\d+/', '', $qris_data);
+    // Parse QRIS TLV: hapus field 54 (nominal) yang lama dengan benar
+    $new_qris = '';
+    $i = 0;
+    $len = strlen($qris_data);
+    while ($i < $len - 4) {
+        $tag = substr($qris_data, $i, 2);
+        $valueLen = (int) substr($qris_data, $i + 2, 2);
+        $totalLen = 4 + $valueLen;
+
+        if ($tag === '54') {
+            // Skip field 54 (nominal lama)
+            $i += $totalLen;
+            continue;
+        }
+
+        // Simpan field lainnya
+        $new_qris .= substr($qris_data, $i, $totalLen);
+        $i += $totalLen;
+    }
+
+    // Sisa string (CRC lama)
+    if ($i < $len) {
+        $new_qris .= substr($qris_data, $i);
+    }
 
     // Hilangkan CRC lama (tag 63)
-    $qris_data = preg_replace('/6304.{4}$/', '', $qris_data);
+    $new_qris = preg_replace('/6304.{4}$/', '', $new_qris);
 
-    $new_qris = $qris_data.$amountField.'6304';
+    // Tambah nominal baru + CRC
+    $new_qris = $new_qris.$amountField.'6304';
     $crc = strtoupper(dechex(crc16($new_qris)));
     $crc = str_pad($crc, 4, '0', STR_PAD_LEFT);
 

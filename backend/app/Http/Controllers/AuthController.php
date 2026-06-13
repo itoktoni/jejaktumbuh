@@ -5,26 +5,60 @@ namespace App\Http\Controllers;
 use App\Models\Affiliate;
 use App\Models\Cashout;
 use App\Models\Discount;
-use App\Models\LangkahKecilAnak;
+use App\Models\Anak;
 use App\Models\Plan;
 use App\Models\Subscribe;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     private function userResponse(User $user): array
     {
-        $user->load('subscribe.plan');
-        $subscribe = $user->subscribe;
+        $user->load('has_subscribe.plan');
+        $subscribe = $user->has_subscribe;
+
+        $subscribeData = null;
+        if ($subscribe) {
+            $now = now();
+            $endDate = $subscribe->subscribe_end_at ? \Carbon\Carbon::parse($subscribe->subscribe_end_at) : null;
+
+            if ($endDate && $endDate->lt($now)) {
+                $subscribeData = [
+                    'subscribe_id' => $subscribe->subscribe_id,
+                    'plan_id' => $subscribe->subscribe_id_plan,
+                    'plan_nama' => $subscribe->plan?->plan_nama,
+                    'plan_value' => $subscribe->subsribe_value,
+                    'plan_harga' => $subscribe->subscribe_harga,
+                    'subscribe_start_at' => $subscribe->subscribe_start_at ? \Carbon\Carbon::parse($subscribe->subscribe_start_at)->toIso8601String() : null,
+                    'subscribe_end_at' => $subscribe->subscribe_end_at ? \Carbon\Carbon::parse($subscribe->subscribe_end_at)->toIso8601String() : null,
+                    'subscribe_trial_at' => $subscribe->subscribe_trial_at ? \Carbon\Carbon::parse($subscribe->subscribe_trial_at)->toIso8601String() : null,
+                    'expired' => true,
+                ];
+            } else {
+                $subscribeData = [
+                    'subscribe_id' => $subscribe->subscribe_id,
+                    'plan_id' => $subscribe->subscribe_id_plan,
+                    'plan_nama' => $subscribe->plan?->plan_nama,
+                    'plan_value' => $subscribe->subsribe_value,
+                    'plan_harga' => $subscribe->subscribe_harga,
+                    'subscribe_start_at' => $subscribe->subscribe_start_at ? \Carbon\Carbon::parse($subscribe->subscribe_start_at)->toIso8601String() : null,
+                    'subscribe_end_at' => $subscribe->subscribe_end_at ? \Carbon\Carbon::parse($subscribe->subscribe_end_at)->toIso8601String() : null,
+                    'subscribe_trial_at' => $subscribe->subscribe_trial_at ? \Carbon\Carbon::parse($subscribe->subscribe_trial_at)->toIso8601String() : null,
+                    'expired' => false,
+                ];
+            }
+        }
 
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
+            'user_agama' => $user->user_agama,
             'role' => $user->role,
             'affiliate_code' => $user->affiliate_code,
             'affiliate_reff' => $user->affiliate_reff,
@@ -33,23 +67,14 @@ class AuthController extends Controller
             'rekening_nama' => $user->rekening_nama,
             'rekening_bank' => $user->rekening_bank,
             'rekening_nomor' => $user->rekening_nomor,
-            'plan' => $subscribe ? [
-                'subscribe_id' => $subscribe->subscribe_id,
-                'plan_id' => $subscribe->subscribe_id_plan,
-                'plan_nama' => $subscribe->plan?->plan_nama,
-                'plan_value' => $subscribe->subsribe_value,
-                'plan_harga' => $subscribe->subscribe_harga,
-                'subscribe_start_at' => $subscribe->subscribe_start_at ? \Carbon\Carbon::parse($subscribe->subscribe_start_at)->toIso8601String() : null,
-                'subscribe_end_at' => $subscribe->subscribe_end_at ? \Carbon\Carbon::parse($subscribe->subscribe_end_at)->toIso8601String() : null,
-                'subscribe_trial_at' => $subscribe->subscribe_trial_at ? \Carbon\Carbon::parse($subscribe->subscribe_trial_at)->toIso8601String() : null,
-            ] : null,
+            'subscribe' => $subscribeData,
         ];
     }
 
     private function plansData(): array
     {
         return Plan::where('plan_status', 1)
-            ->orderBy('plan_harga')
+            ->orderBy('plan_id')
             ->get()
             ->map(function ($p) {
                 $periodEnum = \App\PeriodEnum::tryFrom($p->plan_periode);
@@ -98,10 +123,40 @@ class AuthController extends Controller
             'trial_days' => (int) config('langkahkecil.trial_days', 10),
             'plans' => $this->plansData(),
             'discounts' => $this->discountsData(),
+            'pilars' => $this->pilarsData(),
+            'skills' => $this->skillsData(),
+            'worksheets' => $this->worksheetsData(),
             'affiliate_config' => [
                 'commission_rate' => (int) config('langkahkecil.affiliate.upgrade_commission_rate', 15),
             ],
         ];
+    }
+
+    private function pilarsData(): array
+    {
+        return \App\Models\Pilar::where('pilar_active', true)
+            ->orderBy('pilar_sort_order')
+            ->get()
+            ->map(fn ($p) => $p->toArray())
+            ->toArray();
+    }
+
+    private function skillsData(): array
+    {
+        return \App\Models\MasterSkill::where('skill_active', true)
+            ->orderBy('skill_sort_order')
+            ->get()
+            ->map(fn ($s) => $s->toArray())
+            ->toArray();
+    }
+
+    private function worksheetsData(): array
+    {
+        return \App\Models\MasterWorksheet::where('worksheet_active', true)
+            ->orderBy('worksheet_sort_order')
+            ->get()
+            ->map(fn ($w) => $w->toArray())
+            ->toArray();
     }
 
     public function login(Request $request)
@@ -121,8 +176,16 @@ class AuthController extends Controller
 
         $token = $user->createToken('api_token')->plainTextToken;
 
-        $anakList = LangkahKecilAnak::where('user_id', $user->id)
-            ->with(['skills', 'completedSkills', 'challenges', 'challengeHistory', 'checklists', 'schedules', 'worksheets'])
+        $anakList = Anak::where('anak_id_user', $user->id)
+            ->with([
+                'has_skills.has_activities',
+                'has_completed_skills',
+                'has_challenges',
+                'has_challenge_histories',
+                'has_checklists',
+                'has_schedules',
+                'has_worksheets'
+            ])
             ->get();
 
         return response()->json(array_merge([
@@ -185,7 +248,7 @@ class AuthController extends Controller
                 'subscribe_end_at' => now()->addDays($trialDays),
                 'subscribe_created_at' => now(),
             ]);
-            $user->update(['plan' => $subscription->subscribe_id]);
+            $user->update(['subscribe_id' => $subscription->subscribe_id]);
         }
 
         if ($affiliateReff) {
@@ -229,7 +292,8 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,'.$user->id,
-            'phone' => 'sometimes|string|max:20|unique:users,phone,'.$user->id,
+            'phone' => 'required|string|max:20|unique:users,phone,'.$user->id,
+            'user_agama' => 'sometimes|nullable|in:islam,kristen_protestan,kristen_katolik,hindu,buddha,konghucu',
         ]);
 
         if ($request->has('name')) {
@@ -239,8 +303,9 @@ class AuthController extends Controller
             $user->email = $request->email;
             $user->email_verified_at = null;
         }
-        if ($request->has('phone')) {
-            $user->phone = $request->phone;
+        $user->phone = $request->phone;
+        if ($request->has('user_agama')) {
+            $user->user_agama = $request->user_agama;
         }
 
         $user->save();
@@ -276,6 +341,47 @@ class AuthController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Password berhasil diubah']);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status == Password::RESET_LINK_SENT) {
+            return response()->json(['message' => 'Link reset password telah dikirim ke email Anda.']);
+        }
+
+        return response()->json(['message' => 'Email tidak ditemukan atau terjadi kesalahan.'], 422);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => $password,
+                ])->save();
+            }
+        );
+
+        if ($status == Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'Password berhasil diubah.']);
+        }
+
+        return response()->json(['message' => 'Token tidak valid atau sudah kedaluwarsa.'], 422);
     }
 
     public function updateAffiliateCode(Request $request)

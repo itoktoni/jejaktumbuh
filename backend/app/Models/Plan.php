@@ -77,8 +77,6 @@ class Plan extends BaseModel
         ];
     }
 
-    public function toArray(){}
-
     public static function field_name()
     {
         return 'plan_nama';

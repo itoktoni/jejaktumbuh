@@ -1,5 +1,0 @@
-{ "title": "Puzzle Pola", "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=600&fit=crop", "ages": [4, 5, 6, 7, 8, 9, 10, 11], "skills": ["berpikir_kreatif", "atur_waktu"], "questions": [
-  { "q": "Lengkapi pola: 🔴🔵🔴🔵🔴...", "a": "🔵", "hint": "Perhatikan warna yang bergantian merah dan biru", "emoji": "🔴" },
-  { "q": "Lengkapi pola: 2, 4, 6, 8, ...", "a": "10", "hint": "Setiap angka bertambah 2 dari sebelumnya", "emoji": "🔢" },
-  { "q": "Lengkapi pola: ⭐🌙⭐🌙⭐...", "a": "🌙", "hint": "Bintang dan bulan bergantian satu-satu", "emoji": "⭐" }
-]}

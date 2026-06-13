@@ -2,6 +2,8 @@
 
 return [
 
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL')),
+
     'trial_days' => env('LANGKAHKECIL_TRIAL_DAYS', 10),
 
     'affiliate' => [

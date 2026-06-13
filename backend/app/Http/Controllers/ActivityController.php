@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\ControllerTrait;
 use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ActivityController extends Controller
 {
+    use ControllerTrait;
+
+    public function __construct(Activity $model)
+    {
+        $this->model = $model::getModel();
+    }
     public function index(Request $request)
     {
         $query = Activity::active()->orderBy('sort_order');

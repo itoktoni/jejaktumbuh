@@ -7,7 +7,7 @@
         <button class="hidden md:block p-2 hover:bg-surface-container rounded-full transition-colors" @click="sidebarOpen = !sidebarOpen">
             <span class="material-symbols-outlined text-on-surface-variant">menu</span>
         </button>
-        <a href="{{ route('warehouse.dashboard') }}" class="font-headline-md text-headline-md font-bold text-primary">
+        <a href="{{ route('dashboard') }}" class="font-headline-md text-headline-md font-bold text-primary">
             WMS Portal
         </a>
     </div>

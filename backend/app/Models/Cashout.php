@@ -2,13 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Cashout extends Model
+class Cashout extends BaseModel
 {
     protected $table = 'cashouts';
+    protected $keyType = 'int';
     protected $primaryKey = 'cashout_id';
+
     public $timestamps = false;
+    public $incrementing = true;
+
+    public static $filterColumns = [
+        'cashout_id' => 'Id',
+        'cashout_id_user' => 'User',
+        'cashout_jumlah' => 'Jumlah',
+        'cashout_status' => 'Status',
+        'cashout_rekening_bank' => 'Bank',
+        'cashout_created_at' => 'Created At',
+    ];
+
+    public static $sortColumns = [
+        'cashout_id',
+        'cashout_id_user',
+        'cashout_jumlah',
+        'cashout_status',
+        'cashout_created_at',
+    ];
 
     protected $fillable = [
         'cashout_id_user',
@@ -30,7 +50,20 @@ class Cashout extends Model
         'cashout_diterima' => 'integer',
     ];
 
-    public function user()
+    public function rules(): array
+    {
+        return [
+            'cashout_id_user' => 'required',
+            'cashout_jumlah' => 'required|integer|min:1',
+        ];
+    }
+
+    public static function field_name()
+    {
+        return 'cashout_jumlah';
+    }
+
+    public function has_user()
     {
         return $this->belongsTo(User::class, 'cashout_id_user');
     }

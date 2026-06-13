@@ -1,5 +1,299 @@
 # AGENTS.md - Panduan untuk AI Agent
 
+## Model Convention
+
+Semua model extends `BaseModel` dan memiliki property lengkap.
+
+### Struktur Model
+
+```php
+<?php
+
+namespace App\Models;
+
+use App\Models\BaseModel;
+
+class Example extends BaseModel
+{
+    protected $table = 'examples';
+    protected $keyType = 'int';
+    protected $primaryKey = 'example_id';
+
+    public $timestamps = false;
+    public $incrementing = true;
+
+    public static $filterColumns = [
+        'example_id' => 'Id',
+        'example_nama' => 'Nama',
+    ];
+
+    public static $sortColumns = [
+        'example_id',
+        'example_nama',
+    ];
+
+    protected $fillable = [
+        'example_id_user',
+        'example_nama',
+    ];
+
+    protected $casts = [
+        'example_active' => 'boolean',
+    ];
+
+    public function rules(): array
+    {
+        return [
+            'example_nama' => 'required|string|max:255',
+        ];
+    }
+
+    public function toArray(){}
+
+    public static function field_name()
+    {
+        return 'example_nama';
+    }
+
+    public function has_user()
+    {
+        return $this->belongsTo(User::class, 'example_id_user');
+    }
+
+    public function has_items()
+    {
+        return $this->hasMany(Item::class, 'item_id_example');
+    }
+}
+```
+
+### Relationship Convention
+
+Semua relationship menggunakan prefix `has_`:
+
+| Type | Method Name | Example |
+|------|-------------|---------|
+| hasMany | `has_{plural}` | `has_skills()`, `has_items()` |
+| belongsTo | `has_{singular}` | `has_user()`, `has_anak()`, `has_plan()` |
+
+```php
+// hasMany
+public function has_skills()
+{
+    return $this->hasMany(Skill::class, 'skill_id_anak');
+}
+
+// belongsTo
+public function has_anak()
+{
+    return $this->belongsTo(Anak::class, 'skill_id_anak', 'anak_id');
+}
+```
+
+---
+
+## Controller Convention
+
+Setiap model punya controller dengan `ControllerTrait`.
+
+### Struktur Controller
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Concerns\ControllerTrait;
+use App\Models\Example;
+
+class ExampleController extends Controller
+{
+    use ControllerTrait;
+
+    public function __construct(Example $model)
+    {
+        $this->model = $model::getModel();
+    }
+}
+```
+
+### Controller dengan Custom Logic
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Concerns\ControllerTrait;
+use App\Models\Example;
+use Illuminate\Http\Request;
+
+class ExampleController extends Controller
+{
+    use ControllerTrait;
+
+    public function __construct(Example $model)
+    {
+        $this->model = $model::getModel();
+    }
+
+    protected function share($data = [])
+    {
+        $default = [
+            'model' => $this->model,
+            'options' => Example::getOptions(),
+        ];
+
+        return array_merge($default, $data);
+    }
+}
+```
+
+---
+
+## Policy Convention
+
+Setiap model punya policy extends `BasePolicy`.
+
+### Struktur Policy
+
+```php
+<?php
+
+namespace App\Policies;
+
+class ExamplePolicy extends BasePolicy
+{
+}
+```
+
+`BasePolicy` menyediakan: `save`, `create`, `update`, `table`, `delete`, `show` permission checks via `config('permision')`.
+
+---
+
+## Route Convention
+
+Routes didefinisikan di `routes/web.php` menggunakan `AutoRoute`.
+
+### Struktur Route
+
+```php
+Route::auto('/example', 'ExampleController', ['name' => 'example']);
+```
+
+Route auto-generate: `example.getTable`, `example.getCreate`, `example.postCreate`, `example.getUpdate`, `example.postUpdate`, `example.getDelete`, `example.postDelete`.
+
+---
+
+## View Convention
+
+Setiap controller punya folder views di `resources/views/pages/{module}/`.
+
+### Struktur Views
+
+```
+resources/views/pages/example/
+├── table.blade.php
+└── form.blade.php
+```
+
+### table.blade.php
+
+```blade
+<?php /** @var App\Models\Example $table */ ?>
+
+<x-layouts::app>
+    <x-breadcrumb :items="[['url' => '/dashboard', 'label' => 'Home'], ['url' => '', 'label' => ucfirst(module())]]" />
+    <div class="content mt-4 lg:mt-0">
+        <x-filter :per-page="25" :fields="$fields">
+            <x-slot:advanced>
+                @foreach ($fields as $key => $advance)
+                <x-filter-item :label="$advance" :name="$key"/>
+                @endforeach
+                <x-button variant="primary" class="btn-block" onclick="applyAdvanced()">Apply</x-button>
+                <x-button variant="soft" class="btn-block" onclick="resetAdvanced()">Reset</x-button>
+            </x-slot:advanced>
+        </x-filter>
+
+        @php
+            $currentSort = request('sort.0', '');
+            $sortField = str_replace(':desc','',str_replace(':asc','',$currentSort));
+            $sortDir = str_contains($currentSort, ':desc') ? 'desc' : 'asc';
+        @endphp
+
+        <x-table>
+            <x-slot:head>
+                <x-table-checkbox :model="$model" onchange="toggleAll(this)" />
+                <th>Actions</th>
+                @foreach ($model::$sortColumns as $column)
+                <x-table-sort field="{{ $column }}" label="{{ formatLabel($column) }}" :sortField="$sortField" :sortDir="$sortDir" />
+                @endforeach
+            </x-slot:head>
+
+            <x-slot:body>
+                @foreach($data as $table)
+                <tr>
+                    <x-table-row-checkbox :model="$model" :value="$table->field_primary" />
+                    <x-table-action :model="$model" :id="$table->field_primary" />
+                    @foreach ($model::$sortColumns as $column)
+                    <td>{{ $table->$column }}</td>
+                    @endforeach
+                </tr>
+                @endforeach
+            </x-slot:body>
+
+            <x-slot:mobile>
+                <x-table-mobile-select :model="$model" :total="$data"/>
+                <x-table-mobile-list>
+                    @foreach($data as $table)
+                    <x-table-mobile-item :id="$table->field_primary">
+                        <x-table-mobile-header title="{{ $table->field_name }}" />
+                        @foreach ($model::$sortColumns as $column)
+                        <x-table-mobile-text :text="$table->$column" size="sm" color="primary" />
+                        @endforeach
+                        <x-table-mobile-footer :label="$table->field_primary">
+                            <x-table-action :model="$model" :id="$table->field_primary" />
+                        </x-table-mobile-footer>
+                    </x-table-mobile-item>
+                    @endforeach
+                </x-table-mobile-list>
+            </x-slot:mobile>
+        </x-table>
+
+        <x-pagination :paginator="$data" />
+        <x-action :model="$model" :action="['create', 'delete']"/>
+    </div>
+
+    <input type="hidden" class="module" value="{{ module() }}">
+    <script src="/js/table.js"></script>
+    <script>initTable('{{ $sortField }}', '{{ $sortDir }}');</script>
+</x-layouts::app>
+```
+
+### form.blade.php
+
+```blade
+<?php /** @var App\Models\Example $model */ ?>
+
+<x-layouts::app>
+    <x-breadcrumb :items="[['url' => moduleRoute('getTable'), 'label' => ucfirst(module())], ['url' => '', 'label' => isset($model) && $model->exists ? 'Update' : 'Create']]" />
+
+    <x-form :model="$model">
+        <x-card :label="ucfirst(module())">
+            @bind($model ?? null)
+                <x-input col="4" name="example_nama" />
+                <x-input col="4" name="example_status" />
+                <x-textarea col="12" name="example_catatan" />
+            @endbind
+        </x-card>
+
+        <x-action :model="$model" :action="['save']"/>
+    </x-form>
+</x-layouts::app>
+```
+
+---
+
 ## Form dengan Fixed Bottom Action Bar
 
 Saat membuat form yang memiliki tombol aksi (save, submit, dll) yang perlu selalu terlihat di bawah layar, gunakan component `<x-action>`.
@@ -54,100 +348,6 @@ Untuk form tanpa model (seperti settings/env), buat manual karena `<x-action>` m
 - Untuk form tanpa model, buat manual HTML dengan class yang sama seperti di atas
 - Jangan lupa `<div class="h-28 md:h-16"></div>` sebagai spacer setelah action bar
 
-### Contoh Penggunaan
-
-- `resources/views/pages/product/form.blade.php` — form dengan model (`<x-action>`)
-- `resources/views/pages/settings/env.blade.php` — form tanpa model (manual)
-
----
-
-## Mobile Drawer Padding
-
-Drawer sidebar di mobile perlu padding bottom agar menu di bagian bawah (seperti Settings) bisa di-scroll dan terlihat.
-
-### Masalah
-
-Tanpa padding bottom, menu di bagian bawah drawer terpotong dan tidak bisa di-scroll karena tertimpa area bawah layar.
-
-### Solusi
-
-Tambahkan `pb-24` pada `<nav>` di dalam mobile drawer:
-
-```blade
-<nav class="flex-1 py-4 px-3 pb-24 space-y-1 overflow-y-auto">
-    {{-- Menu items --}}
-</nav>
-```
-
-### Kenapa `pb-24`?
-
-- Bottom nav bar mobile: `h-16` (4rem)
-- Padding bottom: `pb-24` (6rem) — memberikan ruang ekstra agar item terakhir bisa di-scroll ke atas dan terlihat
-
-### Contoh
-
-Lihat `resources/views/layouts/warehouse.blade.php` pada bagian Mobile Drawer.
-
----
-
-## Filter Component
-
-Component `<x-filter>` digunakan untuk search, perpage, dan filter pada halaman table.
-
-### Struktur
-
-```blade
-<x-filter :fields="$fields" searchPlaceholder="Search..." />
-```
-
-### Layout
-
-```
-[Perpage] [FilterField =====] [Search ==========================]
-```
-
-| Element | Width | Keterangan |
-|---------|-------|------------|
-| Perpage select | `w-3xl` | Fixed width, tidak `w-full` |
-| FilterField select | `flex-1` | Sama rata dengan search |
-| Search input + button | `flex-1` | Sama rata dengan filterField |
-
-### Catatan Penting
-
-- Perpage: parent div `relative sm:w-auto` (bukan `w-full`), select `w-3xl` agar chevron mengikuti lebar select
-- FilterField dan Search: kedua-duanya `flex-1` agar lebar sama rata
-- Chevron (expand_more) menggunakan `absolute right-3` di dalam parent `relative`
-
-### Contoh
-
-Lihat `resources/views/components/filter.blade.php`.
-
----
-
-## Profile Tabs
-
-Tab buttons pada halaman profile menggunakan padding `py-4` agar tidak berdempetan.
-
-### Struktur
-
-```blade
-<div class="flex overflow-x-auto border-b border-outline-variant bg-surface-container">
-    <button class="flex items-center gap-2 px-4 md:px-5 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap">
-        Tab Label
-    </button>
-</div>
-```
-
-### Catatan
-
-- `py-4` — padding vertikal tab button
-- `overflow-x-auto` — agar tab bisa di-scroll horizontal di mobile
-- `whitespace-nowrap` — agar teks tab tidak wrap
-
-### Contoh
-
-Lihat `resources/views/pages/settings/profile.blade.php`.
-
 ---
 
 ## Menu Configuration
@@ -160,43 +360,30 @@ Menu didefinisikan di `config/menu.php` dan di-render oleh component Blade.
 return [
     'sidebar' => [
         [
-            'label' => 'Warehouse',  // null untuk section tanpa label
+            'label' => null,
             'items' => [
-                ['route' => 'warehouse.stock', 'icon' => 'inventory_2', 'label' => 'Stock Management'],
-                // ...
+                ['route' => 'dashboard', 'icon' => 'dashboard', 'label' => 'Dashboard'],
+            ],
+        ],
+        [
+            'label' => 'Management',
+            'items' => [
+                ['route' => 'user.getTable', 'icon' => 'manage_accounts', 'label' => 'Users'],
+            ],
+        ],
+        [
+            'label' => 'Settings',
+            'items' => [
+                ['route' => 'profile.edit', 'icon' => 'person', 'label' => 'My Profile'],
+                ['route' => 'settings.env', 'icon' => 'settings', 'label' => 'Environment'],
             ],
         ],
     ],
     'bottom_nav' => [
-        ['route' => 'warehouse.stock', 'icon' => 'inventory_2', 'label' => 'Stock'],
-        // max 5 items, item ke-3 (index 2) jadi center button
+        ['route' => 'dashboard', 'icon' => 'home', 'label' => 'Home'],
+        ['route' => 'profile.edit', 'icon' => 'person', 'label' => 'Profile'],
     ],
 ];
-```
-
-### Components
-
-| Component | Fungsi |
-|-----------|--------|
-| `<x-menu-items />` | Render sidebar/drawer menu dari config |
-| `<x-menu-items :mobile="true" />` | Render dengan `@click="drawerOpen = false"` |
-| `<x-bottom-nav />` | Render bottom nav dari config |
-
-### Penggunaan di Layout
-
-```blade
-{{-- Mobile Drawer --}}
-<nav class="flex-1 py-4 px-3 pb-24 space-y-1 overflow-y-auto">
-    <x-menu-items :mobile="true" />
-</nav>
-
-{{-- Desktop Sidebar --}}
-<nav class="flex-1 space-y-2 overflow-y-auto pr-3 pb-4">
-    <x-menu-items />
-</nav>
-
-{{-- Bottom Nav --}}
-<x-bottom-nav />
 ```
 
 ### Menambah Menu Baru
@@ -206,14 +393,6 @@ return [
    - `sidebar` — untuk desktop sidebar dan mobile drawer
    - `bottom_nav` — untuk bottom nav mobile (max 5 items)
 3. Format: `['route' => 'route.name', 'icon' => 'material_icon', 'label' => 'Display Label']`
-
-### Contoh
-
-Lihat:
-- `config/menu.php`
-- `resources/views/components/menu-items.blade.php`
-- `resources/views/components/bottom-nav.blade.php`
-- `resources/views/layouts/warehouse.blade.php`
 
 ---
 
@@ -267,31 +446,12 @@ All fields use prefix `{table_singular}_` with the table name as prefix.
 | `affiliate` | `affiliate_id` | `affiliate_id_user`, `affiliate_id_from_user`, `affiliate_id_payment` | `affiliate_tipe`, `affiliate_jumlah`, `affiliate_payment_jumlah`, `affiliate_commission_rate`, `affiliate_catatan`, `affiliate_status`, `affiliate_created_at`, `affiliate_updated_at` |
 | `cashouts` | `cashout_id` | `cashout_id_user` | `cashout_jumlah`, `cashout_admin_fee`, `cashout_diterima`, `cashout_rekening_bank`, `cashout_rekening_nomor`, `cashout_rekening_nama`, `cashout_status`, `cashout_catatan`, `cashout_created_at`, `cashout_updated_at` |
 
-#### Model Convention
-
-```php
-class Payment extends Model
-{
-    protected $primaryKey = 'payment_id';
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'payment_id_user');
-    }
-
-    public function plan()
-    {
-        return $this->belongsTo(Plan::class, 'payment_id_plan', 'plan_id');
-    }
-}
-```
-
 #### Creating New Table
 
 When creating a new table, follow this template (gunakan bahasa Indonesia untuk nama field):
 
 ```php
-Schema::create('example', function (Blueprint $table) {
+Schema::create('examples', function (Blueprint $table) {
     $table->id('example_id');
     $table->integer('example_id_user');
     $table->string('example_nama');
@@ -302,3 +462,40 @@ Schema::create('example', function (Blueprint $table) {
     $table->dateTime('example_updated_at')->nullable();
 });
 ```
+
+---
+
+## Mobile Drawer Padding
+
+Drawer sidebar di mobile perlu padding bottom agar menu di bagian bawah (seperti Settings) bisa di-scroll dan terlihat.
+
+Tambahkan `pb-24` pada `<nav>` di dalam mobile drawer:
+
+```blade
+<nav class="flex-1 py-4 px-3 pb-24 space-y-1 overflow-y-auto">
+    <x-menu-items :mobile="true" />
+</nav>
+```
+
+---
+
+## Filter Component
+
+Component `<x-filter>` digunakan untuk search, perpage, dan filter pada halaman table.
+
+```blade
+<x-filter :fields="$fields" searchPlaceholder="Search..." />
+```
+
+---
+
+## Adding New Module Checklist
+
+Saat menambahkan module baru, ikuti checklist ini:
+
+1. **Model** — extends `BaseModel` dengan `$filterColumns`, `$sortColumns`, `$fillable`, `rules()`, `toArray(){}`, `field_name()`
+2. **Policy** — extends `BasePolicy`
+3. **Controller** — uses `ControllerTrait` dengan constructor `$model::getModel()`
+4. **Route** — `Route::auto('/module', 'ModuleController', ['name' => 'module'])`
+5. **Menu** — tambah di `config/menu.php`
+6. **Views** — `pages/{module}/table.blade.php` + `pages/{module}/form.blade.php`

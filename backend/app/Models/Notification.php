@@ -2,11 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Notification extends Model
+class Notification extends BaseModel
 {
+    protected $table = 'notifications';
+    protected $keyType = 'int';
+    protected $primaryKey = 'id';
+
+    public $timestamps = false;
+    public $incrementing = true;
+
+    public static $filterColumns = [
+        'id' => 'Id',
+        'user_id' => 'User',
+        'title' => 'Title',
+        'type' => 'Type',
+        'read' => 'Read',
+    ];
+
+    public static $sortColumns = [
+        'id',
+        'user_id',
+        'title',
+        'type',
+        'read',
+    ];
+
     protected $fillable = [
         'user_id',
         'icon',
@@ -27,7 +50,20 @@ class Notification extends Model
         ];
     }
 
-    public function user(): BelongsTo
+    public function rules(): array
+    {
+        return [
+            'user_id' => 'required',
+            'title' => 'required|string|max:255',
+        ];
+    }
+
+    public static function field_name()
+    {
+        return 'title';
+    }
+
+    public function has_user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

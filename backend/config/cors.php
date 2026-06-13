@@ -10,7 +10,10 @@ return [
         env('FRONTEND_URL', '*')
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://localhost(:\d+)?$#', // Matches http://localhost, http://localhost:3000, http://localhost:5173, etc.
+        '#^http://127\.0\.0\.1(:\d+)?$#', // Matches http://127.0.0.1 and all its ports
+    ],
 
     'allowed_headers' => ['*'],
 

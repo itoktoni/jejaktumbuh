@@ -85,11 +85,14 @@ class Subscribe extends BaseModel
         ];
     }
 
-    public function toArray(){}
-
     public static function field_name()
     {
         return 'subscribe_nama';
+    }
+
+    public function has_plan()
+    {
+        return $this->belongsTo(Plan::class, 'subscribe_id_plan', 'plan_id');
     }
 
     public function plan()

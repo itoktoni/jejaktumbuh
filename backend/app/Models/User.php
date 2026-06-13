@@ -14,15 +14,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Illuminate\Auth\Notifications\ResetPasswordNotification as BaseResetPasswordNotification;
+use App\Notifications\ResetPasswordNotification;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\WebPush;
 
 /**
  * @mixin IdeHelperUser
  */
-#[Fillable(['name', 'email', 'password', 'role', 'phone', 'plan', 'affiliate_code', 'affiliate_reff', 'rekening_nama', 'rekening_bank', 'rekening_nomor'])]
+#[Fillable(['name', 'email', 'password', 'role', 'phone', 'user_agama', 'subscribe_id', 'affiliate_code', 'affiliate_reff', 'rekening_nama', 'rekening_bank', 'rekening_nomor'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -112,55 +112,14 @@ class User extends Authenticatable
         return (int) $earned - (int) $cashout;
     }
 
-    public function pushSubscriptions()
+    public function has_subscribe()
     {
-        return $this->hasMany(PushSubscription::class);
+        return $this->belongsTo(Subscribe::class, 'subscribe_id', 'subscribe_id');
     }
 
-    public function subscribe()
+    public function sendPasswordResetNotification($token)
     {
-        return $this->belongsTo(Subscribe::class, 'plan', 'subscribe_id');
-    }
-
-    public function sendPushNotification(string $title, string $body, string $url = '/', ?string $icon = null): void
-    {
-        $subscriptions = $this->pushSubscriptions;
-
-        if ($subscriptions->isEmpty()) {
-            return;
-        }
-
-        $auth = [
-            'VAPID' => [
-                'subject' => config('push.vapid.subject'),
-                'publicKey' => config('push.vapid.public_key'),
-                'privateKey' => config('push.vapid.private_key'),
-            ],
-        ];
-
-        $webPush = new WebPush($auth);
-        $payload = json_encode([
-            'title' => $title,
-            'body' => $body,
-            'url' => $url,
-            'icon' => $icon ?? url('/apple-touch-icon.png'),
-        ]);
-
-        foreach ($subscriptions as $sub) {
-            $subscription = Subscription::create([
-                'endpoint' => $sub->endpoint,
-                'publicKey' => $sub->public_key,
-                'authToken' => $sub->auth_token,
-                'contentEncoding' => $sub->content_encoding ?? 'aes128gcm',
-            ]);
-            $webPush->queueNotification($subscription, $payload);
-        }
-
-        foreach ($webPush->flush() as $report) {
-            if (! $report->isSuccess() && $report->isSubscriptionExpired()) {
-                PushSubscription::where('endpoint', $report->getRequest()->getUri()->__toString())->delete();
-            }
-        }
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**

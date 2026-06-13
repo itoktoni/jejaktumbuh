@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscribe;
 use App\Models\User;
+use App\PaymentStatusEnum;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,7 +31,7 @@ class ProcessPaidPayment implements ShouldQueue
     {
         $payment = Payment::find($this->paymentId);
 
-        if (!$payment || $payment->payment_status !== 'paid') {
+        if (!$payment || $payment->payment_status !== PaymentStatusEnum::PAID->value) {
             return;
         }
 
@@ -50,8 +51,8 @@ class ProcessPaidPayment implements ShouldQueue
             $plan = Plan::findOrFail($payment->payment_id_plan);
             $user = User::findOrFail($payment->payment_id_user);
 
-            if ($user->plan) {
-                Subscribe::where('subscribe_id', $user->plan)
+            if ($user->subscribe_id) {
+                Subscribe::where('subscribe_id', $user->subscribe_id)
                     ->where('subscribe_canceled_at', null)
                     ->update(['subscribe_canceled_at' => now(), 'subscribe_updated_at' => now()]);
             }
@@ -77,7 +78,7 @@ class ProcessPaidPayment implements ShouldQueue
             ]);
 
             $user->update([
-                'plan' => $subscription->subscribe_id,
+                'subscribe_id' => $subscription->subscribe_id,
                 'role' => $plan->plan_harga > 0 ? 'premium' : 'user',
             ]);
 

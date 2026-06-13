@@ -2,10 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Activity extends Model
+class Activity extends BaseModel
 {
+    protected $table = 'activities';
+    protected $keyType = 'int';
+    protected $primaryKey = 'id';
+
+    public $timestamps = false;
+    public $incrementing = true;
+
+    public static $filterColumns = [
+        'id' => 'Id',
+        'type' => 'Type',
+        'title' => 'Title',
+        'slug' => 'Slug',
+        'active' => 'Active',
+    ];
+
+    public static $sortColumns = [
+        'id',
+        'type',
+        'title',
+        'slug',
+        'sort_order',
+        'active',
+    ];
+
     protected $fillable = [
         'type',
         'title',
@@ -18,6 +42,7 @@ class Activity extends Model
         'data',
         'sort_order',
         'active',
+        'plans',
     ];
 
     protected function casts(): array
@@ -26,8 +51,23 @@ class Activity extends Model
             'ages' => 'array',
             'skills' => 'array',
             'data' => 'array',
+            'plans' => 'array',
             'active' => 'boolean',
         ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'type' => 'required|string|max:100',
+            'slug' => 'required|string|max:255',
+        ];
+    }
+
+    public static function field_name()
+    {
+        return 'title';
     }
 
     public function scopeOfType($query, string $type)

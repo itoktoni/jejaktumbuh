@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\ControllerTrait;
 use App\Jobs\ProcessPaidPayment;
 use App\Models\Discount;
 use App\Models\Payment;
 use App\Models\Plan;
-use App\Models\User;
+use App\PaymentStatusEnum;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class PaymentController extends Controller
 {
+    use ControllerTrait;
+
+    public function __construct(Payment $model)
+    {
+        $this->model = $model::getModel();
+    }
+
     public function create(Request $request)
     {
         $request->validate([
@@ -28,9 +37,14 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Batas pembayaran hari ini tercapai (maks 10x). Coba lagi besok.'], 429);
         }
 
+        $payment_status = PaymentStatusEnum::PENDING;
+        if($plan->plan_harga == 0){
+            $payment_status = PaymentStatusEnum::PAID->value;
+        }
+
         Payment::where('payment_id_user', $user->id)
-            ->where('payment_status', 'pending')
-            ->update(['payment_status' => 'cancelled', 'payment_updated_at' => now()]);
+            ->where('payment_status', PaymentStatusEnum::PENDING->value)
+            ->update(['payment_status' => PaymentStatusEnum::CANCELLED->value, 'payment_updated_at' => now()]);
 
         $qrisString = null;
         $amount = $plan->plan_harga;
@@ -67,9 +81,9 @@ class PaymentController extends Controller
             'payment_diskon_code' => $discountCode,
             'payment_total' => $amount,
             'payment_qris_string' => $qrisString,
-            'payment_status' => 'pending',
+            'payment_status' => $payment_status,
             'payment_metode' => 'qris',
-            'payment_expired_at' => now()->addMinutes(30),
+            'payment_expired_at' => now()->addMinutes(10),
             'payment_created_at' => now(),
             'payment_updated_at' => now(),
         ]);
@@ -83,9 +97,11 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('payment_id_user', $request->user()->id)->findOrFail($id);
 
-        if ($payment->payment_status === 'pending' && \Carbon\Carbon::parse($payment->payment_expired_at)->isPast()) {
-            $payment->update(['payment_status' => 'expired', 'payment_updated_at' => now()]);
+        if ($payment->payment_status === PaymentStatusEnum::PENDING->value && \Carbon\Carbon::parse($payment->payment_expired_at)->isPast()) {
+            $payment->update(['payment_status' => PaymentStatusEnum::EXPIRED->value, 'payment_updated_at' => now()]);
         }
+
+        Artisan::call('payment:process');
 
         return response()->json([
             'payment' => $this->formatPayment($payment),
@@ -96,8 +112,8 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('payment_id_user', $request->user()->id)->findOrFail($id);
 
-        if ($payment->payment_status === 'pending') {
-            $payment->update(['payment_status' => 'cancelled', 'payment_updated_at' => now()]);
+        if ($payment->payment_status === PaymentStatusEnum::PENDING->value) {
+            $payment->update(['payment_status' => PaymentStatusEnum::CANCELLED->value, 'payment_updated_at' => now()]);
         }
 
         return response()->json([
@@ -109,24 +125,24 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('payment_id_user', $request->user()->id)->findOrFail($id);
 
-        if ($payment->payment_status !== 'pending') {
+        if ($payment->payment_status !== PaymentStatusEnum::PENDING->value) {
             return response()->json(['message' => 'Pembayaran sudah diproses'], 422);
         }
 
         if (\Carbon\Carbon::parse($payment->payment_expired_at)->isPast()) {
-            $payment->update(['payment_status' => 'expired', 'payment_updated_at' => now()]);
+            $payment->update(['payment_status' => PaymentStatusEnum::EXPIRED->value, 'payment_updated_at' => now()]);
             return response()->json(['message' => 'Pembayaran sudah kedaluwarsa'], 422);
         }
 
         $payment->update([
-            'payment_status' => 'paid',
+            'payment_status' => PaymentStatusEnum::PAID->value,
             'payment_paid_at' => now(),
             'payment_updated_at' => now(),
         ]);
 
         ProcessPaidPayment::dispatch($payment->payment_id);
 
-        $payment->load('plan');
+        $payment->load('has_plan');
 
         return response()->json([
             'message' => 'Pembayaran berhasil!',
@@ -137,7 +153,7 @@ class PaymentController extends Controller
     public function history(Request $request)
     {
         $payments = Payment::where('payment_id_user', $request->user()->id)
-            ->with('plan')
+            ->with('has_plan')
             ->orderByDesc('payment_created_at')
             ->limit(5)
             ->get()

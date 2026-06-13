@@ -133,7 +133,7 @@ class PlanAction
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
-                'plan' => $user->plan,
+                'subscribe_id' => $user->plan,
                 'plan_start_date' => $user->plan_start_date?->toIso8601String(),
                 'plan_end_date' => $user->plan_end_date?->toIso8601String(),
                 'trial_start_date' => $user->trial_start_date?->toIso8601String(),
