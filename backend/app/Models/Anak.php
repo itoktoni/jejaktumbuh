@@ -46,6 +46,8 @@ class Anak extends BaseModel
         'anak_emoji',
         'anak_avatar',
         'anak_settings',
+        'anak_created_at',
+        'anak_updated_at',
     ];
 
     protected $casts = [

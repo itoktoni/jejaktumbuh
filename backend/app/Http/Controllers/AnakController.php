@@ -16,6 +16,7 @@ use App\Models\SkillActivity;
 use App\Models\Subscribe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AnakController extends Controller
 {
@@ -65,6 +66,7 @@ class AnakController extends Controller
             'anak_agama' => 'nullable|in:islam,kristen_protestan,kristen_katolik,hindu,buddha,konghucu',
             'anak_avatar' => 'nullable|string|max:255',
             'anak_settings' => 'nullable|array',
+            'anak_created_at' => 'nullable|array',
         ];
         $validator = \Illuminate\Support\Facades\Validator::make($data, $rules);
         if ($validator->fails()) {
@@ -81,6 +83,11 @@ class AnakController extends Controller
         if (! isset($data['anak_umur']) && isset($data['anak_tahun_lahir'])) {
             $data['anak_umur'] = (int) date('Y') - (int) $data['anak_tahun_lahir'];
         }
+
+        $data = array_merge($data, [
+            'anak_created_at' => date('Y-m-d H:i:s')
+        ]);
+
         $anak = Anak::create($data);
 
         return response()->json($anak->load(['has_skills.has_activities', 'has_completed_skills']), 201);
@@ -106,6 +113,7 @@ class AnakController extends Controller
             'anak_emoji' => 'nullable|string|max:10',
             'anak_avatar' => 'nullable|string|max:255',
             'anak_settings' => 'nullable|array',
+            'anak_updated_at' => 'nullable|array',
         ];
         $validator = \Illuminate\Support\Facades\Validator::make($data, $rules);
         if ($validator->fails()) {
@@ -123,6 +131,12 @@ class AnakController extends Controller
         }
 
         $anak = Anak::findOrFail($id);
+        $data = array_merge($data, [
+            'anak_updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        Log::info($data);
+
         $anak->update($data);
 
         return response()->json($anak->load(['has_skills.has_activities', 'has_completed_skills']));

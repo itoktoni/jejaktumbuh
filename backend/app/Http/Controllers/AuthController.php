@@ -10,6 +10,7 @@ use App\Models\Plan;
 use App\Models\Subscribe;
 use App\Models\User;
 use App\Models\VerificationCode;
+use App\Services\Notification\NotificationChannelFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -220,7 +221,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20|unique:phone',
             'password' => 'required|string|min:6|confirmed',
             'ref' => 'nullable|string|max:30',
         ], [
@@ -334,12 +335,18 @@ class AuthController extends Controller
             ], 429);
         }
 
-        $this->dispatchVerificationCode($user, $request->channel);
+        $sent = $this->dispatchVerificationCode($user, $request->channel);
+
+        if (!$sent) {
+            return response()->json([
+                'message' => "Gagal mengirim kode via {$request->channel}. Pastikan konfigurasi sudah benar.",
+            ], 500);
+        }
 
         return response()->json(['message' => "Kode verifikasi telah dikirim via {$request->channel}"]);
     }
 
-    private function dispatchVerificationCode(User $user, string $channel): void
+    private function dispatchVerificationCode(User $user, string $channel): bool
     {
         $codeLength = (int) config('langkahkecil.verification.code_length', 6);
         $expiresMinutes = (int) config('langkahkecil.verification.expires_minutes', 10);
@@ -354,20 +361,9 @@ class AuthController extends Controller
         ]);
 
         $message = "Kode verifikasi Jejak Tumbuh Anda: {$code}";
+        $to = $channel === 'email' ? $user->email : ($user->phone ?? $user->email);
 
-        if ($channel === 'email') {
-            try {
-                \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($user, $code) {
-                    $mail->to($user->email)->subject("Kode Verifikasi: {$code}");
-                });
-            } catch (\Exception $e) {
-                \Log::warning('Email verification failed: ' . $e->getMessage());
-            }
-        } elseif ($channel === 'whatsapp') {
-            $this->sendWhatsApp($user->phone ?? $user->email, $message);
-        } elseif ($channel === 'telegram') {
-            $this->sendTelegram($user->phone ?? $user->email, $message);
-        }
+        return NotificationChannelFactory::make($channel)->send($to, $message);
     }
 
     public function verify(Request $request)
@@ -400,54 +396,6 @@ class AuthController extends Controller
             'verified' => true,
             'user' => $this->userResponse($user),
         ], $this->appConfig()));
-    }
-
-    private function sendWhatsApp($to, $message): bool
-    {
-        $token = env('WHATSAPP_TOKEN');
-        $phoneId = env('WHATSAPP_PHONE_ID');
-        if (!$token || !$phoneId) return false;
-
-        try {
-            $client = new \GuzzleHttp\Client();
-            $client->post("https://graph.facebook.com/v18.0/{$phoneId}/messages", [
-                'headers' => [
-                    'Authorization' => "Bearer {$token}",
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'messaging_product' => 'whatsapp',
-                    'to' => preg_replace('/[^0-9]/', '', $to),
-                    'type' => 'text',
-                    'text' => ['body' => $message],
-                ],
-            ]);
-            return true;
-        } catch (\Exception $e) {
-            \Log::warning('WhatsApp send failed: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    private function sendTelegram($to, $message): bool
-    {
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
-        if (!$token || !$chatId) return false;
-
-        try {
-            $client = new \GuzzleHttp\Client();
-            $client->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'json' => [
-                    'chat_id' => $chatId,
-                    'text' => $message,
-                ],
-            ]);
-            return true;
-        } catch (\Exception $e) {
-            \Log::warning('Telegram send failed: ' . $e->getMessage());
-            return false;
-        }
     }
 
     public function logout(Request $request)
@@ -529,7 +477,7 @@ class AuthController extends Controller
             'phone' => ['nullable', 'string'],
         ]);
 
-        $channel = config('langkahkecil.verification.forgot_gateway', 'whatsapp');
+        $channel = config('langkahkecil.verification.forgot_gateway', 'email');
         $user = null;
 
         if ($request->filled('phone')) {
@@ -546,40 +494,19 @@ class AuthController extends Controller
         $frontendUrl = config('langkahkecil.frontend_url', config('app.url'));
         $resetUrl = "{$frontendUrl}/reset-password?token={$token}&email=" . urlencode($user->email);
 
-        if ($channel === 'whatsapp') {
-            if (!$user->phone) {
-                return response()->json(['message' => 'Nomor telepon tidak ditemukan.'], 422);
-            }
+        $message = "Halo {$user->name},\n\n";
+        $message .= "Reset password Jejak Tumbuh:\n{$resetUrl}\n\n";
+        $message .= "Link berlaku 60 menit.";
 
-            $message = "Halo {$user->name},\n\n";
-            $message .= "Reset password Jejak Tumbuh:\n{$resetUrl}\n\n";
-            $message .= "Link berlaku 60 menit.";
+        $to = $channel === 'email' ? $user->email : ($user->phone ?? $user->email);
+        $sent = NotificationChannelFactory::make($channel)->send($to, $message);
 
-            $phone = preg_replace('/[^0-9]/', '', $user->phone);
-            if (str_starts_with($phone, '0')) {
-                $phone = '62' . substr($phone, 1);
-            }
-
-            $waLink = "https://wa.me/{$phone}?text=" . urlencode($message);
-
-            return response()->json([
-                'message' => 'Klik tombol di bawah untuk mengirim link reset ke WhatsApp Anda.',
-                'channel' => 'whatsapp',
-                'wa_link' => $waLink,
-            ]);
+        if ($sent) {
+            $label = $channel === 'email' ? 'email' : ($channel === 'whatsapp' ? 'WhatsApp' : 'Telegram');
+            return response()->json(['message' => "Link reset password telah dikirim ke {$label} Anda."]);
         }
 
-        \Illuminate\Support\Facades\Mail::raw(
-            "Halo {$user->name},\n\nReset password Jejak Tumbuh:\n{$resetUrl}\n\nLink berlaku 60 menit.",
-            function ($mail) use ($user) {
-                $mail->to($user->email)->subject('Reset Password - Jejak Tumbuh');
-            }
-        );
-
-        return response()->json([
-            'message' => 'Link reset password telah dikirim ke email Anda.',
-            'channel' => 'email',
-        ]);
+        return response()->json(['message' => 'Gagal mengirim link reset. Silakan coba lagi atau hubungi admin.'], 500);
     }
 
     public function resetPassword(Request $request)

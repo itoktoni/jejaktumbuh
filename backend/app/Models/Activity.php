@@ -43,6 +43,7 @@ class Activity extends BaseModel
         'sort_order',
         'active',
         'plans',
+        'agama',
     ];
 
     protected function casts(): array
@@ -52,6 +53,7 @@ class Activity extends BaseModel
             'skills' => 'array',
             'data' => 'array',
             'plans' => 'array',
+            'agama' => 'array',
             'active' => 'boolean',
         ];
     }

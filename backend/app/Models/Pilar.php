@@ -34,6 +34,7 @@ class Pilar extends BaseModel
         'pilar_color',
         'pilar_bg',
         'pilar_ages',
+        'pilar_agama',
         'pilar_plans',
         'pilar_sort_order',
         'pilar_active',
@@ -41,6 +42,7 @@ class Pilar extends BaseModel
 
     protected $casts = [
         'pilar_ages' => 'array',
+        'pilar_agama' => 'array',
         'pilar_plans' => 'array',
         'pilar_active' => 'boolean',
     ];
@@ -64,6 +66,7 @@ class Pilar extends BaseModel
             'color' => $this->pilar_color,
             'bg' => $this->pilar_bg,
             'ages' => $this->pilar_ages ?? [],
+            'agama' => $this->pilar_agama ?? [],
             'plans' => $this->pilar_plans ?? [],
             'sort_order' => $this->pilar_sort_order,
             'active' => (bool) $this->pilar_active,
