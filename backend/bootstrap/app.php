@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AccessMiddleware;
+use App\Http\Middleware\VerifyVerified;
 use App\Providers\ModelAliasServiceProvider;
 use Ibex\CrudGenerator\CrudServiceProvider;
 use Illuminate\Broadcasting\BroadcastServiceProvider;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'access' => AccessMiddleware::class,
+            'verified' => VerifyVerified::class,
         ]);
 
         $middleware->append([

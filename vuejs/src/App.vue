@@ -33,6 +33,13 @@
 
     <BottomNav :active-tab="app.activeTab" @switch="app.switchTab" />
 
+    <!-- Verification Overlay -->
+    <VerificationPage
+      v-if="auth.isAuthenticated && auth.needsVerification"
+      :inline="true"
+      @success="onVerificationSuccess"
+    />
+
     <!-- Sync Modal -->
     <SyncModal :show="showSyncModal" @close="showSyncModal = false" @synced="onSynced" />
   </div>
@@ -62,6 +69,7 @@ import JadwalPage from './pages/JadwalPage.vue'
 import ChecklistPage from './pages/ChecklistPage.vue'
 import ReferralPage from './pages/ReferralPage.vue'
 import LoginPage from './pages/LoginPage.vue'
+import VerificationPage from './pages/VerificationPage.vue'
 import AnakSelector from './components/AnakSelector.vue'
 import SyncModal from './components/SyncModal.vue'
 
@@ -90,6 +98,18 @@ const showSyncModal = ref(false)
 const userEmail = computed(() => auth.user?.email || '')
 
 async function onLoginSuccess() {
+  if (auth.needsVerification) return
+
+  app.switchTab('pilar')
+
+  if (auth.serverAnakList.length) {
+    await syncServerData(auth.serverAnakList)
+  }
+
+  await seedAndLoad()
+}
+
+async function onVerificationSuccess() {
   app.switchTab('pilar')
 
   if (auth.serverAnakList.length) {
@@ -174,9 +194,16 @@ onMounted(async () => {
     try {
       const me = await api.getMe()
       auth.applyServerData(me)
-      await seedAndLoad()
+      if (!auth.needsVerification) {
+        await seedAndLoad()
+      }
     } catch (e) {
-      auth.logout()
+      if (e.needs_verification) {
+        auth.needsVerification = true
+        auth.verificationGateway = e.verification_gateway || 'email'
+      } else {
+        auth.logout()
+      }
     }
   }
 })

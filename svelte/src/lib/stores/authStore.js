@@ -9,6 +9,8 @@ export const validationErrors = writable(null)
 export const serverAnakList = writable([])
 export const serverDate = writable(null)
 export const trialDays = writable(10)
+export const needsVerification = writable(false)
+export const verificationGateway = writable('whatsapp')
 const cachedPilars = (() => {
   if (typeof localStorage === 'undefined') return []
   try { const raw = localStorage.getItem('lk_cache_pilars'); return raw ? JSON.parse(raw) : [] } catch { return [] }
@@ -36,9 +38,20 @@ export const userRole = derived(user, ($user) => $user?.role || '')
 export function init() {
   const storedToken = api.getAuthToken()
   if (storedToken) token.set(storedToken)
+
+  api.setVerificationCallback((gateway) => {
+    needsVerification.set(true)
+    verificationGateway.set(gateway)
+  })
 }
 
 export function applyServerData(data) {
+  if (data.needs_verification) {
+    needsVerification.set(true)
+    verificationGateway.set(data.verification_gateway || 'whatsapp')
+  } else {
+    needsVerification.set(false)
+  }
   if (data.user) user.set(data.user)
   if (data.user?.subscribe && typeof localStorage !== 'undefined') localStorage.removeItem('lk_just_paid')
   if (data.anak_list) serverAnakList.set(data.anak_list)
@@ -103,6 +116,8 @@ export function logout() {
   user.set(null)
   serverAnakList.set([])
   serverDate.set(null)
+  needsVerification.set(false)
+  verificationGateway.set('whatsapp')
   if (typeof localStorage !== 'undefined') localStorage.removeItem('lk_cache_user_id')
 }
 

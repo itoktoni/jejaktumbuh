@@ -27,4 +27,13 @@ return [
         ['code' => 'blu', 'name' => 'blu by BCA Digital'],
     ],
 
+    'verification' => [
+        'register_backend' => (bool) env('VERIFICATION_REGISTER_BACKEND', false),
+        'register_frontend' => (bool) env('VERIFICATION_REGISTER_FRONTEND', true),
+        'gateway' => env('VERIFICATION_GATEWAY', 'whatsapp'),
+        'forgot_gateway' => env('FORGOT_PASSWORD_GATEWAY', 'whatsapp'),
+        'code_length' => 6,
+        'expires_minutes' => 10,
+    ],
+
 ];

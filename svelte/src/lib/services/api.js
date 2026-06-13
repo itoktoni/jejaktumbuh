@@ -1,10 +1,19 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 let authToken = null
+let onVerificationRequired = null
+
+export function setVerificationCallback(cb) {
+  onVerificationRequired = cb
+}
 
 export function setAuthToken(token) {
   authToken = token
   if (typeof localStorage !== 'undefined') localStorage.setItem('lk_auth_token', token)
+}
+
+export function setAuthTokenMemory(token) {
+  authToken = token
 }
 
 export function getAuthToken() {
@@ -47,10 +56,25 @@ async function apiFetch(endpoint, options = {}) {
     throw new Error('Unauthorized - please login again')
   }
 
+  if (response.status === 403) {
+    const body = await response.json().catch(() => ({}))
+    if (body.needs_verification) {
+      if (onVerificationRequired) {
+        onVerificationRequired(body.verification_gateway || 'whatsapp')
+      }
+      const err = new Error(body.message || 'Akun belum terverifikasi')
+      err.needs_verification = true
+      err.verification_gateway = body.verification_gateway
+      throw err
+    }
+  }
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }))
     const err = new Error(error.message || `HTTP ${response.status}`)
     err.errors = error.errors || error.data || null
+    err.status = response.status
+    err.cooldown = error.cooldown || null
     throw err
   }
 
@@ -103,12 +127,24 @@ export async function register(name, email, phone, password, passwordConfirmatio
   return data
 }
 
-export async function forgotPassword(email) {
-  return apiFetch('/forgot-password', { method: 'POST', body: JSON.stringify({ email }) })
+export async function forgotPassword(body) {
+  return apiFetch('/forgot-password', { method: 'POST', body: JSON.stringify(body) })
+}
+
+export async function getConfig() {
+  return apiFetch('/config')
 }
 
 export async function resetPassword(token, email, password, passwordConfirmation) {
   return apiFetch('/reset-password', { method: 'POST', body: JSON.stringify({ token, email, password, password_confirmation: passwordConfirmation }) })
+}
+
+export async function sendVerification(channel) {
+  return apiFetch('/send-verification', { method: 'POST', body: JSON.stringify({ channel }) })
+}
+
+export async function verifyCode(code) {
+  return apiFetch('/verify', { method: 'POST', body: JSON.stringify({ code }) })
 }
 
 export async function logout() {

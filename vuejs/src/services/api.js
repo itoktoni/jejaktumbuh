@@ -6,6 +6,11 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 let authToken = null
+let onVerificationRequired = null
+
+export function setVerificationCallback(cb) {
+  onVerificationRequired = cb
+}
 
 /**
  * Set auth token (call after login)
@@ -68,6 +73,19 @@ async function apiFetch(endpoint, options = {}) {
   if (response.status === 401) {
     clearAuthToken()
     throw new Error('Unauthorized - please login again')
+  }
+
+  if (response.status === 403) {
+    const body = await response.json().catch(() => ({}))
+    if (body.needs_verification) {
+      if (onVerificationRequired) {
+        onVerificationRequired(body.verification_gateway || 'email')
+      }
+      const err = new Error(body.message || 'Akun belum terverifikasi')
+      err.needs_verification = true
+      err.verification_gateway = body.verification_gateway
+      throw err
+    }
   }
 
   if (!response.ok) {
@@ -264,6 +282,26 @@ export async function logout() {
     // Ignore errors on logout
   }
   clearAuthToken()
+}
+
+/**
+ * Send verification code
+ */
+export async function sendVerification(channel) {
+  return apiFetch('/send-verification', {
+    method: 'POST',
+    body: JSON.stringify({ channel }),
+  })
+}
+
+/**
+ * Verify code
+ */
+export async function verifyCode(code) {
+  return apiFetch('/verify', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  })
 }
 
 // ==================== ANAK (Children) ====================

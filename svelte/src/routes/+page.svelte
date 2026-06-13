@@ -17,6 +17,7 @@
   import BottomNav from '$lib/layouts/BottomNav.svelte'
   import SyncModal from '$lib/components/SyncModal.svelte'
   import LoginPage from '$lib/pages/LoginPage.svelte'
+  import VerificationPage from '$lib/pages/VerificationPage.svelte'
   import PilarTab from '$lib/pages/PilarTab.svelte'
   import ActivityTab from '$lib/pages/ActivityTab.svelte'
   import ProgressTab from '$lib/pages/ProgressTab.svelte'
@@ -45,6 +46,7 @@
   let userPlanVal = $state(null)
   let userRoleVal = $state('')
   let serverDateVal = $state(null)
+  let needsVerificationVal = $state(false)
 
   // Subscribe to stores
   $effect(() => {
@@ -65,6 +67,7 @@
     const unsubUserPlan = authStore.userPlan.subscribe(v => userPlanVal = v)
     const unsubUserRole = authStore.userRole.subscribe(v => userRoleVal = v)
     const unsubServerDate = authStore.serverDate.subscribe(v => serverDateVal = v)
+    const unsubNeedsVerification = authStore.needsVerification.subscribe(v => needsVerificationVal = v)
     const unsubAnakList = anakStore.anakList.subscribe(async v => {
       toolsAnakList = v
       if (v.length && get(authStore.isAuthenticated)) {
@@ -83,7 +86,7 @@
     return () => {
       unsubTab(); unsubPilar(); unsubAnakId(); unsubUserName(); unsubUserGender()
       unsubAuth(); unsubReady(); unsubToolsId(); unsubCanInstall(); unsubUser()
-      unsubUserPlan(); unsubUserRole(); unsubServerDate(); unsubAnakList()
+      unsubUserPlan(); unsubUserRole(); unsubServerDate(); unsubNeedsVerification(); unsubAnakList()
     }
   })
 
@@ -131,7 +134,18 @@
     }
   }
 
-  async function onLoginSuccess() {
+  async function onLoginSuccess(data) {
+    if (get(authStore.needsVerification)) return
+
+    appStore.switchTab('pilar')
+    const serverList = get(authStore.serverAnakList)
+    if (serverList.length) {
+      await dbSyncServerData(serverList)
+    }
+    await seedAndLoad()
+  }
+
+  async function onVerificationSuccess(data) {
     appStore.switchTab('pilar')
     const serverList = get(authStore.serverAnakList)
     if (serverList.length) {
@@ -201,9 +215,16 @@
     if (get(authStore.isAuthenticated)) {
       api.getMe().then(me => {
         authStore.applyServerData(me)
-        seedAndLoad()
-      }).catch(() => {
-        authStore.logout()
+        if (!get(authStore.needsVerification)) {
+          seedAndLoad()
+        }
+      }).catch((err) => {
+        if (err.needs_verification) {
+          authStore.needsVerification.set(true)
+          authStore.verificationGateway.set(err.verification_gateway || 'whatsapp')
+        } else {
+          authStore.logout()
+        }
       })
     }
   })
@@ -309,5 +330,9 @@
     <BottomNav activeTab={currentTab} onswitch={(tab) => { if (!handleTrialGuard()) appStore.switchTab(tab) }} />
 
     <SyncModal show={showSyncModal} onclose={() => showSyncModal = false} onsynced={onSynced} />
+
+    {#if needsVerificationVal}
+      <VerificationPage inline={true} onsuccess={onVerificationSuccess} />
+    {/if}
   </div>
 {/if}

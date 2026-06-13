@@ -14,6 +14,8 @@ export const useAuthStore = defineStore('auth', () => {
   const plans = ref([])
   const discounts = ref([])
   const affiliateConfig = ref({})
+  const needsVerification = ref(false)
+  const verificationGateway = ref('email')
 
   const isAuthenticated = computed(() => !!token.value)
 
@@ -25,9 +27,20 @@ export const useAuthStore = defineStore('auth', () => {
     if (storedToken) {
       token.value = storedToken
     }
+
+    api.setVerificationCallback((gateway) => {
+      needsVerification.value = true
+      verificationGateway.value = gateway
+    })
   }
 
   function applyServerData(data) {
+    if (data.needs_verification) {
+      needsVerification.value = true
+      verificationGateway.value = data.verification_gateway || 'email'
+    } else {
+      needsVerification.value = false
+    }
     if (data.user) {
       user.value = data.user
     }
@@ -95,6 +108,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     serverAnakList.value = []
     serverDate.value = null
+    needsVerification.value = false
+    verificationGateway.value = 'email'
     localStorage.removeItem('lk_cache_user_id')
   }
 
@@ -114,6 +129,8 @@ export const useAuthStore = defineStore('auth', () => {
     plans,
     discounts,
     affiliateConfig,
+    needsVerification,
+    verificationGateway,
     userPlan,
     userRole,
     login,

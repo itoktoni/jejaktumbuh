@@ -9,6 +9,7 @@ use App\Models\Anak;
 use App\Models\Plan;
 use App\Models\Subscribe;
 use App\Models\User;
+use App\Models\VerificationCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -176,6 +177,24 @@ class AuthController extends Controller
 
         $token = $user->createToken('api_token')->plainTextToken;
 
+        if (!$user->verified_at) {
+            $backendVerification = config('langkahkecil.verification.register_backend', false);
+            $gateway = config('langkahkecil.verification.gateway', 'whatsapp');
+
+            if ($backendVerification) {
+                $this->dispatchVerificationCode($user, $gateway);
+            }
+
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'needs_verification' => true,
+                'verification_gateway' => $gateway,
+                'message' => 'Akun belum terverifikasi. Silakan verifikasi terlebih dahulu.',
+                'user' => $this->userResponse($user),
+            ]);
+        }
+
         $anakList = Anak::where('anak_id_user', $user->id)
             ->with([
                 'has_skills.has_activities',
@@ -204,6 +223,14 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:6|confirmed',
             'ref' => 'nullable|string|max:30',
+        ], [
+            'name.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah digunakan',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 6 karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
         ]);
 
         if ($validator->fails()) {
@@ -270,12 +297,157 @@ class AuthController extends Controller
 
         $token = $user->createToken('api_token')->plainTextToken;
 
-        return response()->json(array_merge([
+        $backendVerification = config('langkahkecil.verification.register_backend', false);
+        $gateway = config('langkahkecil.verification.gateway', 'whatsapp');
+
+        if ($backendVerification) {
+            $this->dispatchVerificationCode($user, $gateway);
+        }
+
+        return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'needs_verification' => true,
+            'verification_gateway' => $gateway,
+            'message' => 'Akun berhasil dibuat. Silakan verifikasi.',
             'user' => $this->userResponse($user),
-            'anak_list' => [],
-        ], $this->appConfig()), 201);
+        ], 201);
+    }
+
+    public function sendVerification(Request $request)
+    {
+        $request->validate([
+            'channel' => 'required|in:whatsapp,telegram,email',
+        ]);
+
+        $user = $request->user();
+        if ($user->verified_at) {
+            return response()->json(['message' => 'Sudah terverifikasi']);
+        }
+
+        $lastCode = VerificationCode::where('user_id', $user->id)->latest()->first();
+        if ($lastCode && $lastCode->created_at && $lastCode->created_at->diffInSeconds(now()) < 60) {
+            $waitSeconds = 60 - $lastCode->created_at->diffInSeconds(now());
+            return response()->json([
+                'message' => "Tunggu {$waitSeconds} detik sebelum mengirim ulang kode.",
+                'cooldown' => $waitSeconds,
+            ], 429);
+        }
+
+        $this->dispatchVerificationCode($user, $request->channel);
+
+        return response()->json(['message' => "Kode verifikasi telah dikirim via {$request->channel}"]);
+    }
+
+    private function dispatchVerificationCode(User $user, string $channel): void
+    {
+        $codeLength = (int) config('langkahkecil.verification.code_length', 6);
+        $expiresMinutes = (int) config('langkahkecil.verification.expires_minutes', 10);
+
+        $code = str_pad(random_int(0, pow(10, $codeLength) - 1), $codeLength, '0', STR_PAD_LEFT);
+
+        VerificationCode::create([
+            'user_id' => $user->id,
+            'code' => $code,
+            'channel' => $channel,
+            'expires_at' => now()->addMinutes($expiresMinutes),
+        ]);
+
+        $message = "Kode verifikasi Jejak Tumbuh Anda: {$code}";
+
+        if ($channel === 'email') {
+            try {
+                \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($user, $code) {
+                    $mail->to($user->email)->subject("Kode Verifikasi: {$code}");
+                });
+            } catch (\Exception $e) {
+                \Log::warning('Email verification failed: ' . $e->getMessage());
+            }
+        } elseif ($channel === 'whatsapp') {
+            $this->sendWhatsApp($user->phone ?? $user->email, $message);
+        } elseif ($channel === 'telegram') {
+            $this->sendTelegram($user->phone ?? $user->email, $message);
+        }
+    }
+
+    public function verify(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = $request->user();
+        if ($user->verified_at) {
+            return response()->json(['message' => 'Sudah terverifikasi', 'verified' => true]);
+        }
+
+        $record = VerificationCode::where('user_id', $user->id)
+            ->where('code', $request->code)
+            ->where('used', false)
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (!$record) {
+            return response()->json(['message' => 'Kode tidak valid atau sudah kedaluwarsa'], 422);
+        }
+
+        $record->update(['used' => true]);
+        $user->update(['verified_at' => now()]);
+
+        return response()->json(array_merge([
+            'message' => 'Verifikasi berhasil!',
+            'verified' => true,
+            'user' => $this->userResponse($user),
+        ], $this->appConfig()));
+    }
+
+    private function sendWhatsApp($to, $message): bool
+    {
+        $token = env('WHATSAPP_TOKEN');
+        $phoneId = env('WHATSAPP_PHONE_ID');
+        if (!$token || !$phoneId) return false;
+
+        try {
+            $client = new \GuzzleHttp\Client();
+            $client->post("https://graph.facebook.com/v18.0/{$phoneId}/messages", [
+                'headers' => [
+                    'Authorization' => "Bearer {$token}",
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'messaging_product' => 'whatsapp',
+                    'to' => preg_replace('/[^0-9]/', '', $to),
+                    'type' => 'text',
+                    'text' => ['body' => $message],
+                ],
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::warning('WhatsApp send failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function sendTelegram($to, $message): bool
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
+        if (!$token || !$chatId) return false;
+
+        try {
+            $client = new \GuzzleHttp\Client();
+            $client->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'json' => [
+                    'chat_id' => $chatId,
+                    'text' => $message,
+                ],
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::warning('Telegram send failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function logout(Request $request)
@@ -319,9 +491,16 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        return response()->json(array_merge([
+        $response = array_merge([
             'user' => $this->userResponse($user),
-        ], $this->appConfig()));
+        ], $this->appConfig());
+
+        if (!$user->verified_at) {
+            $response['needs_verification'] = true;
+            $response['verification_gateway'] = config('langkahkecil.verification.gateway', 'whatsapp');
+        }
+
+        return response()->json($response);
     }
 
     public function changePassword(Request $request)
@@ -346,18 +525,61 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['nullable', 'email'],
+            'phone' => ['nullable', 'string'],
         ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $channel = config('langkahkecil.verification.forgot_gateway', 'whatsapp');
+        $user = null;
 
-        if ($status == Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Link reset password telah dikirim ke email Anda.']);
+        if ($request->filled('phone')) {
+            $user = User::where('phone', $request->phone)->first();
+        } elseif ($request->filled('email')) {
+            $user = User::where('email', $request->email)->first();
         }
 
-        return response()->json(['message' => 'Email tidak ditemukan atau terjadi kesalahan.'], 422);
+        if (!$user) {
+            return response()->json(['message' => 'Akun tidak ditemukan.'], 422);
+        }
+
+        $token = Password::broker()->createToken($user);
+        $frontendUrl = config('langkahkecil.frontend_url', config('app.url'));
+        $resetUrl = "{$frontendUrl}/reset-password?token={$token}&email=" . urlencode($user->email);
+
+        if ($channel === 'whatsapp') {
+            if (!$user->phone) {
+                return response()->json(['message' => 'Nomor telepon tidak ditemukan.'], 422);
+            }
+
+            $message = "Halo {$user->name},\n\n";
+            $message .= "Reset password Jejak Tumbuh:\n{$resetUrl}\n\n";
+            $message .= "Link berlaku 60 menit.";
+
+            $phone = preg_replace('/[^0-9]/', '', $user->phone);
+            if (str_starts_with($phone, '0')) {
+                $phone = '62' . substr($phone, 1);
+            }
+
+            $waLink = "https://wa.me/{$phone}?text=" . urlencode($message);
+
+            return response()->json([
+                'message' => 'Klik tombol di bawah untuk mengirim link reset ke WhatsApp Anda.',
+                'channel' => 'whatsapp',
+                'wa_link' => $waLink,
+            ]);
+        }
+
+        \Illuminate\Support\Facades\Mail::raw(
+            "Halo {$user->name},\n\nReset password Jejak Tumbuh:\n{$resetUrl}\n\nLink berlaku 60 menit.",
+            function ($mail) use ($user) {
+                $mail->to($user->email)->subject('Reset Password - Jejak Tumbuh');
+            }
+        );
+
+        return response()->json([
+            'message' => 'Link reset password telah dikirim ke email Anda.',
+            'channel' => 'email',
+        ]);
     }
 
     public function resetPassword(Request $request)

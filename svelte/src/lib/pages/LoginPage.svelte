@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import * as api from '../services/api.js'
   import { token, applyServerData } from '../stores/authStore.js'
@@ -26,6 +27,60 @@
   let forgotLoading = $state(false)
   let forgotMessage = $state('')
   let forgotError = $state('')
+  let forgotWaLink = $state('')
+  let forgotGateway = $state('email')
+
+  let needsVerify = $state(false)
+  let verifyGateway = $state('email')
+  let verifyCode = $state('')
+  let verifyLoading = $state(false)
+  let verifySending = $state(false)
+  let verifyError = $state('')
+  let verifySendMessage = $state('')
+  let verifyCodeSent = $state(false)
+  let pendingToken = $state('')
+  let timerSeconds = $state(0)
+  let timerInterval = $state(null)
+
+  const timerDisplay = $derived(() => {
+    const m = Math.floor(timerSeconds / 60)
+    const s = timerSeconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  })
+
+  function startTimer() {
+    startTimerWith(600)
+  }
+
+  function startTimerWith(seconds) {
+    timerSeconds = seconds
+    if (timerInterval) clearInterval(timerInterval)
+    timerInterval = setInterval(() => {
+      timerSeconds--
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval)
+        timerInterval = null
+        timerSeconds = 0
+      }
+    }, 1000)
+  }
+
+  function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval)
+    timerInterval = null
+    timerSeconds = 0
+  }
+
+  onMount(() => {
+    const savedToken = localStorage.getItem('lk_pending_token')
+    const savedGateway = localStorage.getItem('lk_verify_gateway')
+    if (savedToken) {
+      pendingToken = savedToken
+      verifyGateway = savedGateway || 'email'
+      needsVerify = true
+      verifyCodeSent = localStorage.getItem('lk_verify_code_sent') === 'true'
+    }
+  })
 
   function handleTabChange(login) {
     if (isLogin === login) return
@@ -48,27 +103,110 @@
         const ref = referralCode || localStorage.getItem('lk_ref_code') || ''
         data = await api.register(name, email, phone, password, passwordConfirmation, ref)
       }
+
+      if (data.needs_verification) {
+        pendingToken = data.access_token
+        verifyGateway = data.verification_gateway || 'email'
+        needsVerify = true
+        verifyCodeSent = false
+        loading = false
+        api.clearAuthToken()
+        localStorage.setItem('lk_pending_token', pendingToken)
+        localStorage.setItem('lk_verify_gateway', verifyGateway)
+        localStorage.removeItem('lk_verify_code_sent')
+        return
+      }
+
       if (data.access_token) {
         token.set(data.access_token)
       }
       applyServerData(data)
-      if (onsuccess) {
-        onsuccess(data)
-      }
+      if (onsuccess) onsuccess(data)
     } catch (err) {
       error = err.message || 'Terjadi kesalahan'
       validationErrors = err.errors || null
-      console.error('[Login Error]', err)
     } finally {
       loading = false
     }
   }
 
-  function openForgotPassword() {
+  async function handleSendCode() {
+    verifySending = true
+    verifySendMessage = ''
+    verifyError = ''
+    try {
+      api.setAuthTokenMemory(pendingToken)
+      await api.sendVerification(verifyGateway)
+      verifyCodeSent = true
+      localStorage.setItem('lk_verify_code_sent', 'true')
+      verifySendMessage = 'Kode verifikasi telah dikirim!'
+      startTimer()
+    } catch (err) {
+      verifyCodeSent = true
+      localStorage.setItem('lk_verify_code_sent', 'true')
+      if (err.status === 429 && err.cooldown) {
+        verifyError = err.message
+        startTimerWith(err.cooldown)
+      } else {
+        verifyError = err.message || 'Gagal mengirim kode'
+      }
+    } finally {
+      verifySending = false
+    }
+  }
+
+  async function handleVerify(e) {
+    if (e) e.preventDefault()
+    if (verifyCode.length !== 6) return
+    verifyLoading = true
+    verifyError = ''
+    try {
+      api.setAuthTokenMemory(pendingToken)
+      const data = await api.verifyCode(verifyCode)
+      api.setAuthToken(pendingToken)
+      token.set(pendingToken)
+      localStorage.removeItem('lk_pending_token')
+      localStorage.removeItem('lk_verify_gateway')
+      localStorage.removeItem('lk_verify_code_sent')
+      applyServerData(data)
+      if (onsuccess) onsuccess(data)
+    } catch (err) {
+      verifyError = err.message || 'Kode tidak valid'
+    } finally {
+      verifyLoading = false
+    }
+  }
+
+  function handleVerifyInput(e) {
+    verifyCode = e.target.value.replace(/\D/g, '').slice(0, 6)
+  }
+
+  function handleBackToLogin() {
+    needsVerify = false
+    pendingToken = ''
+    verifyCode = ''
+    verifyCodeSent = false
+    verifyError = ''
+    verifySendMessage = ''
+    stopTimer()
+    api.clearAuthToken()
+    localStorage.removeItem('lk_pending_token')
+    localStorage.removeItem('lk_verify_gateway')
+    localStorage.removeItem('lk_verify_code_sent')
+  }
+
+  async function openForgotPassword() {
     showForgotPassword = true
     forgotEmail = email
     forgotMessage = ''
     forgotError = ''
+    forgotWaLink = ''
+    try {
+      const config = await api.getConfig()
+      forgotGateway = config.forgot_gateway || 'email'
+    } catch {
+      forgotGateway = 'email'
+    }
   }
 
   async function handleForgotPassword(e) {
@@ -76,9 +214,14 @@
     forgotLoading = true
     forgotMessage = ''
     forgotError = ''
+    forgotWaLink = ''
     try {
-      await api.forgotPassword(forgotEmail)
-      forgotMessage = 'Link reset password telah dikirim ke email Anda.'
+      const body = forgotGateway === 'whatsapp' ? { phone: forgotEmail } : { email: forgotEmail }
+      const data = await api.forgotPassword(body)
+      forgotMessage = data.message || 'Link reset password telah dikirim.'
+      if (data.wa_link) {
+        forgotWaLink = data.wa_link
+      }
     } catch (err) {
       forgotError = err.message || 'Gagal mengirim link reset password'
     } finally {
@@ -89,159 +232,288 @@
 
 <div class="min-h-screen bg-canvas-cream flex items-center justify-center p-4">
   <div class="w-full max-w-sm">
-    <div class="text-center mb-8">
-      <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mx-auto mb-4">
-        <span class="text-4xl">👣</span>
+
+    {#if needsVerify}
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mx-auto mb-4">
+          <span class="text-4xl">🔐</span>
+        </div>
+        <h1 class="text-2xl font-bold text-text-main">Verifikasi Akun</h1>
+        <p class="text-sm text-on-surface-variant mt-1">
+          Verifikasi melalui {verifyGateway === 'whatsapp' ? 'WhatsApp' : verifyGateway === 'telegram' ? 'Telegram' : 'Email'}
+        </p>
       </div>
-      <h1 class="text-2xl font-bold text-text-main">{appName}</h1>
-      <p class="text-sm text-on-surface-variant mt-1">{appTagline}</p>
-    </div>
 
-    <div class="flex bg-white rounded-xl p-1 mb-6 border-2 border-[#B7D9BC]">
-      <button
-        class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 {isLogin ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-gray-100'}"
-        onclick={() => handleTabChange(true)}
-      >
-        Masuk
-      </button>
-      <button
-        class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 {!isLogin ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-gray-100'}"
-        onclick={() => handleTabChange(false)}
-      >
-        Daftar
-      </button>
-    </div>
-
-    {#if error}
-      <div transition:slide={{ duration: 200 }} class="bg-error-container text-on-error-container rounded-xl px-4 py-3 mb-4 text-sm">
-        {error}
-      </div>
-    {/if}
-
-    <form onsubmit={(e) => { e.preventDefault(); handleSubmit() }} class="space-y-3">
-      {#if !isLogin}
-        <div transition:slide={{ duration: 250 }}>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-          <input
-            type="text"
-            placeholder="Masukkan nama"
-            bind:value={name}
-            required
-            class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.name ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-          />
-          {#if validationErrors?.name?.[0]}
-            <p class="text-xs text-error mt-1">{validationErrors.name[0]}</p>
-          {/if}
+      {#if verifyError}
+        <div transition:slide={{ duration: 200 }} class="bg-error-container text-on-error-container rounded-xl px-4 py-3 mb-4 text-sm">
+          {verifyError}
         </div>
       {/if}
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input
-          type="email"
-          placeholder="email@contoh.com"
-          bind:value={email}
-          required
-          class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.email ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-        />
-        {#if validationErrors?.email?.[0]}
-          <p class="text-xs text-error mt-1">{validationErrors.email[0]}</p>
-        {/if}
-      </div>
-
-      {#if !isLogin}
-        <div transition:slide={{ duration: 250 }}>
-          <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
-          <input
-            type="tel"
-            placeholder="08xxxxxxxxxx"
-            bind:value={phone}
-            class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.phone ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-          />
-          {#if validationErrors?.phone?.[0]}
-            <p class="text-xs text-error mt-1">{validationErrors.phone[0]}</p>
-          {/if}
+      {#if verifySendMessage}
+        <div transition:slide={{ duration: 200 }} class="bg-primary-container text-black rounded-xl px-4 py-3 mb-4 text-sm">
+          {verifySendMessage}
         </div>
       {/if}
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <div class="relative">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            bind:value={password}
-            required
-            class="w-full px-4 py-3 pr-12 rounded-xl border-2 {validationErrors?.password ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-          />
-          <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" onclick={() => { showPassword = !showPassword }}>
-            {#if showPassword}
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M11.83 9L15 12.16C15 12.11 15 12.05 15 12a3 3 0 0 0-3-3c-.55 0-1.05.14-1.5.37L10.7 8.05c-.2-.07-.42-.11-.64-.13V8.05m2.57 2.18L9.81 7.64A3 3 0 0 0 12 7c1.66 0 3 1.34 3 3c0 .55-.14 1.05-.37 1.5L14.4 13.07c.2.07.42.11.64.13M2.04 3L3.46 4.41l1.71 1.71C4.17 7.29 3.38 8.73 3.12 10c-.52 2.5.53 4.87 2.18 6.65l1.71 1.71C9.81 20.39 12.76 21 16 21c1.37 0 2.69-.25 3.92-.71L21.59 22.7L23 21.29l-9-9L2.04 3M12 7c-1.66 0-3 1.34-3 3c0 .29.04.57.11.84l5.73 5.73c.07-.27.11-.55.11-.84c0-1.66-1.34-3-3-3m11.16 9.64L19.72 15.2c.66-1.19 1.05-2.53 1.05-3.94c0-3.6-2.71-6.57-6.22-6.93c-.22-.02-.44-.03-.65-.04C12.16 4.29 10.25 5 8.54 6.16L3.61 1.23L2.04 3l3.46 3.46c1.42 1.42 3.33 2.13 5.22 2.33c-.31.37-.56.78-.74 1.22C9.33 10.6 9 11.28 9 12c0 1.66 1.34 3 3 3c.72 0 1.4-.33 1.99-.86c.44-.18.85-.43 1.22-.74c.2.24.42.47.66.69L19.72 15.2l1.44 1.44z"/></svg>
+      {#if !verifyCodeSent}
+        <button
+          type="button"
+          class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold active:scale-95 transition-transform disabled:opacity-50"
+          onclick={handleSendCode}
+          disabled={verifySending}
+        >
+          {#if verifySending}
+            <span class="inline-flex items-center gap-2">
+              <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Mengirim kode...
+            </span>
+          {:else}
+            Kirim Kode Verifikasi
+          {/if}
+        </button>
+      {:else}
+        <form onsubmit={handleVerify} class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Masukkan Kode</label>
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              placeholder="000000"
+              value={verifyCode}
+              oninput={handleVerifyInput}
+              class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white text-center text-xl tracking-[0.5em] font-mono font-bold"
+            />
+            <p class="text-xs text-on-surface-variant mt-1 text-center">
+              {#if timerSeconds > 0}
+                Kode berlaku <span class="font-bold text-primary">{timerDisplay()}</span>
+              {:else}
+                Kode telah kedaluwarsa
+              {/if}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold active:scale-95 transition-transform disabled:opacity-50"
+            disabled={verifyLoading || verifyCode.length !== 6 || timerSeconds <= 0}
+          >
+            {#if verifyLoading}
+              <span class="inline-flex items-center gap-2">
+                <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Memverifikasi...
+              </span>
             {:else}
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+              Verifikasi
             {/if}
           </button>
-        </div>
-        {#if validationErrors?.password?.[0]}
-          <p class="text-xs text-error mt-1">{validationErrors.password[0]}</p>
-        {/if}
+
+          <button
+            type="button"
+            class="w-full py-2 text-sm text-primary font-semibold hover:underline disabled:opacity-50"
+            onclick={handleSendCode}
+            disabled={verifySending || timerSeconds > 0}
+          >
+            {#if verifySending}
+              Mengirim ulang...
+            {:else}
+              Kirim ulang kode
+            {/if}
+          </button>
+        </form>
+      {/if}
+
+      <div class="mt-6 text-center">
+        <button type="button" class="text-sm text-on-surface-variant hover:underline" onclick={handleBackToLogin}>
+          Kembali ke login
+        </button>
       </div>
 
-      {#if isLogin}
-        <div transition:slide={{ duration: 200 }} class="text-right -mt-1">
-          <button type="button" class="text-sm text-primary font-semibold hover:underline" onclick={openForgotPassword}>
-            Lupa password?
-          </button>
+    {:else}
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mx-auto mb-4">
+          <span class="text-4xl">👣</span>
+        </div>
+        <h1 class="text-2xl font-bold text-text-main">{appName}</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{appTagline}</p>
+      </div>
+
+      <div class="flex bg-white rounded-xl p-1 mb-6 border-2 border-[#B7D9BC]">
+        <button
+          class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 {isLogin ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-gray-100'}"
+          onclick={() => handleTabChange(true)}
+        >
+          Masuk
+        </button>
+        <button
+          class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 {!isLogin ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-gray-100'}"
+          onclick={() => handleTabChange(false)}
+        >
+          Daftar
+        </button>
+      </div>
+
+      {#if error}
+        <div transition:slide={{ duration: 200 }} class="bg-error-container text-on-error-container rounded-xl px-4 py-3 mb-4 text-sm">
+          {error}
         </div>
       {/if}
 
-      {#if !isLogin}
-        <div transition:slide={{ duration: 250 }}>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-          <div class="relative">
+      <form onsubmit={(e) => { e.preventDefault(); handleSubmit() }} class="space-y-3">
+        {#if !isLogin}
+          <div transition:slide={{ duration: 250 }}>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
             <input
-              type={showPasswordConfirm ? 'text' : 'password'}
-              placeholder="••••••••"
-              bind:value={passwordConfirmation}
+              type="text"
+              placeholder="Masukkan nama"
+              bind:value={name}
               required
-              class="w-full px-4 py-3 pr-12 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+              class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.name ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
             />
-            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" onclick={() => { showPasswordConfirm = !showPasswordConfirm }}>
-              {#if showPasswordConfirm}
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M11.83 9L15 12.16C15 12.11 15 12.05 15 12a3 3 0 0 0-3-3c-.55 0-1.05.14-1.5.37L10.7 8.05c-.2-.07-.42-.11-.64-.13V8.05m2.57 2.18L9.81 7.64A3 3 0 0 0 12 7c1.66 0 3 1.34 3 3c0 .55-.14 1.05-.37 1.5L14.4 13.07c.2.07.42.11.64.13M2.04 3L3.46 4.41l1.71 1.71C4.17 7.29 3.38 8.73 3.12 10c-.52 2.5.53 4.87 2.18 6.65l1.71 1.71C9.81 20.39 12.76 21 16 21c1.37 0 2.69-.25 3.92-.71L21.59 22.7L23 21.29l-9-9L2.04 3M12 7c-1.66 0-3 1.34-3 3c0 .29.04.57.11.84l5.73 5.73c.07-.27.11-.55.11-.84c0-1.66-1.34-3-3-3m11.16 9.64L19.72 15.2c.66-1.19 1.05-2.53 1.05-3.94c0-3.6-2.71-6.57-6.22-6.93c-.22-.02-.44-.03-.65-.04C12.16 4.29 10.25 5 8.54 6.16L3.61 1.23L2.04 3l3.46 3.46c1.42 1.42 3.33 2.13 5.22 2.33c-.31.37-.56.78-.74 1.22C9.33 10.6 9 11.28 9 12c0 1.66 1.34 3 3 3c.72 0 1.4-.33 1.99-.86c.44-.18.85-.43 1.22-.74c.2.24.42.47.66.69L19.72 15.2l1.44 1.44z"/></svg>
-              {:else}
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
-              {/if}
+            {#if validationErrors?.name?.[0]}
+              <p class="text-xs text-error mt-1">{validationErrors.name[0]}</p>
+            {/if}
+          </div>
+        {/if}
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            placeholder="email@contoh.com"
+            bind:value={email}
+            required
+            class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.email ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+          />
+          {#if validationErrors?.email?.[0]}
+            <p class="text-xs text-error mt-1">{validationErrors.email[0]}</p>
+          {/if}
+        </div>
+
+        {#if !isLogin}
+          <div transition:slide={{ duration: 250 }}>
+            <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
+            <input
+              type="tel"
+              placeholder="08xxxxxxxxxx"
+              bind:value={phone}
+              class="w-full px-4 py-3 rounded-xl border-2 {validationErrors?.phone ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+            />
+            {#if validationErrors?.phone?.[0]}
+              <p class="text-xs text-error mt-1">{validationErrors.phone[0]}</p>
+            {/if}
+          </div>
+        {/if}
+
+        {#if isLogin}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div class="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                bind:value={password}
+                required
+                class="w-full px-4 py-3 pr-12 rounded-xl border-2 {validationErrors?.password ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+              />
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" onclick={() => { showPassword = !showPassword }}>
+                {#if showPassword}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3c-.55 0-1.05.14-1.5.37L10.7 8.05c-.2-.07-.42-.11-.64-.13V8.05m2.57 2.18L9.81 7.64A3 3 0 0 0 12 7c1.66 0 3 1.34 3 3c0 .55-.14 1.05-.37 1.5L14.4 13.07c.2.07.42.11.64.13M2.04 3L3.46 4.41l1.71 1.71C4.17 7.29 3.38 8.73 3.12 10c-.52 2.5.53 4.87 2.18 6.65l1.71 1.71C9.81 20.39 12.76 21 16 21c1.37 0 2.69-.25 3.92-.71L21.59 22.7L23 21.29l-9-9L2.04 3M12 7c-1.66 0-3 1.34-3 3c0 .29.04.57.11.84l5.73 5.73c.07-.27.11-.55.11-.84c0-1.66-1.34-3-3-3m11.16 9.64L19.72 15.2c.66-1.19 1.05-2.53 1.05-3.94c0-3.6-2.71-6.57-6.22-6.93c-.22-.02-.44-.03-.65-.04C12.16 4.29 10.25 5 8.54 6.16L3.61 1.23L2.04 3l3.46 3.46c1.42 1.42 3.33 2.13 5.22 2.33c-.31.37-.56.78-.74 1.22C9.33 10.6 9 11.28 9 12c0 1.66 1.34 3 3 3c.72 0 1.4-.33 1.99-.86c.44-.18.85-.43 1.22-.74c.2.24.42.47.66.69L19.72 15.2l1.44 1.44z"/></svg>
+                {:else}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+                {/if}
+              </button>
+            </div>
+            {#if validationErrors?.password?.[0]}
+              <p class="text-xs text-error mt-1">{validationErrors.password[0]}</p>
+            {/if}
+          </div>
+        {/if}
+
+        {#if isLogin}
+          <div transition:slide={{ duration: 200 }} class="text-right -mt-1">
+            <button type="button" class="text-sm text-primary font-semibold hover:underline" onclick={openForgotPassword}>
+              Lupa password?
             </button>
           </div>
-        </div>
-
-        <div transition:slide={{ duration: 250 }}>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kode Referral (opsional)</label>
-          <input
-            type="text"
-            placeholder="Masukkan kode"
-            bind:value={referralCode}
-            class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-          />
-        </div>
-      {/if}
-
-      <button
-        type="submit"
-        class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold active:scale-95 transition-transform disabled:opacity-50 mt-2"
-        disabled={loading}
-      >
-        {#if loading}
-          <span class="inline-flex items-center gap-2">
-            <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            {isLogin ? 'Masuk...' : 'Mendaftar...'}
-          </span>
-        {:else}
-          <span>{isLogin ? 'Masuk' : 'Daftar'}</span>
         {/if}
-      </button>
-    </form>
+
+        {#if !isLogin}
+          <div class="grid grid-cols-2 gap-3" transition:slide={{ duration: 250 }}>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <div class="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  bind:value={password}
+                  required
+                  class="w-full px-4 py-3 pr-12 rounded-xl border-2 {validationErrors?.password ? 'border-error' : 'border-[#B7D9BC]'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                />
+                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" onclick={() => { showPassword = !showPassword }}>
+                  {#if showPassword}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3c-.55 0-1.05.14-1.5.37L10.7 8.05c-.2-.07-.42-.11-.64-.13V8.05m2.57 2.18L9.81 7.64A3 3 0 0 0 12 7c1.66 0 3 1.34 3 3c0 .55-.14 1.05-.37 1.5L14.4 13.07c.2.07.42.11.64.13M2.04 3L3.46 4.41l1.71 1.71C4.17 7.29 3.38 8.73 3.12 10c-.52 2.5.53 4.87 2.18 6.65l1.71 1.71C9.81 20.39 12.76 21 16 21c1.37 0 2.69-.25 3.92-.71L21.59 22.7L23 21.29l-9-9L2.04 3M12 7c-1.66 0-3 1.34-3 3c0 .29.04.57.11.84l5.73 5.73c.07-.27.11-.55.11-.84c0-1.66-1.34-3-3-3m11.16 9.64L19.72 15.2c.66-1.19 1.05-2.53 1.05-3.94c0-3.6-2.71-6.57-6.22-6.93c-.22-.02-.44-.03-.65-.04C12.16 4.29 10.25 5 8.54 6.16L3.61 1.23L2.04 3l3.46 3.46c1.42 1.42 3.33 2.13 5.22 2.33c-.31.37-.56.78-.74 1.22C9.33 10.6 9 11.28 9 12c0 1.66 1.34 3 3 3c.72 0 1.4-.33 1.99-.86c.44-.18.85-.43 1.22-.74c.2.24.42.47.66.69L19.72 15.2l1.44 1.44z"/></svg>
+                  {:else}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+                  {/if}
+                </button>
+              </div>
+              {#if validationErrors?.password?.[0]}
+                <p class="text-xs text-error mt-1">{validationErrors.password[0]}</p>
+              {/if}
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi</label>
+              <div class="relative">
+                <input
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  bind:value={passwordConfirmation}
+                  required
+                  class="w-full px-4 py-3 pr-12 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                />
+                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" onclick={() => { showPasswordConfirm = !showPasswordConfirm }}>
+                  {#if showPasswordConfirm}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3c-.55 0-1.05.14-1.5.37L10.7 8.05c-.2-.07-.42-.11-.64-.13V8.05m2.57 2.18L9.81 7.64A3 3 0 0 0 12 7c1.66 0 3 1.34 3 3c0 .55-.14 1.05-.37 1.5L14.4 13.07c.2.07.42.11.64.13M2.04 3L3.46 4.41l1.71 1.71C4.17 7.29 3.38 8.73 3.12 10c-.52 2.5.53 4.87 2.18 6.65l1.71 1.71C9.81 20.39 12.76 21 16 21c1.37 0 2.69-.25 3.92-.71L21.59 22.7L23 21.29l-9-9L2.04 3M12 7c-1.66 0-3 1.34-3 3c0 .29.04.57.11.84l5.73 5.73c.07-.27.11-.55.11-.84c0-1.66-1.34-3-3-3m11.16 9.64L19.72 15.2c.66-1.19 1.05-2.53 1.05-3.94c0-3.6-2.71-6.57-6.22-6.93c-.22-.02-.44-.03-.65-.04C12.16 4.29 10.25 5 8.54 6.16L3.61 1.23L2.04 3l3.46 3.46c1.42 1.42 3.33 2.13 5.22 2.33c-.31.37-.56.78-.74 1.22C9.33 10.6 9 11.28 9 12c0 1.66 1.34 3 3 3c.72 0 1.4-.33 1.99-.86c.44-.18.85-.43 1.22-.74c.2.24.42.47.66.69L19.72 15.2l1.44 1.44z"/></svg>
+                  {:else}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+                  {/if}
+                </button>
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        {#if !isLogin}
+          <div transition:slide={{ duration: 250 }}>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Kode Referral (opsional)</label>
+            <input
+              type="text"
+              placeholder="Masukkan kode"
+              bind:value={referralCode}
+              class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+            />
+          </div>
+        {/if}
+
+        <button
+          type="submit"
+          class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold active:scale-95 transition-transform disabled:opacity-50 mt-2"
+          disabled={loading}
+        >
+          {#if loading}
+            <span class="inline-flex items-center gap-2">
+              <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              {isLogin ? 'Masuk...' : 'Mendaftar...'}
+            </span>
+          {:else}
+            <span>{isLogin ? 'Masuk' : 'Daftar'}</span>
+          {/if}
+        </button>
+      </form>
+    {/if}
   </div>
 </div>
 
@@ -249,10 +521,22 @@
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" transition:fade={{ duration: 200 }} onclick={() => { showForgotPassword = false }}>
     <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm" transition:slide={{ duration: 250, y: 20 }} onclick={(e) => e.stopPropagation()}>
       <h3 class="text-lg font-bold text-text-main mb-2">Reset Password</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Masukkan email Anda untuk menerima link reset password.</p>
+      <p class="text-sm text-on-surface-variant mb-4">
+        {#if forgotGateway === 'whatsapp'}
+          Masukkan nomor HP Anda untuk menerima link reset via WhatsApp.
+        {:else}
+          Masukkan email Anda untuk menerima link reset password.
+        {/if}
+      </p>
 
       {#if forgotMessage}
         <div transition:slide={{ duration: 200 }} class="bg-primary-container text-black rounded-xl px-4 py-3 mb-4 text-xs">{forgotMessage}</div>
+      {/if}
+      {#if forgotWaLink}
+        <a href={forgotWaLink} target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] text-white font-bold active:scale-95 transition-transform mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Kirim via WhatsApp
+        </a>
       {/if}
       {#if forgotError}
         <div transition:slide={{ duration: 200 }} class="bg-error-container text-on-error-container rounded-xl px-4 py-3 mb-4 text-sm">{forgotError}</div>
@@ -260,14 +544,25 @@
 
       <form onsubmit={handleForgotPassword} class="space-y-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            placeholder="email@contoh.com"
-            bind:value={forgotEmail}
-            required
-            class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
-          />
+          {#if forgotGateway === 'whatsapp'}
+            <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
+            <input
+              type="tel"
+              placeholder="08xxxxxxxxxx"
+              bind:value={forgotEmail}
+              required
+              class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+            />
+          {:else}
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              placeholder="email@contoh.com"
+              bind:value={forgotEmail}
+              required
+              class="w-full px-4 py-3 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+            />
+          {/if}
         </div>
         <div class="flex gap-3">
           <button type="button" class="flex-1 px-4 py-3 rounded-xl border-2 border-[#B7D9BC] text-text-main font-semibold hover:bg-surface-variant transition-colors" onclick={() => { showForgotPassword = false }}>
