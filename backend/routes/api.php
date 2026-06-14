@@ -301,6 +301,7 @@ Route::post('/activities/{id}/view', [ActivityController::class, 'trackView'])->
 Route::get('/pilars', [PilarController::class, 'index'])->name('pilars.index');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
     Route::get('/me', [AuthController::class, 'me'])->name('me');
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/send-verification', [AuthController::class, 'sendVerification'])->name('verification.send');
@@ -346,6 +347,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/anak/{anakId}/skills', [SkillController::class, 'store'])->name('anak.skills.store');
         Route::put('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'update'])->name('anak.skills.update');
         Route::delete('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'destroy'])->name('anak.skills.destroy');
+
+        Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
 
         Route::post('/anak/{anakId}/activities', [SkillActivityController::class, 'store'])->name('anak.activities.store');
         Route::delete('/anak/{anakId}/activities/{activityId}', [SkillActivityController::class, 'destroy'])->name('anak.activities.destroy');

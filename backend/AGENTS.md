@@ -173,15 +173,121 @@ class ExamplePolicy extends BasePolicy
 
 ## Route Convention
 
-Routes didefinisikan di `routes/web.php` menggunakan `AutoRoute`.
+Routes didefinisikan di `routes/web.php` menggunakan [izniburak/laravel-auto-routes](https://github.com/izniburak/laravel-auto-routes).
 
-### Struktur Route
+### Dasar
 
 ```php
 Route::auto('/example', 'ExampleController', ['name' => 'example']);
 ```
 
-Route auto-generate: `example.getTable`, `example.getCreate`, `example.postCreate`, `example.getUpdate`, `example.postUpdate`, `example.getDelete`, `example.postDelete`.
+Semua method `public` di controller otomatis menjadi endpoint. URL dikonversi dari `camelCase` ke `kebab-case`.
+
+### HTTP Method Prefix
+
+Tambah prefix pada nama method untuk menentukan HTTP method:
+
+| Prefix | HTTP Method | Contoh Method | URL |
+|--------|-------------|---------------|-----|
+| `get` | GET | `getFooBar()` | `/example/foo-bar` |
+| `post` | POST | `postFooBar()` | `/example/foo-bar` |
+| `put` | PUT | `putFooBar()` | `/example/foo-bar` |
+| `delete` | DELETE | `deleteFooBar()` | `/example/foo-bar` |
+| *(tanpa)* | ANY | `fooBar()` | `/example/foo-bar` |
+
+### AJAX / Frontend Prefix (XMLHttpRequest)
+
+Untuk endpoint yang dipanggil dari frontend (Svelte/fetch), gunakan prefix `x` di depan HTTP method:
+
+| Prefix | HTTP Method | Contoh Method | URL |
+|--------|-------------|---------------|-----|
+| `xget` | GET + XHR | `xgetFoo()` | `/example/foo` |
+| `xpost` | POST + XHR | `xpostBar()` | `/example/bar` |
+| `xput` | PUT + XHR | `xputBaz()` | `/example/baz` |
+| `xdelete` | DELETE + XHR | `xdeleteQux()` | `/example/qux` |
+| `xany` | ANY + XHR | `xanyQuux()` | `/example/quux` |
+
+Prefix `x` otomatis menambah middleware yang memastikan request hanya bisa diakses via XMLHttpRequest (fetch/AJAX). Jika diakses dari browser biasa, akan throw `MethodNotAllowedException`.
+
+### Controller untuk Web (Blade)
+
+```php
+class ExampleController extends Controller
+{
+    use ControllerTrait;
+
+    // GET /example/table — tampilkan halaman table
+    public function getTable(GeneralRequest $request) { ... }
+
+    // GET /example/create — tampilkan form create
+    public function getCreate(GeneralRequest $request) { ... }
+
+    // POST /example/create — proses form create
+    public function postCreate(GeneralRequest $request) { ... }
+
+    // GET /example/update/{id} — tampilkan form update
+    public function getUpdate(GeneralRequest $request, $id) { ... }
+
+    // POST /example/update/{id} — proses form update
+    public function postUpdate(GeneralRequest $request, $id) { ... }
+
+    // GET /example/delete/{id} — hapus data
+    public function getDelete(GeneralRequest $request, $id) { ... }
+
+    // POST /example/delete — bulk delete
+    public function postDelete(GeneralRequest $request) { ... }
+}
+```
+
+### Controller untuk Frontend API (Svelte/fetch)
+
+```php
+class ExampleController extends Controller
+{
+    // GET /example/items — ambil semua data
+    public function xgetItems(Request $request) { ... }
+
+    // POST /example/item — buat data baru
+    public function xpostItem(Request $request) { ... }
+
+    // PUT /example/item/{id} — update data
+    public function xputItem(Request $request, $id) { ... }
+
+    // DELETE /example/item/{id} — hapus data
+    public function xdeleteItem(Request $request, $id) { ... }
+}
+```
+
+### Options
+
+```php
+Route::auto('/example', 'ExampleController', [
+    'name' => 'example',
+    'middleware' => ['auth'],
+    'patterns' => ['id' => '\\d+'],
+    'only' => ['getTable', 'postCreate'],       // hanya generate method ini
+    'except' => ['getDelete', 'postDelete'],     // exclude method ini
+]);
+```
+
+### Parameter
+
+```php
+// URL: /example/{id} — parameter wajib
+public function getShow(Request $request, int $id) { ... }
+
+// URL: /example/{name}/{page?} — parameter optional
+public function xgetItems(Request $request, string $name, int $page = 1) { ... }
+```
+
+### Route Manual di `routes/api.php`
+
+Untuk endpoint API yang tidak menggunakan auto-route (misalnya perlu path berbeda), definisikan manual:
+
+```php
+Route::get('/activities', [ActivityController::class, 'index']);
+Route::put('/activities/{id}', [ActivityController::class, 'update']);
+```
 
 ---
 
@@ -499,3 +605,4 @@ Saat menambahkan module baru, ikuti checklist ini:
 4. **Route** — `Route::auto('/module', 'ModuleController', ['name' => 'module'])`
 5. **Menu** — tambah di `config/menu.php`
 6. **Views** — `pages/{module}/table.blade.php` + `pages/{module}/form.blade.php`
+7. **Frontend API** — gunakan prefix `x` (`xget`, `xpost`, `xput`, `xdelete`) untuk endpoint yang dipanggil dari Svelte

@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateAction;
+use App\Actions\UpdateAction;
 use App\Concerns\ControllerTrait;
+use App\Http\Requests\GeneralRequest;
 use App\Models\Activity;
+use App\Services\ImageSplitterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -14,6 +18,52 @@ class ActivityController extends Controller
     public function __construct(Activity $model)
     {
         $this->model = $model::getModel();
+    }
+
+    protected function splitAndStore(Request $request, int $activityId): string
+    {
+        $pages = (int) $request->input('pages', 0);
+
+        if ($pages >= 2) {
+            $result = ImageSplitterService::split($request->file('file'), $activityId, $pages);
+            // return $result['cover'];
+            return 'cover.png';
+        }
+
+        $folder = "images/stories/{$activityId}";
+        $path = $request->file('file')->store($folder, 'public');
+        return 'cover.png';
+        // return basename($path);
+    }
+
+    public function postCreate(GeneralRequest $request)
+    {
+        $hasFile = $request->hasFile('image');
+
+        if ($hasFile) {
+            $request->merge(['image' => 'cover.png']);
+        }
+
+        $response = CreateAction::run($request, $this->model);
+
+        if ($hasFile && $response['status']) {
+            $activity = $response['data'];
+            $this->splitAndStore($request, $activity->getKey());
+        }
+
+        return $this->response($response);
+    }
+
+    public function postUpdate(GeneralRequest $request, $id)
+    {
+        if ($request->hasFile('file')) {
+            ImageSplitterService::deleteFolder($id);
+            $request->merge(['image' => $this->splitAndStore($request, $id)]);
+        }
+
+        $response = UpdateAction::run($request, $id, $this->model);
+
+        return $this->response($response);
     }
 
     public function index(Request $request)
@@ -87,7 +137,8 @@ class ActivityController extends Controller
             'type' => 'required|string|max:50',
             'title' => 'required|string|max:255',
             'desc' => 'nullable|string',
-            'image' => 'nullable|string|max:500',
+            'image' => 'nullable|file|image|max:10240',
+            'pages' => 'nullable|integer|min:2|max:25',
             'moral' => 'nullable|string|max:500',
             'ages' => 'nullable|array',
             'skills' => 'nullable|array',
@@ -106,40 +157,25 @@ class ActivityController extends Controller
         $data['status'] = $data['status'] ?? 'approved';
         $data['created_by'] = $data['created_by'] ?? ($request->user()?->id ?? 1);
 
+        if ($request->hasFile('image')) {
+            $data['image'] = 'cover.png';
+        }
+
         $activity = Activity::create($data);
+
+        if ($request->hasFile('image')) {
+            $this->splitAndStore($request, $activity->getKey());
+        }
 
         return response()->json($activity, 201);
     }
 
-    public function update(Request $request, $id)
+    public function destroy($id)
     {
         $activity = Activity::findOrFail($id);
 
-        $data = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'desc' => 'nullable|string',
-            'image' => 'nullable|string|max:500',
-            'moral' => 'nullable|string|max:500',
-            'ages' => 'nullable|array',
-            'skills' => 'nullable|array',
-            'data' => 'nullable|array',
-            'sort_order' => 'nullable|integer',
-            'active' => 'nullable|boolean',
-            'status' => 'nullable|in:pending,review,approved,rejected',
-            'created_by' => 'nullable|integer',
-            'prompt' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'creator' => 'nullable|string|max:255',
-        ]);
-
-        $activity->update($data);
-
-        return response()->json($activity);
-    }
-
-    public function destroy($id)
-    {
-        Activity::findOrFail($id)->delete();
+        ImageSplitterService::deleteFolder($id);
+        $activity->delete();
 
         return response()->json(null, 204);
     }
