@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { aktivitasData, buildAktivitasDataFromAPI, setAktivitasData, filterActivities } from '../data/activities.js'
   import { activitiesCache, serverCount, localCount, downloading, downloadMessage, loadFromCache, checkServer, downloadActivities } from '../stores/activityStore.js'
-  import { isAuthenticated, userPlan, plans as planList } from '../stores/authStore.js'
+  import { isAuthenticated, userRole, userPlan, plans as planList } from '../stores/authStore.js'
   import { switchCounter, activeTab, selectedAnakId, selectedSkillKey, selectedAge, selectedAgama, selectedPlanId } from '../stores/appStore.js'
   import * as api from '../services/api.js'
   import { trackActivityView } from '../services/api.js'
@@ -45,6 +45,8 @@
   let selectedAgamaVal = $state(null)
   let selectedPlanIdVal = $state(null)
   let searchQuery = $state('')
+  let detailSearchQuery = $state('')
+  let activeTabVal = $state('activity')
 
   $effect(() => {
     const u1 = aktivitasData.subscribe(v => aktData = v)
@@ -60,16 +62,18 @@
     const u11 = selectedAge.subscribe(v => selectedAgeVal = v)
     const u12 = selectedAgama.subscribe(v => selectedAgamaVal = v)
     const u13 = selectedPlanId.subscribe(v => selectedPlanIdVal = v)
-    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8(); u9(); u10(); u11(); u12(); u13() }
+    const u14 = activeTab.subscribe(v => activeTabVal = v)
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8(); u9(); u10(); u11(); u12(); u13(); u14() }
   })
 
   $effect(() => {
-    if (switchCount > 0 && $state.snapshot(activeTab) === 'activity') {
+    if (switchCount > 0 && activeTabVal === 'activity') {
       selectedType = null
       activeStory = null
       activeRoleplay = null
       activeProject = null
       activePuzzle = null
+      detailSearchQuery = ''
     }
   })
 
@@ -96,11 +100,13 @@
 
   let userPlanVal = $state(null)
   let planListVal = $state([])
+  let userRoleVal = $state('')
 
   $effect(() => {
     const u14 = userPlan.subscribe(v => userPlanVal = v)
     const u15 = planList.subscribe(v => planListVal = v)
-    return () => { u14(); u15() }
+    const u16 = userRole.subscribe(v => userRoleVal = v)
+    return () => { u14(); u15(); u16() }
   })
 
   $effect(() => {
@@ -177,7 +183,15 @@
   const sortedItems = $derived.by(() => {
     if (!selectedType) return []
     const items = getItems(selectedType)
-    return [...items].sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    let result = [...items].sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    if (detailSearchQuery) {
+      const q = detailSearchQuery.toLowerCase()
+      result = result.filter(item =>
+        item.title?.toLowerCase().includes(q) ||
+        item.desc?.toLowerCase().includes(q)
+      )
+    }
+    return result
   })
 
   onMount(async () => {
@@ -225,7 +239,7 @@
     if (activeRoleplay) { activeRoleplay = null; return }
     if (activeProject) { activeProject = null; return }
     if (activePuzzle) { activePuzzle = null; return }
-    if (selectedType) { selectedType = null; return }
+    if (selectedType) { selectedType = null; detailSearchQuery = ''; return }
   }
 </script>
 
@@ -264,38 +278,55 @@
       </div>
       {#if selectedAgeVal != null || selectedAgamaVal || selectedSkillKeyVal || selectedPlanIdVal}
         <div class="mt-3">
-          <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Filter Aktif</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold text-primary uppercase tracking-wider">Filter Aktif</p>
+            {#if userRoleVal === 'developer'}
+              <button onclick={() => { selectedAge.set(null); selectedAgama.set(null); selectedSkillKey.set(null); selectedPlanId.set(null) }}
+                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold text-error hover:bg-error/10 transition-colors">
+                <span class="material-symbols-outlined text-sm">close</span>
+                Hapus Semua
+              </button>
+            {/if}
+          </div>
           <div class="bg-white rounded-2xl p-3 border-2 border-[#B7D9BC] flex flex-wrap gap-2">
             {#if selectedAgeVal != null}
-              <button onclick={() => selectedAge.set(null)}
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <button onclick={() => userRoleVal === 'developer' && selectedAge.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
                 <span class="material-symbols-outlined text-sm">cake</span>
                 Umur {selectedAgeVal} th
-                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {#if userRoleVal === 'developer'}
+                  <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {/if}
               </button>
             {/if}
             {#if selectedAgamaVal}
-              <button onclick={() => selectedAgama.set(null)}
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <button onclick={() => userRoleVal === 'developer' && selectedAgama.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
                 <span class="material-symbols-outlined text-sm">diversity_3</span>
                 {selectedAgamaVal}
-                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {#if userRoleVal === 'developer'}
+                  <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {/if}
               </button>
             {/if}
             {#if selectedSkillKeyVal}
-              <button onclick={() => selectedSkillKey.set(null)}
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <button onclick={() => userRoleVal === 'developer' && selectedSkillKey.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
                 <span class="material-symbols-outlined text-sm">psychology</span>
                 {selectedSkillKeyVal.replace(/_/g, ' ')}
-                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {#if userRoleVal === 'developer'}
+                  <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {/if}
               </button>
             {/if}
             {#if selectedPlanIdVal}
-              <button onclick={() => selectedPlanId.set(null)}
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+              <button onclick={() => userRoleVal === 'developer' && selectedPlanId.set(null)}
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
                 <span class="material-symbols-outlined text-sm">workspace_premium</span>
                 {planName() || 'Plan'}
-                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {#if userRoleVal === 'developer'}
+                  <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+                {/if}
               </button>
             {/if}
           </div>
@@ -326,7 +357,7 @@
       {/each}
     </div>
   {:else}
-    <button onclick={() => selectedType = null}
+    <button onclick={() => { selectedType = null; detailSearchQuery = '' }}
       class="flex items-center gap-2 text-primary font-label-lg mb-stack-md hover:opacity-80 transition-opacity bg-success-soft px-4 py-2 rounded-full border-2 border-[#B7D9BC]">
       <span class="material-symbols-outlined text-xl">arrow_back</span>
       Kembali
@@ -355,6 +386,16 @@
         </div>
       {/if}
     </section>
+
+    <div class="relative mb-4">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+      <input
+        type="text"
+        placeholder="Cari {selectedType.title?.toLowerCase() || 'aktivitas'}..."
+        bind:value={detailSearchQuery}
+        class="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-[#B7D9BC] focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white text-sm"
+      />
+    </div>
 
     {#if sortedItems.length > 0}
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -402,8 +443,9 @@
 <!-- Simple Item Reader Modal -->
 {#if activeStory || activeRoleplay || activeProject || activePuzzle}
   {@const item = activeStory || activeRoleplay || activeProject || activePuzzle}
-  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4">
-    <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col">
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={() => { activeStory = null; activeRoleplay = null; activeProject = null; activePuzzle = null }}>
+    <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col" onclick={(e) => e.stopPropagation()}>
       <div class="p-5 flex items-center justify-between border-b-2 border-[#B7D9BC]/50 shrink-0">
         <h3 class="font-bold text-lg text-text-main truncate flex-1 mr-3">{item.title}</h3>
         <button onclick={() => { activeStory = null; activeRoleplay = null; activeProject = null; activePuzzle = null }}

@@ -105,6 +105,9 @@ class ImageSplitterService
 
         Storage::disk('public')->makeDirectory($folder);
 
+        $masterContent = file_get_contents($filePath);
+        Storage::disk('public')->put("{$folder}/master.png", $masterContent);
+
         $files = [];
         $counter = 1;
         $totalPanels = $cols * $rows;
@@ -161,6 +164,7 @@ class ImageSplitterService
 
         return [
             'folder' => $folder,
+            'master' => "{$folder}/master.png",
             'grid' => [
                 'cols' => $cols,
                 'rows' => $rows,

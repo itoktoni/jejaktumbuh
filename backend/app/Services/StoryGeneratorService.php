@@ -133,6 +133,7 @@ class StoryGeneratorService
         $systemPrompt .= "- Age range: {$minAge}-{$maxAge} years old\n";
         $systemPrompt .= "- The pages array MUST contain EXACTLY {$pagesCount} items. Count them before returning.\n";
         $systemPrompt .= "- Each page text MUST be MAXIMUM 40 words. Keep it concise and impactful.\n";
+        $systemPrompt .= "CRITICAL: This content is for CHILDREN ages {$minAge}-{$maxAge}. You MUST use ONLY safe, kind, positive language. NEVER include any swear words, vulgar language, insults, violence, scary content, or inappropriate words in ANY language (Indonesian, English, etc.). Words like bajingan, sialan, bodoh, tolol, gila, bangsat, kampret, tai, anjing, babi, kontol, memek, ngentot, asu, jancok, and ALL similar words are STRICTLY FORBIDDEN. If a character does something wrong, show consequences in a gentle, educational way. Always promote kindness, empathy, and positive values.\n";
 
         try {
             $response = $client->post('/chat/completions', [
@@ -236,7 +237,25 @@ class StoryGeneratorService
     {
         $text = preg_replace('/[^\x00-\x7F]/u', '', $text);
         $text = preg_replace('/\s+/', ' ', $text);
+        $text = $this->filterProfanity($text);
         return trim($text);
+    }
+
+    private function filterProfanity(string $text): string
+    {
+        $badWords = [
+            'bajingan', 'sialan', 'bodoh', 'tolol', 'gila', 'bangsat', 'kampret',
+            'tai', 'anjing', 'babi', 'kontol', 'memek', 'ngentot', 'asu', 'jancok',
+            'goblok', 'idiot', 'dungu', 'keparat', 'setan', 'tukang tipu',
+            'bego', 'bebal', 'bloon', 'dancok', 'jancok', 'cukimak',
+            'fuck', 'shit', 'damn', 'hell', 'ass', 'bitch', 'bastard',
+            'stupid', 'idiot', 'dumb', 'moron', 'crap', 'piss',
+        ];
+
+        $pattern = '/\b(' . implode('|', array_map('preg_quote', $badWords)) . ')\b/i';
+        $text = preg_replace($pattern, 'baik', $text);
+
+        return $text;
     }
 
     private function openAiClient(): PendingRequest

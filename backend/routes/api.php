@@ -348,7 +348,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'update'])->name('anak.skills.update');
         Route::delete('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'destroy'])->name('anak.skills.destroy');
 
-        Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
+    Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
+    Route::post('/activities/{id}/generate-image', [ActivityController::class, 'generateImage'])->name('activities.generate-image');
 
         Route::post('/anak/{anakId}/activities', [SkillActivityController::class, 'store'])->name('anak.activities.store');
         Route::delete('/anak/{anakId}/activities/{activityId}', [SkillActivityController::class, 'destroy'])->name('anak.activities.destroy');

@@ -41,4 +41,10 @@ return [
         'model' => env('OPENAI_MODEL', 'MiniMax-M2.7-highspeed'),
     ],
 
+    'image' => [
+        'api_key' => env('IMAGE_API_KEY', env('OPENAI_API_KEY')),
+        'base_url' => env('IMAGE_BASE_URL', 'https://ark.ap-southeast.bytepluses.com/api/v3'),
+        'model' => env('IMAGE_MODEL', 'seedream-4-5-251128'),
+    ],
+
 ];

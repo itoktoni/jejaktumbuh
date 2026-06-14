@@ -57,31 +57,46 @@ class GenerateStory extends Command
             ];
         }
 
-        $pagesJson = json_encode($pagesForPrompt, JSON_UNESCAPED_UNICODE);
+        $grid = match ($pagesCount) {
+            16 => '4x4',
+            24 => '6x4',
+            20 => '5x4',
+            12 => '4x3',
+            10 => '5x2',
+            9  => '3x3',
+            default => '4x4',
+        };
 
-        $prompt = "create image canvas 9000 x 9000 pixel\n\n";
-        $prompt .= "- Buat 16 gambar persegi terpisah (2250×2250)\n\n";
-        $prompt .= "- Perbandingan setiap gambar cerita dengan rasio 1 : 1\n\n";
-        $prompt .= "- Lalu susun ke kanvas 9000×9000 menggunakan template grid tetap.\n\n";
-        $prompt .= "- Total {$pagesCount} panel\n\n";
-        $prompt .= "- Perfect square ratio 1:1 for every panel\n\n";
-        $prompt .= "- No merged panels,No oversized panels,No rounded corners.\n\n";
-        $prompt .= "- Straight vertical and horizontal grid lines only.\n\n";
-        $prompt .= "- Pure white divider lines between panels.\n\n";
-        $prompt .= "- No outer border around canvas.\n\n";
-        $prompt .= "- No objects crossing panel boundaries.\n\n";
-        $prompt .= "- Every scene fully contained inside its own panel.\n\n";
-        $prompt .= "- Reading order left-to-right, top-to-bottom.\n\n";
-        $prompt .= "- Pixar 3D cartoon style, bright colorful daylight, kid friendly.\n\n";
-        $prompt .= "- Panel 1 cover with title centered.\n\n";
-        $prompt .= "- jangan text / tulisan di dalam gambar kecuali cover\n\n";
-        $prompt .= "- border antar panel warna putih\n\n";
-        $prompt .= "- Dirancang agar bisa dipotong otomatis menggunakan rasio 1 : 1\n\n";
-        $prompt .= "- halaman pertama cover dengan tulisan text judul cerita yang menarik dan besar di tengah\n\n";
-        $prompt .= "pages : {$pagesJson}\n";
-        $prompt .= "title : {$title}\n";
-        $prompt .= "theme : {$desc}\n";
-        $prompt .= "moral : {$moral}";
+        $panelLines = [];
+        $panelLines[] = "Panel 1 (cover): Title \"{$title}\" centered, colorful kid-friendly illustration representing the story theme.";
+
+        foreach ($pagesForPrompt as $page) {
+            if ($page['num'] === 0) continue;
+            $panelLines[] = "Panel {$page['num']}: {$page['text']}";
+        }
+
+        $prompt = "A {$pagesCount}-panel comic page storyboard, single image with a {$grid} panel grid.\n\n";
+        $prompt .= "Title: {$title}\n";
+        $prompt .= "Description: {$desc}\n";
+        $prompt .= "Moral: {$moral}\n\n";
+        $prompt .= "Each panel is an illustration for the story:\n\n";
+        $prompt .= implode("\n", $panelLines) . "\n\n";
+        $prompt .= "Style: Modern pixar 3D cartoon, bright colorful daylight, kid friendly.\n\n";
+        $prompt .= "Rules:\n";
+        $prompt .= "- Panel 1 is the cover with title text centered\n";
+        $prompt .= "- cover title is not to big and small";
+        $prompt .= "- No written text in other panels except cover\n";
+        $prompt .= "- No speech bubbles allowed\n";
+        $prompt .= "- No merged panels, no oversized panels, no rounded corners\n";
+        $prompt .= "- No outer border around canvas\n";
+        $prompt .= "- No objects crossing panel boundaries\n";
+        $prompt .= "- No Page number\n";
+        $prompt .= "- Funny expressions, clear visual storytelling\n";
+        $prompt .= "- Straight vertical and horizontal grid lines only\n";
+        $prompt .= "- Pure white divider lines between panels\n";
+        $prompt .= "- Every scene fully contained inside its own panel\n";
+        $prompt .= "- Reading order left-to-right, top-to-bottom\n";
+        $prompt .= "- Perfect square ratio 1:1 for every panel\n";
 
         $activity = Activity::create([
             'type' => 'storytelling',

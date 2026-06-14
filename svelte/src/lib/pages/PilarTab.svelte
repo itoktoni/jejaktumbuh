@@ -9,7 +9,7 @@
   import { activitiesCache } from '../stores/activityStore.js'
   import * as authStore from '../stores/authStore.js'
   import { selectedAnakId, selectedPilar, selectedSkillKey, selectedAge, selectedAgama, selectedPlanId, openPilarSub, closePilarSub, activeTab, switchCounter, switchTab } from '../stores/appStore.js'
-  import { userPlan, plans as planList } from '../stores/authStore.js'
+  import { userRole, userPlan, plans as planList } from '../stores/authStore.js'
   import * as api from '../services/api.js'
   import AnakDropdown from '../components/AnakDropdown.svelte'
 
@@ -22,6 +22,7 @@
   let selectedAgamaVal = $state(null)
   let selectedPlanIdVal = $state(null)
   let searchQuery = $state('')
+  let userRoleVal = $state('')
 
   $effect(() => {
     const u1 = anakList.subscribe(v => anakListVal = v)
@@ -32,7 +33,8 @@
     const u6 = selectedAgama.subscribe(v => selectedAgamaVal = v)
     const u7 = selectedPlanId.subscribe(v => selectedPlanIdVal = v)
     const u8 = planList.subscribe(v => planListVal = v)
-    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8() }
+    const u9 = userRole.subscribe(v => userRoleVal = v)
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8(); u9() }
   })
 
   onMount(async () => {
@@ -138,30 +140,45 @@
     </div>
     {#if selectedAnakIdVal && (selectedAgeVal != null || selectedAgamaVal || selectedPlanIdVal)}
       <div class="mt-3">
-        <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Filter Aktif</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-bold text-primary uppercase tracking-wider">Filter Aktif</p>
+          {#if userRoleVal === 'developer'}
+            <button onclick={() => { selectedAge.set(null); selectedAgama.set(null); selectedPlanId.set(null) }}
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold text-error hover:bg-error/10 transition-colors">
+              <span class="material-symbols-outlined text-sm">close</span>
+              Hapus Semua
+            </button>
+          {/if}
+        </div>
         <div class="bg-white rounded-2xl p-3 border-2 border-[#B7D9BC] flex flex-wrap gap-2">
           {#if selectedAgeVal != null}
-            <button onclick={() => selectedAge.set(null)}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+            <button onclick={() => userRoleVal === 'developer' && selectedAge.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
               <span class="material-symbols-outlined text-sm">cake</span>
               Umur {selectedAgeVal} th
-              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {#if userRoleVal === 'developer'}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {/if}
             </button>
           {/if}
           {#if selectedAgamaVal}
-            <button onclick={() => selectedAgama.set(null)}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+            <button onclick={() => userRoleVal === 'developer' && selectedAgama.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
               <span class="material-symbols-outlined text-sm">diversity_3</span>
               {selectedAgamaVal}
-              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {#if userRoleVal === 'developer'}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {/if}
             </button>
           {/if}
           {#if selectedPlanIdVal}
-            <button onclick={() => selectedPlanId.set(null)}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold hover:bg-primary/10 transition-colors border border-[#B7D9BC]/50">
+            <button onclick={() => userRoleVal === 'developer' && selectedPlanId.set(null)}
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-soft text-primary text-xs font-bold border border-[#B7D9BC]/50 {userRoleVal === 'developer' ? 'hover:bg-primary/10 cursor-pointer' : 'cursor-default'}">
               <span class="material-symbols-outlined text-sm">workspace_premium</span>
               {planName() || 'Plan'}
-              <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {#if userRoleVal === 'developer'}
+                <span class="material-symbols-outlined text-sm text-primary/60">close</span>
+              {/if}
             </button>
           {/if}
         </div>

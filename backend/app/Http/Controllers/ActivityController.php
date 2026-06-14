@@ -7,8 +7,10 @@ use App\Actions\UpdateAction;
 use App\Concerns\ControllerTrait;
 use App\Http\Requests\GeneralRequest;
 use App\Models\Activity;
+use App\Services\ImageGeneratorService;
 use App\Services\ImageSplitterService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class ActivityController extends Controller
@@ -196,5 +198,68 @@ class ActivityController extends Controller
         ];
 
         return response()->json($types);
+    }
+
+    public function generateImage(Request $request, $id)
+    {
+        $activity = Activity::findOrFail($id);
+
+        if (!$activity->prompt) {
+            return response()->json(['message' => 'Activity has no prompt'], 422);
+        }
+
+        $model = $request->input('model');
+        $size = $request->input('size', '2K');
+        $pagesCount = (int) $request->input('pages', 0);
+
+        if (!$pagesCount) {
+            $pagesCount = isset($activity->data['pages'])
+                ? count($activity->data['pages']) + 1
+                : 16;
+        }
+
+        $grid = ImageSplitterService::getGrid($pagesCount);
+
+        if (!$grid) {
+            return response()->json(['message' => "Unsupported page count: {$pagesCount}"], 422);
+        }
+
+        $generator = new ImageGeneratorService();
+
+        $imageUrl = $generator->generate($activity->prompt, $size, $model);
+
+        if (!$imageUrl) {
+            return response()->json(['message' => 'Failed to generate image'], 500);
+        }
+
+        $tmpPath = $generator->download($imageUrl);
+
+        if (!$tmpPath) {
+            return response()->json(['message' => 'Failed to download image'], 500);
+        }
+
+        try {
+            $file = new UploadedFile(
+                $tmpPath,
+                'story.png',
+                mime_content_type($tmpPath),
+                null,
+                true
+            );
+
+            $result = ImageSplitterService::split($file, $activity->id, $pagesCount);
+
+            @unlink($tmpPath);
+
+            return response()->json([
+                'message' => 'Image generated and split successfully',
+                'folder' => $result['folder'],
+                'files' => $result['files'],
+                'grid' => $result['grid'],
+            ]);
+        } catch (\Throwable $e) {
+            @unlink($tmpPath);
+            return response()->json(['message' => 'Failed to split image: ' . $e->getMessage()], 500);
+        }
     }
 }

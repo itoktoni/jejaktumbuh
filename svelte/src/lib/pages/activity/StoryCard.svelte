@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { trackActivityView } from '../../services/api.js'
+  import { resolveCoverImage, resolveStoryImage } from '../../utils/images.js'
 
 
   let { item, bg, onclick } = $props()
@@ -135,28 +136,32 @@
   onclick={openReader}>
   <div class="relative transition-all duration-300 group-hover:-translate-y-1 group-hover:rotate-[-1deg]">
     <div class="bg-white rounded-[24px] overflow-hidden shadow-lg border-4 border-[#B7D9BC] relative">
-      <div class="aspect-[3/4] overflow-hidden relative rounded-t-[20px]">
+      <div class="aspect-square p-2 overflow-hidden relative rounded-t-[20px]">
         {#if item.image}
-          <img src={item.image} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <img src={resolveCoverImage(item.id, item.image)} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 rounded-lg transition-transform duration-700" onerror={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }} />
+          <div class="w-full h-full flex-col items-center justify-center absolute inset-0 rounded-lg" style="background: {bg}; display: none">
+            <span class="text-5xl mb-1">🖼️</span>
+            <p class="text-xs font-bold text-on-surface-variant">No Image</p>
+          </div>
         {:else}
-          <div class="w-full h-full flex items-center justify-center" style="background: {bg}">
-            <span class="text-6xl">{item.emoji || '📖'}</span>
+          <div class="w-full h-full flex flex-col items-center justify-center rounded-lg" style="background: {bg}">
+            <span class="text-5xl mb-1">🖼️</span>
+            <p class="text-xs font-bold text-on-surface-variant">No Image</p>
           </div>
         {/if}
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
-        <div class="absolute top-0 left-0 right-0 flex justify-between p-2">
+        <div class="absolute bottom-2 right-2">
           {#if totalPages > 0}
-            <div class="bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 text-[10px] font-bold text-primary shadow-sm">
+            <div class="bg-white/90 backdrop-blur-sm rounded-full mr-1 mb-1 px-2.5 py-1 text-[10px] font-bold text-primary shadow-sm">
                {totalPages} Halaman
             </div>
           {/if}
         </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-primary/30 backdrop-blur-sm p-3 space-y-1">
-          <h3 class="text-sm text-white line-clamp-2 leading-tight">{item.title}</h3>
-          {#if item.moral}
-            <p class="text-[10px] text-white/80 line-clamp-1">💬 {item.moral}</p>
-          {/if}
-        </div>
+      </div>
+      <div class="px-3 py-2.5 space-y-1">
+        <h3 class="text-sm font-semibold text-on-surface line-clamp-2 leading-tight">{item.title}</h3>
+        {#if item.moral}
+          <p class="text-[10px] text-on-surface-variant line-clamp-1">💬 {item.moral}</p>
+        {/if}
       </div>
       <div class="px-3 py-2.5 flex items-center justify-between bg-success-soft">
         <div class="flex items-center gap-1.5 text-xs text-text-secondary">
@@ -176,8 +181,9 @@
 </button>
 
 {#if showReader}
-  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4">
-    <div class="w-full max-w-md bg-canvas-cream lg:rounded-[40px] lg:shadow-2xl lg:border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative">
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={closeReader}>
+    <div class="w-full max-w-md bg-canvas-cream lg:rounded-[40px] lg:shadow-2xl lg:border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative" onclick={(e) => e.stopPropagation()}>
 
       <div class="px-4 pt-4 pb-2 flex items-center gap-3 z-10 shrink-0">
         <div class="bg-primary text-on-primary w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center text-xs font-bold shrink-0">
@@ -196,11 +202,18 @@
         <div class="flex-1 flex flex-col justify-center px-4 gap-4 overflow-hidden">
 
           <div class="w-full max-h-[50vh] aspect-[3/4] bg-success-soft rounded-[32px] border-4 border-white shadow-lg overflow-hidden relative floating-illustration">
-            {#if currentPageData.image}
-              <img src={currentPageData.image} alt={currentPageData.text || item.title}
-                class="w-full h-full object-cover" />
+            {#if currentPageData.num}
+              <img src={resolveStoryImage(item.id, currentPageData.num + '.png')} alt={currentPageData.text || item.title}
+                class="w-full h-full object-cover" onerror={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }} />
+              <div class="w-full h-full flex-col items-center justify-center absolute inset-0" style="background: {bg || '#E8F5E9'}; display: none">
+                <span class="text-5xl mb-1">🖼️</span>
+                <p class="text-xs font-bold text-on-surface-variant">No Image</p>
+              </div>
             {:else}
-              <div class="w-full h-full flex items-center justify-center text-7xl">{item.emoji || '📖'}</div>
+              <div class="w-full h-full flex flex-col items-center justify-center" style="background: {bg || '#E8F5E9'}">
+                <span class="text-5xl mb-1">🖼️</span>
+                <p class="text-xs font-bold text-on-surface-variant">No Image</p>
+              </div>
             {/if}
           </div>
 
@@ -209,20 +222,6 @@
             <p class="text-text-main text-base lg:text-lg text-center leading-relaxed font-medium">
               {currentPageData.text || 'Konten belum tersedia'}
             </p>
-          </div>
-
-          <div class="flex justify-center">
-            <button onclick={toggleSpeech}
-              class="border-4 border-white px-5 py-2.5 rounded-full flex items-center gap-2 text-base font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all"
-              class:bg-error={isSpeaking}
-              class:text-on-error={isSpeaking}
-              class:bg-primary={!isSpeaking}
-              class:text-on-primary={!isSpeaking}>
-              <span class="material-symbols-outlined text-xl" class:animate-pulse={!isSpeaking}>
-                {isSpeaking ? 'stop' : 'volume_up'}
-              </span>
-              {isSpeaking ? 'Berhenti' : 'Dengarkan'}
-            </button>
           </div>
         </div>
       {:else}
@@ -256,7 +255,7 @@
                 <span class="material-symbols-outlined text-xl">
                   {isSpeakingMoral ? 'stop' : 'volume_up'}
                 </span>
-                {isSpeakingMoral ? 'Berhenti' : 'Dengarkan Pelajaran'}
+                {isSpeakingMoral ? 'Berhenti' : 'Mainkan Pelajaran'}
               </button>
             </div>
           {/if}
@@ -271,6 +270,20 @@
             <span class="material-symbols-outlined text-xl">arrow_back</span>
             {isFinished ? 'Baca Lagi' : 'Kembali'}
           </button>
+
+          {#if !isFinished}
+            <button onclick={toggleSpeech}
+              class="py-3 px-4 rounded-2xl border-4 border-white flex items-center justify-center gap-1.5 text-sm font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all shrink-0"
+              class:bg-error={isSpeaking}
+              class:text-on-error={isSpeaking}
+              class:bg-primary={!isSpeaking}
+              class:text-on-primary={!isSpeaking}>
+              <span class="material-symbols-outlined text-lg" class:animate-pulse={!isSpeaking}>
+                {isSpeaking ? 'stop' : 'volume_up'}
+              </span>
+              {isSpeaking ? 'Stop' : 'Mainkan'}
+            </button>
+          {/if}
 
           <button onclick={nextPage}
             class="flex-1 py-3 px-4 rounded-2xl border border-primary-400 text-white font-semibold text-base flex items-center justify-center gap-2 transition-all btn-pop-green">
