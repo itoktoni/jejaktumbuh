@@ -21,6 +21,8 @@ class Activity extends BaseModel
         'active' => 'Active',
         'status' => 'Status',
         'views' => 'Views',
+        'created_by' => 'Created By',
+        'creator' => 'Creator',
     ];
 
     public static $sortColumns = [
@@ -32,6 +34,8 @@ class Activity extends BaseModel
         'active',
         'views',
         'status',
+        'created_by',
+        'creator',
     ];
 
     protected $fillable = [
@@ -50,6 +54,10 @@ class Activity extends BaseModel
         'agama',
         'views',
         'status',
+        'created_by',
+        'prompt',
+        'notes',
+        'creator',
     ];
 
     protected function casts(): array
@@ -62,6 +70,7 @@ class Activity extends BaseModel
             'agama' => 'array',
             'active' => 'boolean',
             'views' => 'integer',
+            'created_by' => 'integer',
         ];
     }
 

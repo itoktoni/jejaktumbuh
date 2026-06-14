@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'access' => AccessMiddleware::class,
             'verified' => VerifyVerified::class,
+            // 'skip_verified' => SkipVerifiedCheck::class,
         ]);
 
         $middleware->append([

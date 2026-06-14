@@ -18,7 +18,14 @@ class ActivityController extends Controller
 
     public function index(Request $request)
     {
-        $query = Activity::active()->approved()->orderBy('sort_order');
+        $user = auth('sanctum')->user();
+        $isDeveloper = $user && $user->role === 'developer';
+
+        $query = Activity::where('active', true)->orderBy('sort_order');
+
+        if (!$isDeveloper) {
+            $query->where('status', 'approved');
+        }
 
         if ($request->has('type')) {
             $query->ofType($request->type);
@@ -36,10 +43,16 @@ class ActivityController extends Controller
     public function popular(Request $request)
     {
         $limit = $request->input('limit', 10);
-        $activities = Activity::active()->approved()
-            ->orderByDesc('views')
-            ->limit($limit)
-            ->get();
+        $user = auth('sanctum')->user();
+        $isDeveloper = $user && $user->role === 'developer';
+
+        $query = Activity::where('active', true)->orderByDesc('views')->limit($limit);
+
+        if (!$isDeveloper) {
+            $query->where('status', 'approved');
+        }
+
+        $activities = $query->get();
 
         return response()->json($activities);
     }
@@ -52,9 +65,18 @@ class ActivityController extends Controller
         return response()->json(['views' => $views]);
     }
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
-        $activity = Activity::where('slug', $slug)->active()->firstOrFail();
+        $user = auth('sanctum')->user();
+        $isDeveloper = $user && $user->role === 'developer';
+
+        $query = Activity::where('slug', $slug)->where('active', true);
+
+        if (!$isDeveloper) {
+            $query->where('status', 'approved');
+        }
+
+        $activity = $query->firstOrFail();
 
         return response()->json($activity);
     }
@@ -73,11 +95,16 @@ class ActivityController extends Controller
             'sort_order' => 'nullable|integer',
             'active' => 'nullable|boolean',
             'status' => 'nullable|in:pending,review,approved,rejected',
+            'created_by' => 'nullable|integer',
+            'prompt' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'creator' => 'nullable|string|max:255',
         ]);
 
         $data['slug'] = Str::slug($data['title']).'-'.Str::random(5);
         $data['active'] = $data['active'] ?? true;
         $data['status'] = $data['status'] ?? 'approved';
+        $data['created_by'] = $data['created_by'] ?? ($request->user()?->id ?? 1);
 
         $activity = Activity::create($data);
 
@@ -99,6 +126,10 @@ class ActivityController extends Controller
             'sort_order' => 'nullable|integer',
             'active' => 'nullable|boolean',
             'status' => 'nullable|in:pending,review,approved,rejected',
+            'created_by' => 'nullable|integer',
+            'prompt' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'creator' => 'nullable|string|max:255',
         ]);
 
         $activity->update($data);

@@ -16,12 +16,247 @@ use App\Http\Controllers\SkillActivityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\PilarController;
 use App\Http\Controllers\WorksheetController;
+use App\Models\Activity;
+use App\Services\LocalImageGeneratorService;
+use App\Services\StoryGeneratorService;
 use App\Actions\PlanAction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+Route::get('/stories/generate', function (Request $request, StoryGeneratorService $stories, LocalImageGeneratorService $images) {
+    $theme = (string) $request->query('theme', 'kebersamaan');
+    $childName = (string) $request->query('child_name', 'Anak');
+    $pagesCount = (int) $request->query('pages_count', 4);
+    if ($pagesCount < 1) $pagesCount = 1;
+    if ($pagesCount > 24) $pagesCount = 24;
+    $generateImages = (bool) $request->query('generate_images', false);
+    $withAi = (bool) $request->query('with_ai', false);
+    $save = (bool) $request->query('save', false);
+
+    if ($withAi) {
+        $generated = $stories->generateWithAI($theme, $childName, $pagesCount);
+        $pages = $generated['pages'];
+    } else {
+        $generated = $stories->generate($theme, $childName);
+        $pagesRaw = array_slice($generated['pages'], 0, $pagesCount);
+        $pages = [];
+        foreach ($pagesRaw as $index => $page) {
+            $pages[] = [
+                'num' => $index + 1,
+                'text' => $page['text'],
+            ];
+        }
+    }
+
+    $title = $generated['title'];
+    $slug = Str::slug($title) . '-' . Str::random(5);
+    $moral = $generated['moral'];
+
+    $response = [
+        'title' => $title,
+        'slug' => $slug,
+        'moral' => $moral,
+        'pages' => $pages,
+        'theme' => $theme,
+        'child_name' => $childName,
+        'source' => $generated['source'] ?? 'template',
+    ];
+
+    if ($save) {
+        $activity = Activity::create([
+            'type' => 'storytelling',
+            'title' => $title,
+            'slug' => $slug,
+            'desc' => $title . ' - Cerita tentang ' . $theme . ' untuk anak.',
+            'image' => null,
+            'moral' => $moral,
+            'ages' => range(3, 8),
+            'skills' => [],
+            'data' => ['pages' => $pages],
+            'sort_order' => 0,
+            'active' => true,
+            'views' => 0,
+            'status' => 'approved',
+        ]);
+
+        if ($generateImages && $activity) {
+            $savedPages = [];
+            foreach ($pages as $page) {
+                $num = (int) ($page['num'] ?? 1);
+                $savedPages[] = [
+                    'num' => $num,
+                    'text' => $page['text'],
+                    'image' => 'https://backend.test/storage/images/stories/' . $activity->id . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png',
+                ];
+            }
+            $activity->data = array_merge($activity->data ?? [], ['pages' => $savedPages]);
+            $activity->image = 'https://backend.test/storage/images/stories/' . $activity->id . '/01.png';
+            $activity->save();
+            $pages = $savedPages;
+        }
+
+        $response['activity_id'] = $activity->id;
+        $response['saved'] = true;
+    } elseif ($generateImages) {
+        $tempId = time();
+        foreach ($pages as &$page) {
+            $num = (int) ($page['num'] ?? 1);
+            $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+        }
+        unset($page);
+    }
+
+    return response()->json($response);
+})->name('stories.generate');
+
+Route::get('/stories/preview', function (Request $request, LocalImageGeneratorService $images) {
+    $pages = $request->query('pages', []);
+    if (!is_array($pages)) $pages = [$pages];
+    $generateImages = (bool) $request->query('generate_images', false);
+
+    if ($generateImages) {
+        foreach ($pages as &$page) {
+            $prompt = is_array($page) ? trim($page['text'] ?? '') : trim((string) $page);
+            if (is_array($page) && isset($page['text'])) {
+                $page['image'] = $images->generate($prompt);
+            }
+        }
+        unset($page);
+    }
+
+    return response()->json([
+        'pages' => $pages,
+    ]);
+})->name('stories.preview');
+
+// OpenAI-compatible endpoint for AI tools (Aider, Cursor, Windsurf, Cline, etc.)
+Route::post('/openai/v1/chat/completions', function (Request $request, StoryGeneratorService $stories, LocalImageGeneratorService $images) {
+    $body = $request->all();
+    $stream = !empty($body['stream']) && $body['stream'] === true;
+
+    $messages = $body['messages'] ?? [];
+    $lastMessage = end($messages);
+    $userPrompt = is_array($lastMessage) ? ($lastMessage['content'] ?? '') : '';
+
+    $theme = 'kebersamaan';
+    $childName = 'Anak';
+    $pagesCount = 4;
+    $generateImages = false;
+
+    if (preg_match('/tema[:\s]+([a-z_]+)/i', $userPrompt, $m)) {
+        $theme = strtolower(trim($m[1]));
+    }
+    if (preg_match('/nama[:\s]+([A-Za-z]+)/i', $userPrompt, $m)) {
+        $childName = trim($m[1]);
+    }
+    if (preg_match('/pages?[:\s]+(\d+)/i', $userPrompt, $m)) {
+        $pagesCount = (int) $m[1];
+        if ($pagesCount < 2) $pagesCount = 2;
+        if ($pagesCount > 8) $pagesCount = 8;
+    }
+    if (stripos($userPrompt, 'gambar') !== false || stripos($userPrompt, 'image') !== false) {
+        $generateImages = true;
+    }
+
+    if ($stream) {
+        return response()->stream(function () use ($stories, $images, $theme, $childName, $pagesCount, $generateImages) {
+            $generated = $stories->generate($theme, $childName);
+            $pages = array_slice($generated['pages'], 0, $pagesCount);
+            $renumbered = [];
+            foreach ($pages as $index => $page) {
+                $renumbered[] = [
+                    'num' => $index + 1,
+                    'text' => $page['text'],
+                ];
+            }
+            if ($generateImages) {
+                $tempId = time();
+                foreach ($renumbered as &$page) {
+                    $num = (int) ($page['num'] ?? 1);
+                    $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+                }
+                unset($page);
+            }
+
+            $content = json_encode([
+                'title' => $generated['title'],
+                'moral' => $generated['moral'],
+                'pages' => $renumbered,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            $chunk = json_encode([
+                'id' => 'chatcmpl-' . Str::random(8),
+                'object' => 'chat.completion.chunk',
+                'created' => time(),
+                'model' => 'story-generator',
+                'choices' => [[
+                    'index' => 0,
+                    'delta' => ['content' => $content],
+                    'finish_reason' => 'stop',
+                ]],
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            echo "data: {$chunk}\n\n";
+            echo "data: [DONE]\n\n";
+            ob_flush();
+            flush();
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
+    $generated = $stories->generate($theme, $childName);
+    $pages = array_slice($generated['pages'], 0, $pagesCount);
+    $renumbered = [];
+    foreach ($pages as $index => $page) {
+        $renumbered[] = [
+            'num' => $index + 1,
+            'text' => $page['text'],
+        ];
+    }
+    if ($generateImages) {
+        $tempId = time();
+        foreach ($renumbered as &$page) {
+            $num = (int) ($page['num'] ?? 1);
+            $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+        }
+        unset($page);
+    }
+
+    $content = json_encode([
+        'title' => $generated['title'],
+        'moral' => $generated['moral'],
+        'pages' => $renumbered,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+    return response()->json([
+        'id' => 'chatcmpl-' . Str::random(8),
+        'object' => 'chat.completion',
+        'created' => time(),
+        'model' => 'story-generator',
+        'choices' => [
+            [
+                'index' => 0,
+                'message' => [
+                    'role' => 'assistant',
+                    'content' => $content,
+                ],
+                'finish_reason' => 'stop',
+            ],
+        ],
+        'usage' => [
+            'prompt_tokens' => max(1, (int) (strlen($userPrompt) / 4)),
+            'completion_tokens' => max(1, (int) (strlen($content) / 4)),
+            'total_tokens' => max(2, (int) ((strlen($userPrompt) + strlen($content)) / 4)),
+        ],
+    ]);
+})->name('openai.stories.completions');
 
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
@@ -137,16 +372,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/anak/{anakId}/worksheets/{worksheetId}', [WorksheetController::class, 'destroy'])->name('anak.worksheets.destroy');
 
         Route::get('/anak/{anakId}/evaluations', [EvaluationController::class, 'index'])->name('anak.evaluations.index');
-        Route::post('/anak/{anakId}/evaluations', [EvaluationController::class, 'store'])->name('anak.evaluations.store');
-        Route::delete('/anak/{anakId}/evaluations/{evalId}', [EvaluationController::class, 'destroy'])->name('anak.evaluations.destroy');
+        Route::get('/evaluations/{evaluationId}', [EvaluationController::class, 'show'])->name('evaluations.show');
+        Route::post('/evaluations/{evaluationId}/finalize', [EvaluationController::class, 'finalize'])->name('evaluations.finalize');
     });
-});
-
-Route::post('webhook', function(){
-    $request = request()->all();
-    Log::info($request);
-});
-
-Route::get('test', function(){
-    dd(now()->format('Y-m-d H:i:s'));
 });
