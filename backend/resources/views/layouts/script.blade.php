@@ -8,15 +8,29 @@
 
             init() {
                 this.fetchNotifications();
-                const self = this;
-                window.addNotification = function(notif) {
-                    if (self.notifications.find(n => n.id === notif.id)) return;
-                    self.notifications.unshift(notif);
-                    self.unreadCount = self.notifications.filter(n => !n.read).length;
-                    if (window.showToast) {
-                        window.showToast(notif.title, notif.body);
-                    }
-                };
+                setInterval(() => this.pollNotifications(), 15000);
+            },
+
+            async pollNotifications() {
+                try {
+                    const res = await fetch('/notifications-web', {
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const newNotifs = data.notifications || [];
+                    const existingIds = new Set(this.notifications.map(n => n.id));
+                    const added = newNotifs.filter(n => !existingIds.has(n.id));
+                    this.notifications = newNotifs;
+                    this.unreadCount = data.unread_count || 0;
+                    added.forEach(n => {
+                        if (window.showToast) window.showToast(n.title, n.body);
+                    });
+                } catch (e) {}
             },
 
             async fetchNotifications() {
@@ -86,7 +100,7 @@
 
     window.showToast = function(title, body) {
         const toast = document.createElement('div');
-        toast.className = 'fixed top-20 right-4 z-50 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-lg max-w-sm';
+        toast.className = 'bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-lg max-w-sm';
         toast.innerHTML = '<div class="flex items-start gap-3"><span class="material-symbols-outlined text-primary">notifications</span><div><p class="font-body-sm font-semibold text-on-surface">' + title + '</p><p class="font-body-sm text-on-surface-variant text-sm">' + (body || '') + '</p></div></div>';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 5000);

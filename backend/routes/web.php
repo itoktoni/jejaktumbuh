@@ -5,11 +5,16 @@ use App\Models\Notification;
 use Buki\AutoRoute\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::view('/', 'welcome')->name('home');
+Route::post('/broadcasting/auth', function (Request $request) {
+    return Broadcast::auth($request);
+})->middleware('auth');
 Route::middleware(['auth', 'verified', 'access'])->group(function () {
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::view('test-reverb', 'test-reverb')->name('test.reverb');
 
     Route::auto('/user', 'UsersController', ['name' => 'user']);
     Route::auto('/subscribe', 'SubscribeController', ['name' => 'subscribe']);
