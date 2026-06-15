@@ -385,6 +385,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/anak/{anakId}/checklists/{checklistId}', [ChecklistController::class, 'update'])->name('anak.checklists.update');
         Route::delete('/anak/{anakId}/checklists/{checklistId}', [ChecklistController::class, 'destroy'])->name('anak.checklists.destroy');
 
+        Route::get('/anak/{anakId}/schedules', [ScheduleController::class, 'index'])->name('anak.schedules.index');
         Route::post('/anak/{anakId}/schedules', [ScheduleController::class, 'store'])->name('anak.schedules.store');
         Route::put('/anak/{anakId}/schedules/{scheduleId}', [ScheduleController::class, 'update'])->name('anak.schedules.update');
         Route::delete('/anak/{anakId}/schedules/{scheduleId}', [ScheduleController::class, 'destroy'])->name('anak.schedules.destroy');

@@ -3,16 +3,24 @@ import {
   getChallenges, saveChallenge as dbSaveChallenge, removeChallenge as dbRemoveChallenge,
   getChallengeHistory, saveChallengeHistory as dbSaveChallengeHistory,
   getChecklists, saveChecklist as dbSaveChecklist, removeChecklist as dbRemoveChecklist,
-  getSchedules, saveSchedule as dbSaveSchedule, removeSchedule as dbRemoveSchedule,
+  getSchedules as dbGetSchedules, saveSchedule as dbSaveSchedule, removeSchedule as dbRemoveSchedule,
   getWorksheets, saveWorksheet as dbSaveWorksheet, removeWorksheet as dbRemoveWorksheet,
   getSetting, getAnakList as dbGetAnakList
 } from '../db.js'
+import { autoSync } from './syncStore.js'
 import * as api from '../services/api.js'
 
 async function shouldAutoSync() {
   if (!api.isAuthenticated()) return false
   const val = await getSetting('autoSync')
   return val !== false
+}
+
+function isAutoSyncEnabled() {
+  let enabled = true
+  const unsubscribe = autoSync.subscribe(v => enabled = v)
+  unsubscribe()
+  return enabled
 }
 
 async function ensureAnakOnServer(anakId) {
@@ -64,11 +72,30 @@ export const toolsData = derived(
 
 export async function loadToolsData(anakListArr) {
   const toolsMap = {}
+  const syncEnabled = isAutoSyncEnabled()
   for (const anak of anakListArr) {
     const challenges = await getChallenges(anak.id)
     const challengeHistory = await getChallengeHistory(anak.id)
     const checklists = await getChecklists(anak.id)
-    const schedules = await getSchedules(anak.id)
+    // Load schedules based on autoSync setting
+    let schedules = []
+    if (syncEnabled && api.isAuthenticated()) {
+      try {
+        schedules = await api.getSchedules(anak.id) || []
+        for (const s of schedules) {
+          if (s.anak_id !== undefined) {
+            s.anakId = s.anak_id
+            delete s.anak_id
+          }
+        }
+      } catch (e) {
+        console.warn('[loadToolsData] Failed to load schedules from server:', e.message)
+        // Fallback to local
+        schedules = await dbGetSchedules(anak.id)
+      }
+    } else {
+      schedules = await dbGetSchedules(anak.id)
+    }
     const worksheets = await getWorksheets(anak.id)
     toolsMap[anak.id] = { challenges, challengeHistory, checklists, schedules, worksheets }
   }
@@ -238,18 +265,50 @@ export async function removeChecklistItem({ checklistId, itemIndex }) {
 
 export async function addSchedule(item) {
   const currentId = get(toolsAnakId)
+  if (!item.id) item.id = Date.now()
+
+  // Add to local state first
   anakToolsData.update(map => {
     getAnakToolsData(map, currentId).schedules.push(item)
     return map
   })
+
+  // Save to Dexie for local storage
   dbSaveSchedule({ ...item, anakId: currentId })
-  if (await shouldAutoSync()) {
+
+  // Sync to server if autoSync enabled
+  if (isAutoSyncEnabled() && api.isAuthenticated()) {
     try {
       const serverAnakId = await ensureAnakOnServer(currentId)
-      if (!serverAnakId) return
-      const saved = await api.addSchedule(serverAnakId, item)
-      if (saved?.id) item.serverId = saved.id
-    } catch (e) { console.warn('[Schedule] Sync FAILED:', e.message) }
+      if (serverAnakId) {
+        const saved = await api.addSchedule(serverAnakId, item)
+        if (saved?.id) {
+          item.serverId = saved.id
+        }
+      }
+    } catch (e) { console.warn('[Schedule] Add FAILED:', e.message) }
+  }
+}
+
+export async function updateSchedule(item, data) {
+  const currentId = get(toolsAnakId)
+  const map = get(anakToolsData)
+  const schedules = getAnakToolsData(map, currentId).schedules
+  const idx = schedules.findIndex(s => s === item || s.id === item.id)
+  if (idx > -1) {
+    Object.assign(schedules[idx], data)
+    anakToolsData.set(map)
+
+    // Update in Dexie
+    dbSaveSchedule({ ...schedules[idx], anakId: currentId })
+
+    // Sync to server if autoSync enabled
+    if (isAutoSyncEnabled() && schedules[idx]?.serverId && api.isAuthenticated()) {
+      try {
+        const serverAnakId = await ensureAnakOnServer(currentId)
+        if (serverAnakId) await api.updateSchedule(serverAnakId, schedules[idx].serverId, data)
+      } catch (e) { console.warn('[Schedule] Update FAILED:', e.message) }
+    }
   }
 }
 
@@ -257,15 +316,15 @@ export async function removeSchedule(item) {
   const currentId = get(toolsAnakId)
   const map = get(anakToolsData)
   const schedules = getAnakToolsData(map, currentId).schedules
-  const idx = schedules.indexOf(item)
+  const idx = schedules.findIndex(s => s === item || s.id === item.id)
   if (idx > -1) {
-    schedules.splice(idx, 1)
+    const removed = schedules.splice(idx, 1)[0]
     anakToolsData.set(map)
-    if (item.id) dbRemoveSchedule(item.id)
-    if (await shouldAutoSync() && item?.serverId) {
+    if (removed?.id) dbRemoveSchedule(removed.id)
+    if (await shouldAutoSync() && removed?.serverId) {
       try {
         const serverAnakId = await ensureAnakOnServer(currentId)
-        if (serverAnakId) await api.deleteSchedule(serverAnakId, item.serverId)
+        if (serverAnakId) await api.deleteSchedule(serverAnakId, removed.serverId)
       } catch (e) { console.warn('[Schedule] Sync delete FAILED:', e.message) }
     }
   }

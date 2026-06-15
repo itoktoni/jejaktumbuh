@@ -25,6 +25,13 @@
         <p class="text-xs text-on-surface-variant line-clamp-3 italic">"{item.script}"</p>
       </div>
     {/if}
+    {#if item.tips?.length}
+      <div class="bg-success-soft rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
+        <p class="text-xs text-primary">
+          <span class="font-bold">💡 Tips:</span> {item.tips[0]}
+        </p>
+      </div>
+    {/if}
     {#if item.views}
       <span class="flex items-center gap-1 text-[11px] text-on-surface-variant">
         <span class="material-symbols-outlined text-sm">visibility</span>

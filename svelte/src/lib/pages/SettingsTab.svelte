@@ -1,12 +1,14 @@
 <script>
   import { appConfig } from '../config/appConfig.js'
   import { isAuthenticated } from '../stores/authStore.js'
+  import { autoSync } from '../stores/syncStore.js'
   import { activitiesCache, serverCount, localCount, downloading, downloadMessage, loadFromCache, downloadActivities } from '../stores/activityStore.js'
   import { buildAktivitasDataFromAPI, setAktivitasData } from '../data/activities.js'
   import { get } from 'svelte/store'
   import { onMount } from 'svelte'
 
   let isAuth = $state(false)
+  let syncEnabled = $state(true)
   let dl = $state(false)
   let dlMsg = $state('')
   let locCnt = $state(0)
@@ -16,7 +18,8 @@
     const u2 = downloading.subscribe(v => dl = v)
     const u3 = downloadMessage.subscribe(v => dlMsg = v)
     const u4 = localCount.subscribe(v => locCnt = v)
-    return () => { u1(); u2(); u3(); u4() }
+    const u5 = autoSync.subscribe(v => syncEnabled = v)
+    return () => { u1(); u2(); u3(); u4(); u5() }
   })
 
   onMount(() => { loadFromCache() })
@@ -28,6 +31,10 @@
       setAktivitasData(buildAktivitasDataFromAPI(cache))
     }
   }
+
+  function toggleSync() {
+    autoSync.toggle()
+  }
 </script>
 
 <div class="px-margin-mobile md:px-margin-desktop pt-5 max-w-6xl mx-auto pb-8">
@@ -38,27 +45,23 @@
           <span class="material-symbols-outlined text-lg text-primary">sync</span>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="font-label-lg text-text-main">Sinkronisasi</p>
-          <p class="text-xs text-on-surface-variant mt-0.5">Backup & restore data anak ke cloud</p>
+          <p class="font-label-lg text-text-main">Sinkronisasi Otomatis</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Data langsung tersimpan ke server</p>
         </div>
+        <button onclick={toggleSync}
+          class="relative w-12 h-7 rounded-full transition-colors duration-200 shrink-0 mt-0.5"
+          class:bg-primary={syncEnabled}
+          class:bg-surface-variant={!syncEnabled}>
+          <span class="absolute top-0.5 w-6 right-5 h-6 rounded-full bg-white shadow-md transition-transform duration-200"
+            class:translate-x-5={syncEnabled}
+            class:translate-x-0.5={!syncEnabled}></span>
+        </button>
       </div>
       <p class="text-xs text-on-surface-variant mt-3">
-        {isAuth ? 'Anda terhubung ke server. Data akan otomatis tersinkronisasi.' : 'Masuk untuk mengaktifkan sinkronisasi otomatis.'}
+        {syncEnabled ? 'Data jadwal, checklist, dll langsung disimpan ke server.' : 'Data disimpan di local device saja.'}
       </p>
     </div>
 
-    <div class="bg-canvas-cream rounded-[32px] p-6 border-4 border-[#B7D9BC] shadow-lg">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-[#B7D9BC] shadow-sm shrink-0">
-          <span class="material-symbols-outlined text-lg text-primary">notifications</span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="font-label-lg text-text-main">Notifikasi</p>
-          <p class="text-xs text-on-surface-variant mt-0.5">Atur pemberitahuan push dari server</p>
-        </div>
-      </div>
-      <p class="text-xs text-on-surface-variant mt-3">Pemberitahuan akan muncul saat ada update atau pengingat dari server.</p>
-    </div>
 
     <div class="bg-canvas-cream rounded-[32px] p-6 border-4 border-[#B7D9BC] shadow-lg">
       <div class="flex items-start gap-3">

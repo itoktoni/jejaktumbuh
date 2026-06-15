@@ -20,6 +20,13 @@
     {#if item.desc}
       <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">{item.desc}</p>
     {/if}
+    {#if item.steps?.length}
+      <div class="bg-white rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
+        <p class="text-xs text-on-surface-variant">
+          <span class="font-bold text-primary">1.</span> {item.steps[0]}
+        </p>
+      </div>
+    {/if}
     {#if item.benefit}
       <div class="bg-success-soft rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
         <p class="text-xs text-primary font-bold">

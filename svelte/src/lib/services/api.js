@@ -182,6 +182,7 @@ export async function addChecklist(anakId, checklist) { return apiFetch(`/anak/$
 export async function updateChecklist(anakId, checklistId, data) { return apiFetch(`/anak/${anakId}/checklists/${checklistId}`, { method: 'PUT', body: JSON.stringify(data) }) }
 export async function deleteChecklist(anakId, checklistId) { return apiFetch(`/anak/${anakId}/checklists/${checklistId}`, { method: 'DELETE' }) }
 
+export async function getSchedules(anakId) { return apiFetch(`/anak/${anakId}/schedules`) }
 export async function addSchedule(anakId, schedule) { return apiFetch(`/anak/${anakId}/schedules`, { method: 'POST', body: JSON.stringify(schedule) }) }
 export async function updateSchedule(anakId, scheduleId, data) { return apiFetch(`/anak/${anakId}/schedules/${scheduleId}`, { method: 'PUT', body: JSON.stringify(data) }) }
 export async function deleteSchedule(anakId, scheduleId) { return apiFetch(`/anak/${anakId}/schedules/${scheduleId}`, { method: 'DELETE' }) }

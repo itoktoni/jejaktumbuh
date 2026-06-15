@@ -9,6 +9,8 @@ export const unreadCount = derived(notifications, ($n) => $n.filter(n => !n.read
 
 let channel = null
 
+const notificationEnabled = import.meta.env.VITE_NOTIFICATION_ENABLE === 'true'
+
 export async function fetchNotifications() {
   if (!api.isAuthenticated()) return
   loading.set(true)
@@ -22,6 +24,8 @@ export async function fetchNotifications() {
 }
 
 export function initRealtime(userId) {
+  if (!notificationEnabled) return
+
   const echo = initEcho()
   if (!echo) return
 

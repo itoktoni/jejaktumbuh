@@ -5,6 +5,17 @@
 
 <button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
   {onclick}>
+  {#if item.image}
+    <div class="h-32 overflow-hidden relative shrink-0">
+      <img src={item.image} alt={item.title} class="w-full h-full object-cover" onerror={(e) => { e.target.style.display = 'none' }} />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+      {#if item.duration}
+        <div class="absolute top-2 right-2 bg-white/90 rounded-full px-2 py-0.5 text-[10px] font-bold text-primary border border-[#B7D9BC]">
+          {item.duration}
+        </div>
+      {/if}
+    </div>
+  {/if}
   <div class="p-5 flex flex-col flex-1">
     <div class="flex items-start justify-between mb-3">
       <div class="w-12 h-12 rounded-[16px] flex items-center justify-center text-2xl border-2 border-white shadow-sm" style="background: {bg}">

@@ -25,6 +25,13 @@
         <p class="text-xs text-on-surface-variant line-clamp-2">{item.how}</p>
       </div>
     {/if}
+    {#if item.moral}
+      <div class="bg-success-soft rounded-xl p-3 mb-3 border border-[#B7D9BC]/50">
+        <p class="text-xs text-primary">
+          <span class="font-bold">💬 Pelajaran:</span> {item.moral}
+        </p>
+      </div>
+    {/if}
     {#if item.views}
       <span class="flex items-center gap-1 text-[11px] text-on-surface-variant">
         <span class="material-symbols-outlined text-sm">visibility</span>

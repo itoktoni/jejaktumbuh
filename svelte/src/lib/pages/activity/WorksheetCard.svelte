@@ -1,5 +1,4 @@
 <script>
-
   let { item, bg, onclick } = $props()
 </script>
 
@@ -10,6 +9,11 @@
       <div class="w-12 h-12 rounded-[16px] flex items-center justify-center text-2xl border-2 border-white shadow-sm" style="background: {bg}">
         {item.emoji || '📝'}
       </div>
+      {#if item.ageLabel}
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-white border border-[#B7D9BC] text-on-surface-variant">
+          {item.ageLabel}
+        </span>
+      {/if}
     </div>
     <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
     {#if item.desc}

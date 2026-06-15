@@ -1,5 +1,5 @@
 <script>
-  import { toolsData, toolsAnakId, anakToolsData, addSchedule, removeSchedule } from '../stores/toolsStore.js'
+  import { toolsData, toolsAnakId, anakToolsData, addSchedule, removeSchedule, updateSchedule } from '../stores/toolsStore.js'
   import { anakList } from '../stores/anakStore.js'
   import AppModal from '../components/AppModal.svelte'
   import AppInput from '../components/AppInput.svelte'
@@ -7,21 +7,56 @@
   import AnakDropdown from '../components/AnakDropdown.svelte'
   import { onMount } from 'svelte'
   import { get } from 'svelte/store'
+  import { shareJadwalImage } from '../utils/share.js'
 
   let schedules = $state([])
   let currentAnakId = $state(null)
   let anakListVal = $state([])
 
   let showForm = $state(false)
+  let showHistory = $state(false)
   let newLabel = $state('')
+  let newDate = $state('')
   let newTime = $state('')
   let labelError = $state('')
+  let dateError = $state('')
   let timeError = $state('')
 
+  const undoneSchedules = $derived(schedules.filter(s => !s.done))
+  const doneSchedules = $derived(schedules.filter(s => s.done))
+
+  // Group done schedules by date
+  const doneSchedulesByDate = $derived.by(() => {
+    const grouped = {}
+    for (const s of doneSchedules) {
+      const date = s.date || 'unknown'
+      if (!grouped[date]) grouped[date] = []
+      grouped[date].push(s)
+    }
+    // Sort by date descending
+    return Object.entries(grouped)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, items]) => ({ date, items }))
+  })
+
+  const selectedAnakName = $derived.by(() => {
+    const a = anakListVal.find(a => a.id === currentAnakId)
+    return a ? a.nama : 'Anak'
+  })
+
   $effect(() => {
-    const u1 = toolsData.subscribe(v => { schedules = v.schedules || [] })
-    const u2 = toolsAnakId.subscribe(v => { currentAnakId = v })
-    const u3 = anakList.subscribe(v => { anakListVal = v })
+    const u1 = toolsData.subscribe(v => {
+      console.log('[JadwalTab] toolsData update:', JSON.stringify(v?.schedules))
+      schedules = v?.schedules || []
+    })
+    const u2 = toolsAnakId.subscribe(v => {
+      console.log('[JadwalTab] toolsAnakId:', v)
+      currentAnakId = v
+    })
+    const u3 = anakList.subscribe(v => {
+      console.log('[JadwalTab] anakList:', v?.map(a => a.id))
+      anakListVal = v
+    })
     return () => { u1(); u2(); u3() }
   })
 
@@ -29,11 +64,33 @@
     return new Date().toISOString().slice(0, 10)
   }
 
+  function formatDate(dateStr) {
+    if (!dateStr) return 'Tanggal tidak diketahui'
+    const date = new Date(dateStr + 'T00:00:00')
+    if (isNaN(date.getTime())) return dateStr || 'Tanggal tidak diketahui'
+
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const dateOnly = date.toISOString().slice(0, 10)
+    const todayStr = today.toISOString().slice(0, 10)
+    const yesterdayStr = yesterday.toISOString().slice(0, 10)
+
+    if (dateOnly === todayStr) return 'Hari Ini'
+    if (dateOnly === yesterdayStr) return 'Kemarin'
+
+    return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
   onMount(() => {
     const today = getToday()
     const lastReset = localStorage.getItem('jadwal_last_reset')
     if (lastReset !== today && schedules.length > 0) {
-      schedules.forEach(s => { s.done = false })
+      // Reset only today's schedules
+      schedules.forEach(s => {
+        if (s.date === today) s.done = false
+      })
       anakToolsData.update(map => {
         const id = get(toolsAnakId)
         if (map[id]) map[id].schedules = [...schedules]
@@ -43,28 +100,32 @@
     }
   })
 
-  function toggleDone(item) {
-    item.done = !item.done
-    const map = get(anakToolsData)
-    const id = get(toolsAnakId)
-    if (map[id]) map[id].schedules = [...schedules]
-    anakToolsData.set(map)
+  async function toggleDone(item) {
+    const newDone = !item.done
+    await updateSchedule(item, { done: newDone })
   }
 
   function closeForm() {
     showForm = false
     newLabel = ''
+    newDate = ''
     newTime = ''
     labelError = ''
+    dateError = ''
     timeError = ''
   }
 
   async function handleAdd() {
     labelError = ''
+    dateError = ''
     timeError = ''
     let valid = true
     if (!newLabel.trim()) {
       labelError = 'Nama aktivitas wajib diisi'
+      valid = false
+    }
+    if (!newDate) {
+      dateError = 'Tanggal wajib diisi'
       valid = false
     }
     if (!newTime) {
@@ -72,56 +133,126 @@
       valid = false
     }
     if (!valid) return
-    await addSchedule({ time: newTime, label: newLabel.trim(), done: false })
+    await addSchedule({ date: newDate, time: newTime, label: newLabel.trim(), done: false })
     closeForm()
   }
 
   async function handleRemove(item) {
     await removeSchedule(item)
   }
+
+  function handleShareJadwal() {
+    shareJadwalImage(schedules, { childName: selectedAnakName })
+  }
 </script>
 
 <div class="px-margin-mobile md:px-margin-desktop pt-5 max-w-6xl mx-auto pb-8">
   <AnakDropdown anakList={anakListVal} value={currentAnakId} onselect={(id) => toolsAnakId.set(id)} />
-<div class="space-y-4">
-  {#each schedules as s, i (i)}
-    <div class="jadwal-card"
-      class:jadwal-done={s.done}
-      class:jadwal-undone={!s.done}
-      onclick={() => toggleDone(s)}
-      role="button"
-      tabindex="0"
-      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleDone(s) }}>
-      <div class="jadwal-icon" class:jadwal-icon-done={s.done}>
-        <span class="material-symbols-outlined text-lg">{s.done ? 'check' : 'schedule'}</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="font-label-lg" class:text-main={!s.done} class:text-variant={s.done} class:line-through={s.done}>{s.label}</p>
-        <p class="text-xs text-on-surface-variant">{s.time}</p>
-      </div>
-      <button class="jadwal-remove" onclick={(e) => { e.stopPropagation(); handleRemove(s) }}>
-        <span class="material-symbols-outlined text-base">close</span>
+
+  <div class="flex items-center justify-between mb-4 mt-5">
+    <h3 class="font-headline-md text-text-main flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-success-soft border-2 border-[#B7D9BC] flex items-center justify-center text-base">📅</span> Jadwal Harian
+    </h3>
+    <div class="flex items-center gap-2">
+      {#if schedules.length > 0}
+        <button onclick={handleShareJadwal}
+          class="flex items-center gap-1.5 text-sm font-bold text-primary transition-colors bg-success-soft px-3 py-1.5 rounded-full">
+          <span class="material-symbols-outlined text-lg">share</span>
+          Share
+        </button>
+      {/if}
+      <button onclick={() => showHistory = !showHistory}
+        class="flex items-center gap-1.5 text-sm font-bold text-primary transition-colors bg-success-soft px-3 py-1.5 rounded-full">
+        <span class="material-symbols-outlined text-lg">{showHistory ? 'close' : 'history'}</span>
+        {showHistory ? 'Tutup' : 'History'}
       </button>
     </div>
-  {/each}
+  </div>
 
-  {#if !schedules.length}
-    <div class="jadwal-empty">
-      <p class="text-3xl mb-2">📅</p>
-      <p class="text-sm text-on-surface-variant font-medium">Belum ada jadwal</p>
+<div class="space-y-4">
+  {#if !showHistory}
+    {#each undoneSchedules as s, i (s.id || i)}
+      <div class="jadwal-card jadwal-undone"
+        onclick={() => toggleDone(s)}
+        role="button"
+        tabindex="0"
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleDone(s) }}>
+        <div class="jadwal-icon">
+          <span class="material-symbols-outlined text-lg">schedule</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-label-lg text-main">{s.label}</p>
+          <p class="text-xs text-on-surface-variant">{s.date} {s.time}</p>
+        </div>
+        <button class="jadwal-remove" onclick={(e) => { e.stopPropagation(); handleRemove(s) }}>
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+    {/each}
+
+    {#if undoneSchedules.length === 0 && doneSchedules.length === 0}
+      <div class="jadwal-empty">
+        <p class="text-3xl mb-2">📅</p>
+        <p class="text-sm text-on-surface-variant font-medium">Belum ada jadwal</p>
+      </div>
+    {:else if undoneSchedules.length === 0}
+      <div class="bg-canvas-cream rounded-[24px] p-6 text-center border-4 border-[#B7D9BC]">
+        <p class="text-3xl mb-2">🎉</p>
+        <p class="text-sm text-text-main font-bold">Semua jadwal selesai!</p>
+        <p class="text-xs text-on-surface-variant mt-1">Hebat! Semua aktivitas hari ini sudah terlaksana.</p>
+      </div>
+    {/if}
+
+    <button class="btn-pop-green" onclick={() => { showForm = true }}>
+      <span class="material-symbols-outlined text-lg">add</span>
+      Tambah Jadwal
+    </button>
+  {:else}
+    <div class="space-y-6">
+      {#if doneSchedulesByDate.length > 0}
+        {#each doneSchedulesByDate as group (group.date)}
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">{formatDate(group.date)}</h4>
+              <span class="text-xs font-bold text-primary bg-success-soft px-2 py-0.5 rounded-full">{group.items.length}</span>
+            </div>
+            <div class="space-y-2">
+              {#each group.items as s (s.id)}
+                <div class="jadwal-card jadwal-done"
+                  onclick={() => toggleDone(s)}
+                  role="button"
+                  tabindex="0"
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleDone(s) }}>
+                  <div class="jadwal-icon jadwal-icon-done">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-label-lg text-variant line-through">{s.label}</p>
+                    <p class="text-xs text-on-surface-variant">{s.date} {s.time}</p>
+                  </div>
+                  <button class="jadwal-remove" onclick={(e) => { e.stopPropagation(); handleRemove(s) }}>
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      {:else}
+        <div class="jadwal-empty">
+          <p class="text-3xl mb-2">📋</p>
+          <p class="text-sm text-on-surface-variant font-medium">Belum ada jadwal yang selesai</p>
+        </div>
+      {/if}
     </div>
   {/if}
-
-  <button class="btn-pop-green" onclick={() => { showForm = true }}>
-    <span class="material-symbols-outlined text-lg">add</span>
-    Tambah Jadwal
-  </button>
 </div>
 </div>
 
 <AppModal show={showForm} title="Tambah Jadwal" onclose={closeForm}>
   <div class="space-y-4">
     <AppInput bind:value={newLabel} label="Nama Aktivitas" placeholder="Contoh: Belajar Membaca" error={labelError} />
+    <AppInput bind:value={newDate} label="Tanggal" type="date" error={dateError} />
     <AppInput bind:value={newTime} label="Waktu" type="time" placeholder="08:00" error={timeError} />
   </div>
   <div class="flex gap-3 mt-6">

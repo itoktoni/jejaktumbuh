@@ -5,6 +5,7 @@
   import AppModal from '../components/AppModal.svelte'
   import AppInput from '../components/AppInput.svelte'
   import AnakDropdown from '../components/AnakDropdown.svelte'
+  import { shareProgress, shareChallenge } from '../utils/share.js'
 
   let toolsDataVal = $state({ challenges: [], challengeHistory: [] })
   let anakListVal = $state([])
@@ -62,21 +63,27 @@
   }
 
   function handleShareProgress(c) {
-    if (navigator.share) {
-      navigator.share({
-        title: `Challenge: ${c.title}`,
-        text: `${selectedAnakName} sedang mengerjakan challenge "${c.title}" - ${c.points}/${c.maxPoints} poin! 🏆`
-      }).catch(() => {})
-    }
+    shareProgress({
+      title: c.title,
+      category: c.category,
+      emoji: c.emoji,
+      color: c.color,
+      points: c.points,
+      maxPoints: c.maxPoints,
+      notes: c.notes,
+      childName: selectedAnakName,
+      isComplete: false
+    })
   }
 
   function handleShareChallenge(c) {
-    if (navigator.share) {
-      navigator.share({
-        title: `Challenge Selesai: ${c.title}`,
-        text: `${selectedAnakName} berhasil menyelesaikan challenge "${c.title}" dengan ${c.maxPoints} poin! 🎉🏆`
-      }).catch(() => {})
-    }
+    shareChallenge({
+      title: c.title,
+      category: c.category,
+      emoji: c.emoji,
+      maxPoints: c.maxPoints,
+      childName: selectedAnakName
+    })
   }
 
   function handleDeleteChallenge(c) {
@@ -162,7 +169,7 @@
 
 <div class="px-margin-mobile md:px-margin-desktop pt-5 max-w-6xl mx-auto pb-8">
   <AnakDropdown anakList={anakListVal} value={toolsAnakIdVal} onselect={(id) => toolsAnakId.set(id)} />
-  <div class="flex items-center justify-between mb-4">
+  <div class="flex items-center justify-between mb-4 mt-5">
     <h3 class="font-headline-md text-text-main flex items-center gap-2">
       <span class="w-8 h-8 rounded-full bg-success-soft border-2 border-[#B7D9BC] flex items-center justify-center text-base">🏆</span> Challenge
     </h3>
@@ -180,13 +187,14 @@
           role="button" tabindex="0" onclick={() => openEdit(c)} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEdit(c); } }}>
           <div class="flex items-end gap-4">
             <div class="flex-1 min-w-0">
-              <div class="mb-1">
-                <p class="text-[11px] font-bold uppercase tracking-wider mb-0.5" style="color: {c.color}">{c.category}</p>
-                <p class="font-label-lg font-bold text-text-main">{c.title}</p>
-                {#if c.notes}
-                  <p class="text-xs text-on-surface-variant mt-0.5">{c.notes}</p>
-                {/if}
-              </div>
+                <div class="mb-1">
+                  <p class="text-[11px] font-bold uppercase tracking-wider mb-0.5" style="color: {c.color}">{c.category}</p>
+                  <p class="font-label-lg font-bold text-text-main">{c.title}</p>
+                  <p class="text-xs text-on-surface-variant mt-0.5">{pointPercent(c)}% progress ({c.points}/{c.maxPoints} poin)</p>
+                  {#if c.notes}
+                    <p class="text-xs text-on-surface-variant mt-0.5">{c.notes}</p>
+                  {/if}
+                </div>
 
               <div class="flex items-center gap-2 mt-4">
                 <button onclick={(e) => { e.stopPropagation(); handleRemovePoint(c) }}
@@ -219,9 +227,7 @@
                 </div>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
                   <span class="text-lg font-extrabold leading-none"
-                    style="color: {pointPercent(c) > 50 ? '#FFF9F3' : c.color}">{c.points}</span>
-                  <span class="text-[10px] font-bold leading-none mt-0.5"
-                    style="color: {pointPercent(c) > 50 ? 'rgba(255,255,255,0.8)' : 'text-on-surface-variant'}">/ {c.maxPoints}</span>
+                    style="color: {pointPercent(c) > 50 ? '#FFF9F3' : c.color}">{pointPercent(c)}%</span>
                 </div>
               </div>
             </div>

@@ -12,6 +12,17 @@ class ScheduleController extends Controller
 {
     use AnakUserTrait, NormalizeInputTrait;
 
+    public function index(Request $request, $anakId)
+    {
+        if (! $this->authorizeAnak($request, (int) $anakId)) {
+            return $this->unauthorized();
+        }
+
+        $schedules = Schedule::where('schedule_id_anak', $anakId)->get();
+
+        return response()->json($schedules->map->toArray());
+    }
+
     public function store(Request $request, $anakId)
     {
         if (! $this->authorizeAnak($request, (int) $anakId)) {

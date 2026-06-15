@@ -186,3 +186,117 @@ const cardMap = {
   {/if}
 {/each}
 ```
+
+## Jadwal Tab (Jadwal Harian)
+
+### File
+
+`src/lib/pages/JadwalTab.svelte`
+
+### Flow Tambah Jadwal
+
+1. User klik "Tambah Jadwal" → modal muncul
+2. Isi nama aktivitas + waktu → klik "Simpan"
+3. Data disimpan ke **IndexedDB** (Dexie) dan ke **store** di memori (`anakToolsData`)
+4. Kalau user login, data juga di-**sync ke server** (via `api.addSchedule`)
+
+### Status Centang (Done)
+
+- **Data jadwal** = permanen, tetap ada sampai dihapus manual
+- **Status centang (done)** = reset otomatis setiap hari baru
+- Reset dilakukan di `onMount`: cek tanggal hari ini vs `jadwal_last_reset` di localStorage, kalau beda hari → semua `done` direset ke `false`
+
+### Hapus Jadwal
+
+- User klik tombol ✕ → `removeSchedule()` → hapus dari IndexedDB + sync hapus dari server
+
+### History View
+
+- Tombol "History" di header → toggle tampilan antara jadwal aktif (belum selesai) dan jadwal yang sudah dicentang (selesai hari ini)
+- Derived state: `doneSchedules` (s.done === true) dan `undoneSchedules` (s.done === false)
+- Klik item di history → uncentang → kembali ke daftar aktif
+
+## Checklist Tab
+
+### File
+
+`src/lib/pages/ChecklistTab.svelte`
+
+### Flow Buat Checklist
+
+1. User klik "Buat Checklist" → modal muncul
+2. Isi nama checklist → klik "Simpan"
+3. Data disimpan ke **IndexedDB** (Dexie) dan ke **store** (`anakToolsData`)
+4. Kalau user login, data juga di-**sync ke server** (via `api.addChecklist`)
+
+### Tambah Item
+
+1. Klik "Tambah Item" pada checklist → modal muncul
+2. Isi nama aktivitas → klik "Simpan"
+3. Item ditambahkan ke checklist yang bersangkutan
+4. Simpan ke IndexedDB + sync ke server
+
+### Status Centang (Done)
+
+- **Status centang permanen** — tidak ada reset harian
+- Centang/uncentang kapan saja, status tetap tersimpan
+- Berbeda dengan JadwalTab yang reset setiap hari
+
+### Progress Bar
+
+- Setiap checklist punya progress bar (persentase item selesai)
+- `percent = (item.done / total items) * 100`
+
+### Share Checklist
+
+- Tombol share → format teks: nama checklist + daftar item dengan centang + jumlah selesai
+- Gunakan `navigator.share` atau copy ke clipboard
+
+### Hapus
+
+- Hapus checklist: tombol delete → `removeChecklist(index)` → hapus dari IndexedDB + server
+- Hapus item: tombol ✕ (muncul saat hover) → `removeChecklistItem()` → hapus dari IndexedDB + server
+
+### Perbedaan dengan JadwalTab
+
+| | JadwalTab | ChecklistTab |
+|---|---|---|
+| Status centang | Reset otomatis setiap hari | Permanen |
+| Tombol History | Ada | Tidak ada |
+| Progress bar | Tidak ada | Ada |
+| Share | Tidak ada | Ada |
+
+## Share Image (Semua Tab)
+
+### Library
+
+`@zumer/snapdom` — DOM capture engine, convert elemen HTML ke gambar (PNG/JPG/WebP)
+
+### File
+
+`src/lib/utils/share.js`
+
+### Flow Share
+
+1. Bangun HTML card dengan inline style (layout mirip ReferralPage: gradient bg, decorative circles, app branding)
+2. Render sementara di DOM (hidden container, posisi off-screen)
+3. Capture pakai `snapdom.toBlob()` → hasilnya Blob JPEG
+4. Buat `File` object dari Blob
+5. Share pakai `navigator.share({ files: [file] })` (Web Share API)
+6. Fallback: kalau device tidak support share file → download otomatis sebagai JPG
+7. Fallback kedua: kalau capture gagal → share sebagai text biasa
+
+### Tipe Share Card
+
+| Tipe | Fungsi | Konten |
+|---|---|---|
+| Challenge Progress | `shareProgress()` | Emoji, nama anak, judul challenge, progress bar, poin |
+| Challenge Selesai | `shareChallenge()` | Emoji, nama anak, judul, poin tercapai |
+| Checklist | `shareChecklistImage()` | Nama anak, judul checklist, daftar item + centang, progress bar |
+| Jadwal | `shareJadwalImage()` | Nama anak, daftar jadwal + status done, jumlah selesai |
+
+### Integrasi di Tab
+
+- **ChallengeTab**: tombol share pada setiap challenge card → `shareProgress()` / `shareChallenge()`
+- **ChecklistTab**: tombol share pada setiap checklist → `shareChecklistImage()`
+- **JadwalTab**: tombol "Share" di header (muncul jika ada jadwal) → `shareJadwalImage()`

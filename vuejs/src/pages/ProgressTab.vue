@@ -212,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { pilars } from '../data/pilars.js'
 import { getEvaluasi } from '../data/skills.js'
 import { ageLabel } from '../utils/age.js'
@@ -256,10 +256,20 @@ watch(() => props.selectedAnakId, (id) => {
 }, { immediate: true })
 
 watch(() => props.anakList, (list) => {
-  for (const a of list) {
-    if (!evaluationsData.value[a.id]) fetchEvaluations(a.id)
-  }
-}, { immediate: true })
+  nextTick(() => {
+    for (const a of list) {
+      if (!evaluationsData.value[a.id]) fetchEvaluations(a.id)
+    }
+  })
+}, { deep: true, immediate: true })
+
+onMounted(() => {
+  nextTick(() => {
+    if (props.selectedAnakId) {
+      fetchEvaluations(props.selectedAnakId)
+    }
+  })
+})
 
 function toggle(id) {
   if (openId.value === id) {
@@ -272,15 +282,13 @@ function toggle(id) {
 
 async function fetchEvaluations(anakId) {
   if (!api.isAuthenticated()) return
-  const anak = props.anakList.find(a => a.id === anakId)
-  if (!anak || !anak.serverSynced) return
   try {
     const data = await api.getEvaluations(anakId)
-    evaluationsData.value[anakId] = data.evaluations || []
-    activeEvals.value[anakId] = data.active || []
-    completedCount.value[anakId] = data.completed_count || 0
-    totalPoints.value[anakId] = data.total_points || 0
-    totalMax.value[anakId] = data.total_max || 0
+    evaluationsData.value = { ...evaluationsData.value, [anakId]: data.evaluations || [] }
+    activeEvals.value = { ...activeEvals.value, [anakId]: data.active || [] }
+    completedCount.value = { ...completedCount.value, [anakId]: data.completed_count || 0 }
+    totalPoints.value = { ...totalPoints.value, [anakId]: data.total_points || 0 }
+    totalMax.value = { ...totalMax.value, [anakId]: data.total_max || 0 }
   } catch (e) {
     console.warn('Failed to fetch evaluations:', e)
   }
@@ -379,8 +387,8 @@ function onSliderChange() {
 }
 
 async function autoSaveEvaluation() {
-  if (!evalAnak.value || !evalSkill.value || evalPoints.value === 0) return
-  if (!evalAnak.value.serverSynced) return
+  if (!evalAnak.value || !evalSkill.value) return
+  if (!api.isAuthenticated()) return
   evalSaving.value = true
   try {
     await api.addEvaluation(evalAnak.value.id, {
@@ -403,8 +411,8 @@ function closeEvaluasi() {
 }
 
 async function saveEvaluation() {
-  if (!evalAnak.value || !evalSkill.value || evalPoints.value === 0) return
-  if (!evalAnak.value.serverSynced) return
+  if (!evalAnak.value || !evalSkill.value) return
+  if (!api.isAuthenticated()) return
   evalSaving.value = true
   try {
     await api.addEvaluation(evalAnak.value.id, {

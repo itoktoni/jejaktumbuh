@@ -2,6 +2,8 @@
   import NotificationDropdown from '../components/NotificationDropdown.svelte'
   import { unreadCount } from '../composables/useNotifications.js'
 
+  const notificationEnabled = import.meta.env.VITE_NOTIFICATION_ENABLE === 'true'
+
   let { title = '', canInstallProp = false, userName = '', userEmail = '', userGender = '', onsync, oninstall, onprofile, onsettings, onbilling, onreferral, onlogout } = $props()
 
   let profileOpen = $state(false)
@@ -38,6 +40,7 @@
       onclick={() => onsync?.()}>
       <span class="material-symbols-outlined text-xl">cloud_sync</span>
     </button>
+    {#if notificationEnabled}
     <div class="relative">
       <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white border-2 border-[#B7D9BC] shadow-sm text-primary hover:opacity-80 transition-opacity duration-200 relative"
         onclick={() => { notifOpen = !notifOpen; profileOpen = false }}>
@@ -48,6 +51,7 @@
       </button>
       <NotificationDropdown show={notifOpen} onclose={() => notifOpen = false} />
     </div>
+    {/if}
     <div class="relative" bind:this={profileRef}>
       <button class="w-9 h-9 flex items-center justify-center rounded-full bg-success-soft border-2 border-[#B7D9BC] shadow-sm text-base hover:opacity-80 transition-opacity duration-200"
         onclick={() => { profileOpen = !profileOpen; notifOpen = false }}>

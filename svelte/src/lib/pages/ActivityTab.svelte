@@ -11,6 +11,7 @@
   import { calcAge } from '../utils/age.js'
   import AnakDropdown from '../components/AnakDropdown.svelte'
   import { StoryCard, RoleplayCard, GameCard, ScriptCard, ProjectCard, SongCard, PuzzleCard, ExerciseCard, OutdoorCard, ExperimentCard, WorksheetCard } from './activity/index.js'
+  import { openWorksheetByType, hasWorksheetTemplate } from '../utils/worksheetRenderer.js'
 
   const cardMap = {
     storytelling: StoryCard,
@@ -33,10 +34,11 @@
   let srvCount = $state(0)
   let locCount = $state(0)
   let selectedType = $state(null)
-  let activeStory = $state(null)
-  let activeRoleplay = $state(null)
-  let activeProject = $state(null)
-  let activePuzzle = $state(null)
+  let activeItem = $state(null)
+  let puzzleQIndex = $state(0)
+  let puzzleShowHint = $state(false)
+  let puzzleShowAnswer = $state(false)
+  let puzzleScore = $state({ correct: 0, wrong: 0 })
   let switchCount = $state(0)
   let anakListVal = $state([])
   let selectedAnakIdVal = $state(null)
@@ -47,6 +49,7 @@
   let searchQuery = $state('')
   let detailSearchQuery = $state('')
   let activeTabVal = $state('activity')
+  let hasAutoDownloaded = false
 
   $effect(() => {
     const u1 = aktivitasData.subscribe(v => aktData = v)
@@ -69,11 +72,15 @@
   $effect(() => {
     if (switchCount > 0 && activeTabVal === 'activity') {
       selectedType = null
-      activeStory = null
-      activeRoleplay = null
-      activeProject = null
-      activePuzzle = null
+      activeItem = null
       detailSearchQuery = ''
+    }
+  })
+
+  $effect(() => {
+    if (isAuth && !hasAutoDownloaded && !dl) {
+      hasAutoDownloaded = true
+      doDownload()
     }
   })
 
@@ -220,25 +227,30 @@
     }
   }
 
-  function openStory(story) { activeStory = story }
-  function openRoleplay(rp) { activeRoleplay = rp }
-  function openProject(proj) { activeProject = proj }
-  function openPuzzle(pz) { activePuzzle = pz }
-
   function handleItemClick(item) {
     if (item.id) trackActivityView(item.id).catch(() => {})
-    const feature = selectedType?.feature
-    if (feature === 'story') openStory(item)
-    else if (feature === 'roleplay') openRoleplay(item)
-    else if (feature === 'project') openProject(item)
-    else if (feature === 'puzzle') openPuzzle(item)
+    activeItem = item
+    puzzleQIndex = 0
+    puzzleShowHint = false
+    puzzleShowAnswer = false
+    puzzleScore = { correct: 0, wrong: 0 }
+  }
+
+  function puzzleAnswer(isCorrect) {
+    if (isCorrect) puzzleScore.correct++
+    else puzzleScore.wrong++
+    const questions = activeItem?.questions || []
+    if (puzzleQIndex < questions.length - 1) {
+      puzzleQIndex++
+      puzzleShowHint = false
+      puzzleShowAnswer = false
+    } else {
+      puzzleShowAnswer = true
+    }
   }
 
   function goBack() {
-    if (activeStory) { activeStory = null; return }
-    if (activeRoleplay) { activeRoleplay = null; return }
-    if (activeProject) { activeProject = null; return }
-    if (activePuzzle) { activePuzzle = null; return }
+    if (activeItem) { activeItem = null; return }
     if (selectedType) { selectedType = null; detailSearchQuery = ''; return }
   }
 </script>
@@ -440,31 +452,167 @@
   {/if}
 </div>
 
-<!-- Simple Item Reader Modal -->
-{#if activeStory || activeRoleplay || activeProject || activePuzzle}
-  {@const item = activeStory || activeRoleplay || activeProject || activePuzzle}
+<!-- Activity Detail Modal -->
+{#if activeItem}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={() => { activeStory = null; activeRoleplay = null; activeProject = null; activePuzzle = null }}>
+  <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={() => activeItem = null}>
     <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col" onclick={(e) => e.stopPropagation()}>
       <div class="p-5 flex items-center justify-between border-b-2 border-[#B7D9BC]/50 shrink-0">
-        <h3 class="font-bold text-lg text-text-main truncate flex-1 mr-3">{item.title}</h3>
-        <button onclick={() => { activeStory = null; activeRoleplay = null; activeProject = null; activePuzzle = null }}
+        <h3 class="font-bold text-lg text-text-main truncate flex-1 mr-3">{activeItem.title}</h3>
+        <button onclick={() => activeItem = null}
           class="w-10 h-10 rounded-full bg-error text-white flex items-center justify-center text-lg shrink-0 shadow-md">
           ✕
         </button>
       </div>
       <div class="flex-1 overflow-y-auto p-5 space-y-4">
-        {#if item.emoji}
-          <div class="w-full aspect-video rounded-2xl flex items-center justify-center text-6xl border-2 border-white shadow-md"
-            style="background: {selectedType?.bg || '#E8F5E9'}">
-            {item.emoji}
+
+        {#if activeItem.questions?.length}
+          {@const questions = activeItem.questions}
+          {@const q = questions[puzzleQIndex]}
+          {@const isLast = puzzleQIndex >= questions.length - 1 && puzzleShowAnswer}
+
+          {#if !isLast}
+            <div class="text-center">
+              <span class="text-xs font-bold px-3 py-1 rounded-full bg-primary text-white">
+                Soal {puzzleQIndex + 1} / {questions.length}
+              </span>
+              {#if puzzleScore.correct > 0 || puzzleScore.wrong > 0}
+                <div class="flex justify-center gap-3 mt-2">
+                  <span class="text-xs font-bold text-green-600">✅ {puzzleScore.correct}</span>
+                  <span class="text-xs font-bold text-error">❌ {puzzleScore.wrong}</span>
+                </div>
+              {/if}
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border-2 border-[#B7D9BC] text-center">
+              {#if q.emoji}
+                <div class="text-5xl mb-3">{q.emoji}</div>
+              {/if}
+              <p class="text-base font-semibold text-text-main leading-relaxed">{q.q}</p>
+            </div>
+
+            {#if puzzleShowHint && q.hint}
+              <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+                <p class="text-sm text-primary">
+                  <span class="font-bold">💡 Petunjuk:</span> {q.hint}
+                </p>
+              </div>
+            {/if}
+
+            {#if puzzleShowAnswer}
+              <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+                <p class="text-sm text-text-main"><span class="font-bold text-primary">Jawaban:</span> {q.a}</p>
+              </div>
+
+              <p class="text-xs text-center text-on-surface-variant">Apakah jawabanmu benar?</p>
+              <div class="flex gap-3">
+                <button onclick={() => puzzleAnswer(true)}
+                  class="flex-1 py-3 rounded-2xl bg-green-500 text-white font-bold text-sm shadow-md hover:bg-green-600 transition-colors">
+                  ✅ Benar
+                </button>
+                <button onclick={() => puzzleAnswer(false)}
+                  class="flex-1 py-3 rounded-2xl bg-error text-white font-bold text-sm shadow-md hover:bg-red-600 transition-colors">
+                  ❌ Salah
+                </button>
+              </div>
+            {:else}
+              <div class="flex gap-3">
+                {#if !puzzleShowHint && q.hint}
+                  <button onclick={() => puzzleShowHint = true}
+                    class="flex-1 py-3 rounded-2xl bg-white border-2 border-[#B7D9BC] text-primary font-bold text-sm shadow-sm hover:bg-success-soft transition-colors">
+                    💡 Petunjuk
+                  </button>
+                {/if}
+                <button onclick={() => puzzleShowAnswer = true}
+                  class="flex-1 py-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary/90 transition-colors">
+                  👁️ Jawaban
+                </button>
+              </div>
+            {/if}
+
+          {:else}
+            <div class="text-center py-6 space-y-4">
+              <div class="text-6xl">🎉</div>
+              <h3 class="font-bold text-xl text-text-main">Selesai!</h3>
+              <div class="flex justify-center gap-6">
+                <div class="bg-green-50 rounded-2xl px-6 py-4 border-2 border-green-200">
+                  <p class="text-3xl font-bold text-green-600">{puzzleScore.correct}</p>
+                  <p class="text-xs text-green-600 font-bold">Benar</p>
+                </div>
+                <div class="bg-red-50 rounded-2xl px-6 py-4 border-2 border-red-200">
+                  <p class="text-3xl font-bold text-error">{puzzleScore.wrong}</p>
+                  <p class="text-xs text-error font-bold">Salah</p>
+                </div>
+              </div>
+              <button onclick={() => { puzzleQIndex = 0; puzzleShowHint = false; puzzleShowAnswer = false; puzzleScore = { correct: 0, wrong: 0 } }}
+                class="px-6 py-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-md">
+                🔄 Main Lagi
+              </button>
+            </div>
+          {/if}
+
+        {:else if activeItem.id && hasWorksheetTemplate(activeItem.id)}
+
+          <div class="text-center py-4 space-y-4">
+            <div class="text-6xl">{activeItem.emoji || '📝'}</div>
+            <h3 class="font-bold text-xl text-text-main">{activeItem.title}</h3>
+            {#if activeItem.desc}
+              <p class="text-sm text-on-surface-variant">{activeItem.desc}</p>
+            {/if}
+            {#if activeItem.ageLabel}
+              <span class="inline-block text-xs font-bold px-3 py-1.5 rounded-full bg-success-soft text-primary border border-[#B7D9BC]">
+                Usia {activeItem.ageLabel}
+              </span>
+            {/if}
+            <button onclick={() => openWorksheetByType(activeItem.id)}
+              class="w-full py-4 rounded-2xl bg-primary text-white font-bold text-base shadow-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-xl">download</span>
+              Download PDF
+            </button>
+            <p class="text-xs text-on-surface-variant/60">Worksheet terbuka di tab baru. Gunakan Ctrl+P untuk print/save PDF.</p>
+          </div>
+
+        {:else}
+
+          {#if activeItem.image}
+            <div class="w-full aspect-video rounded-2xl overflow-hidden border-2 border-white shadow-md">
+              <img src={activeItem.image} alt={activeItem.title} class="w-full h-full object-cover"
+                onerror={(e) => { e.target.style.display = 'none' }} />
+            </div>
+          {:else if activeItem.emoji}
+            <div class="w-full aspect-video rounded-2xl flex items-center justify-center text-6xl border-2 border-white shadow-md"
+              style="background: {selectedType?.bg || '#E8F5E9'}">
+              {activeItem.emoji}
+            </div>
+          {/if}
+
+        {#if activeItem.desc}
+          <p class="text-sm text-on-surface-variant leading-relaxed">{activeItem.desc}</p>
+        {/if}
+
+        {#if activeItem.how}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-2">🎲 Cara Bermain</p>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{activeItem.how}</p>
           </div>
         {/if}
-        {#if item.desc}
-          <p class="text-sm text-on-surface-variant leading-relaxed">{item.desc}</p>
+
+        {#if activeItem.rules?.length}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-2">📋 Aturan</p>
+            <ul class="space-y-2">
+              {#each activeItem.rules as rule}
+                <li class="flex items-start gap-2 text-sm text-on-surface-variant">
+                  <span class="material-symbols-outlined text-primary text-base mt-0.5">check_circle</span>
+                  {rule}
+                </li>
+              {/each}
+            </ul>
+          </div>
         {/if}
-        {#if item.pages}
-          {#each item.pages as page, i}
+
+        {#if activeItem.pages?.length}
+          {#each activeItem.pages as page, i}
             <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC] shadow-sm">
               <p class="text-xs font-bold text-primary mb-2">Halaman {i + 1}</p>
               {#if page.text}
@@ -473,16 +621,113 @@
             </div>
           {/each}
         {/if}
-        {#if item.steps}
-          {#each item.steps as step, i}
-            <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC] shadow-sm">
-              <p class="text-xs font-bold text-primary mb-1">Langkah {i + 1}</p>
-              <p class="text-sm text-text-main">{step}</p>
-            </div>
-          {/each}
+
+        {#if activeItem.steps?.length}
+          <div class="space-y-2">
+            <p class="text-xs font-bold text-primary">📋 Langkah-Langkah</p>
+            {#each activeItem.steps as step, i}
+              <div class="flex items-start gap-3 bg-white rounded-2xl p-3 border-2 border-[#B7D9BC]">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 bg-primary">{i + 1}</div>
+                <p class="text-sm text-on-surface-variant pt-0.5">{step}</p>
+              </div>
+            {/each}
+          </div>
         {/if}
-        {#if !item.pages && !item.steps && !item.desc}
-          <p class="text-sm text-on-surface-variant text-center py-4">Konten belum tersedia</p>
+
+        {#if activeItem.materials?.length}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-2">📦 Bahan yang Dibutuhkan</p>
+            <ul class="space-y-1.5">
+              {#each activeItem.materials as mat}
+                <li class="flex items-center gap-2 text-xs text-on-surface-variant">
+                  <span class="material-symbols-outlined text-sm text-primary">check_box_outline_blank</span>
+                  {mat}
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        {#if activeItem.lyrics}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-2">🎵 Lirik</p>
+            <p class="text-sm text-on-surface-variant whitespace-pre-line leading-relaxed">{activeItem.lyrics}</p>
+          </div>
+        {/if}
+
+        {#if activeItem.moves?.length}
+          <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+            <p class="text-xs font-bold text-primary mb-2">💃 Gerakan</p>
+            <ul class="space-y-1.5">
+              {#each activeItem.moves as move, i}
+                <li class="flex items-start gap-2 text-sm text-on-surface-variant">
+                  <span class="font-bold text-primary shrink-0">{i + 1}.</span>{move}
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        {#if activeItem.script}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-2">🎤 Naskah</p>
+            <p class="text-sm text-on-surface-variant italic leading-relaxed">"{activeItem.script}"</p>
+          </div>
+        {/if}
+
+        {#if activeItem.tips?.length}
+          <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+            <p class="text-xs font-bold text-primary mb-2">💡 Tips</p>
+            <ul class="space-y-1.5">
+              {#each activeItem.tips as tip}
+                <li class="flex items-start gap-2 text-sm text-on-surface-variant">
+                  <span class="material-symbols-outlined text-primary text-base mt-0.5">lightbulb</span>
+                  {tip}
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        {#if activeItem.observation}
+          <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+            <p class="text-xs font-bold text-primary mb-1">🔍 Pengamatan</p>
+            <p class="text-sm text-on-surface-variant">{activeItem.observation}</p>
+          </div>
+        {/if}
+
+        {#if activeItem.explanation}
+          <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+            <p class="text-xs font-bold text-primary mb-1">💡 Penjelasan</p>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{activeItem.explanation}</p>
+          </div>
+        {/if}
+
+        {#if activeItem.funFact}
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#B7D9BC]">
+            <p class="text-xs font-bold text-primary mb-1">⭐ Tahukah Kamu?</p>
+            <p class="text-sm text-on-surface-variant leading-relaxed italic">{activeItem.funFact}</p>
+          </div>
+        {/if}
+
+        {#if activeItem.moral}
+          <div class="bg-success-soft rounded-2xl p-4 border border-[#B7D9BC]/50">
+            <p class="text-xs font-bold text-primary mb-1">💬 Pelajaran</p>
+            <p class="text-sm text-on-surface-variant">{activeItem.moral}</p>
+          </div>
+        {/if}
+
+        {#if activeItem.duration || activeItem.difficulty}
+          <div class="flex gap-2">
+            {#if activeItem.duration}
+              <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-white border border-[#B7D9BC] text-on-surface-variant">⏱ {activeItem.duration}</span>
+            {/if}
+            {#if activeItem.difficulty}
+              <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-white border border-[#B7D9BC] text-on-surface-variant">{activeItem.difficulty}</span>
+            {/if}
+          </div>
+        {/if}
+
         {/if}
       </div>
     </div>

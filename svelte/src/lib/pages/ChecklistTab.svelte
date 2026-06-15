@@ -3,6 +3,7 @@
   import { anakList } from '../stores/anakStore.js'
   import AppModal from '../components/AppModal.svelte'
   import AnakDropdown from '../components/AnakDropdown.svelte'
+  import { shareChecklistImage } from '../utils/share.js'
 
   let checklistsData = $state([])
   let anakListVal = $state([])
@@ -14,6 +15,11 @@
   let newItemLabel = $state('')
   let itemError = $state('')
   let activeChecklistId = $state(null)
+
+  const selectedAnakName = $derived.by(() => {
+    const a = anakListVal.find(a => a.id === toolsAnakIdVal)
+    return a ? a.nama : 'Anak'
+  })
 
   $effect(() => {
     const u1 = toolsData.subscribe(v => {
@@ -89,18 +95,15 @@
   }
 
   function shareChecklist(cl) {
-    const text = `${cl.title}\n\n` + cl.items.map(i => `${i.done ? '✅' : '⬜'} ${i.label}`).join('\n') + `\n\n${checked(cl)}/${cl.items.length} selesai`
-    if (navigator.share) {
-      navigator.share({ title: cl.title, text })
-    } else {
-      navigator.clipboard?.writeText(text)
-    }
+    shareChecklistImage(cl.title, cl.items, checked(cl), percent(cl), {
+      childName: selectedAnakName
+    })
   }
 </script>
 
 <div class="px-margin-mobile md:px-margin-desktop pt-5 max-w-6xl mx-auto pb-8">
   <AnakDropdown anakList={anakListVal} value={toolsAnakIdVal} onselect={(id) => toolsAnakId.set(id)} />
-<div class="space-y-4">
+<div class="space-y-4 mt-4">
   {#each checklistsData as cl, idx (idx)}
     <div class="bg-canvas-cream rounded-[24px] p-5 border-4 border-[#B7D9BC] shadow-md">
       <div class="flex items-center justify-between mb-3">

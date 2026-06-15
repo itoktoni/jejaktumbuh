@@ -2,11 +2,16 @@ import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 import { getAuthToken } from './api.js'
 
-window.Pusher = Pusher
+const notificationEnabled = import.meta.env.VITE_NOTIFICATION_ENABLE === 'true'
+
+if (notificationEnabled) {
+  window.Pusher = Pusher
+}
 
 let echoInstance = null
 
 export function initEcho() {
+  if (!notificationEnabled) return null
   if (echoInstance) return echoInstance
 
   const token = getAuthToken()

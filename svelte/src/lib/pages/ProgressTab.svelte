@@ -62,8 +62,6 @@
 
   async function fetchEvaluations(anakId) {
     if (!api.isAuthenticated()) return
-    const anak = anakListVal.find(a => a.id === anakId)
-    if (!anak?.serverSynced) return
     try {
       const data = await api.getEvaluations(anakId)
       evaluationsData[anakId] = data.evaluations || []
@@ -89,13 +87,13 @@
 
   function getSkillProgress(anakId, skillKey) {
     const evals = activeEvals[anakId] || []
-    const ev = evals.find(e => e.skill_key === skillKey)
-    if (!ev?.max_points) return { points: 0, max: 10, percent: 0 }
-    return { points: ev.points, max: ev.max_points, percent: Math.round((ev.points / ev.max_points) * 100) }
+    const ev = evals.find(e => e.evaluation_skill_key === skillKey)
+    if (!ev?.evaluation_max_points) return { points: 0, max: 10, percent: 0 }
+    return { points: ev.evaluation_points, max: ev.evaluation_max_points, percent: Math.round((ev.evaluation_points / ev.evaluation_max_points) * 100) }
   }
 
   function getCompletedEvals(anakId) {
-    return (evaluationsData[anakId] || []).filter(e => e.points >= e.max_points)
+    return (evaluationsData[anakId] || []).filter(e => e.evaluation_points >= e.evaluation_max_points)
   }
 
   function getPilarName(key) {
@@ -130,8 +128,8 @@
     evalSkill = sp
     const data = getEvaluasi(sp.key)
     evalQuestions = data ? data.evaluasi : []
-    const existing = (activeEvals[anak.id] || []).find(e => e.skill_key === sp.key)
-    evalPoints = existing ? existing.points : 0
+    const existing = (activeEvals[anak.id] || []).find(e => e.evaluation_skill_key === sp.key)
+    evalPoints = existing ? existing.evaluation_points : 0
     showEvaluasi = true
   }
 
@@ -141,8 +139,8 @@
   }
 
   async function autoSaveEvaluation() {
-    if (!evalAnak || !evalSkill || evalPoints === 0) return
-    if (!evalAnak.serverSynced) return
+    if (!evalAnak || !evalSkill) return
+    if (!api.isAuthenticated()) return
     evalSaving = true
     try {
       await api.addEvaluation(evalAnak.id, {
@@ -169,7 +167,7 @@
       color: evalSkill.color,
       points: progress.points,
       maxPoints: progress.max,
-      notes: progress.points >= progress.max ? `Selesai! ${progress.points}/${progress.max} poin` : `Progress ${progress.points}/${progress.max} poin`,
+      notes: progress.points >= progress.max ? `Selesai! ${progress.points}/${progress.max} poin` : `Progress ${progress.percent}%`,
       childName: evalAnak.nama,
       isComplete: progress.points >= progress.max,
     })
@@ -184,7 +182,7 @@
       color: sp.color,
       points: progress.points,
       maxPoints: progress.max,
-      notes: progress.points >= progress.max ? `Selesai! ${progress.points}/${progress.max} poin` : `Progress ${progress.points}/${progress.max} poin`,
+      notes: progress.points >= progress.max ? `Selesai! ${progress.points}/${progress.max} poin` : `Progress ${progress.percent}%`,
       childName: anak.nama,
       isComplete: progress.points >= progress.max,
     })
@@ -247,7 +245,7 @@
                         <p class="text-xs text-on-surface-variant">{getPilarName(sp.pilar)}</p>
                       </div>
                       <span class="text-xs font-bold" style="color: {sp.color}">
-                        {getSkillProgress(anak.id, sp.key).points}/{getSkillProgress(anak.id, sp.key).max}
+                        Progress {getSkillProgress(anak.id, sp.key).percent}%
                       </span>
                     </div>
                     <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
@@ -350,11 +348,11 @@
                           <span class="material-symbols-outlined text-primary text-sm">check_circle</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-text-main">{ev.skill_title}</p>
-                          <p class="text-[10px] text-on-surface-variant">{formatDate(ev.updated_at)}</p>
+                          <p class="text-sm font-medium text-text-main">{ev.evaluation_skill_title}</p>
+                          <p class="text-[10px] text-on-surface-variant">{formatDate(ev.evaluation_created_at)}</p>
                         </div>
                         <span class="text-xs font-bold text-white bg-primary px-2 py-1 rounded-full">
-                          {ev.points}/{ev.max_points}
+                          {ev.evaluation_points}/{ev.evaluation_max_points}
                         </span>
                       </div>
                     {/each}
@@ -371,9 +369,11 @@
 
 <!-- Evaluasi Modal -->
 {#if showEvaluasi}
-  <div class="fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-canvas-cream rounded-t-[32px] sm:rounded-[32px] p-5 sm:p-6 border-4 border-primary shadow-xl w-full sm:max-w-sm max-h-[90vh] overflow-y-auto"
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4" onclick={async () => { await autoSaveEvaluation(); showEvaluasi = false }}>
+    <div class="bg-canvas-cream rounded-t-[32px] sm:rounded-[32px] border-4 border-primary shadow-xl w-full sm:max-w-sm max-h-[90vh] flex flex-col overflow-hidden"
       onclick={(e) => e.stopPropagation()}>
+      <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain flex-1 min-h-0">
       <div class="w-10 h-1 bg-outline-variant rounded-full mx-auto mb-4 sm:hidden"></div>
 
       <h3 class="font-bold text-lg text-text-main mb-2">{evalTitle}</h3>
@@ -425,12 +425,13 @@
       </div>
 
       <div class="flex gap-3 mt-5">
-        <button onclick={() => showEvaluasi = false}
+        <button onclick={async () => { await autoSaveEvaluation(); showEvaluasi = false }}
           class="flex-1 py-3 rounded-2xl text-sm font-bold text-on-surface-variant btn-pop-gray">Tutup</button>
         <button onclick={shareEval}
           class="flex-1 py-3 rounded-2xl text-sm font-bold text-white btn-pop-green flex items-center justify-center gap-1">
           <span class="material-symbols-outlined text-lg">share</span> Share
         </button>
+      </div>
       </div>
     </div>
   </div>
@@ -487,5 +488,19 @@
   .btn-pop-gray:active {
     transform: translateY(3px);
     box-shadow: 0 0px 0 #999;
+  }
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #B7D9BC transparent;
+  }
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
+  }
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: #B7D9BC;
+    border-radius: 9999px;
   }
 </style>
