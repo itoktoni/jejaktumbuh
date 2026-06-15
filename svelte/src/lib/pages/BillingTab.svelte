@@ -82,11 +82,6 @@
     return userPlanVal?.plan_id === plan?.id
   }
 
-  function isDowngrade(plan) {
-    if (!userPlanVal?.plan_harga || plan?.price === undefined) return false
-    return plan.price < userPlanVal.plan_harga
-  }
-
   function isExpired() {
     return !!userPlanVal?.expired
   }
@@ -115,7 +110,6 @@
   }
 
   function selectPlan(plan) {
-    if (isDowngrade(plan)) return
     selectedPlan = selectedPlan?.id === plan.id ? null : plan
     paymentData = null
     paymentError = ''
@@ -346,11 +340,7 @@
   <div class="space-y-3">
     {#each plansVal as plan (plan.id)}
       {@const theme = planTheme(plan)}
-      {@const downgrading = isDowngrade(plan)}
-      <div role="button" tabindex="0" class="w-full text-left rounded-[24px] overflow-hidden transition-all border-4"
-        class:cursor-pointer={!downgrading}
-        class:cursor-not-allowed={downgrading}
-        class:opacity-50={downgrading}
+      <div role="button" tabindex="0" class="w-full text-left rounded-[24px] overflow-hidden transition-all border-4 cursor-pointer"
         style="background: {selectedPlan?.id === plan.id ? theme.bg : '#FFFBF5'}; border-color: {selectedPlan?.id === plan.id ? theme.color : '#B7D9BC'}; box-shadow: {selectedPlan?.id === plan.id ? `0 6px 24px ${theme.color}30` : `0 2px 12px ${theme.color}10`}"
         onclick={() => selectPlan(plan)}
         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPlan(plan); } }}>
@@ -366,9 +356,6 @@
                 {#if isCurrentPlan(plan)}
                   <span class="text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded" style="background: white; color: {theme.color}">Saat Ini</span>
                 {/if}
-                {#if downgrading}
-                  <span class="text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-error/10 text-error">Tidak bisa downgrade</span>
-                {/if}
               </div>
               <p class="text-xs sm:text-sm text-on-surface-variant mt-0.5 line-clamp-2">{plan.description}</p>
               <div class="flex items-center gap-2 sm:gap-3 mt-2">
@@ -378,17 +365,13 @@
                 <span class="text-[10px] sm:text-xs text-on-surface-variant">{plan.value} Anak · {plan.period_label}</span>
               </div>
             </div>
-            {#if !downgrading}
-              <span class="material-symbols-outlined text-lg sm:text-xl shrink-0 transition-transform mt-1"
+            <span class="material-symbols-outlined text-lg sm:text-xl shrink-0 transition-transform mt-1"
                 style="color: {theme.color}; opacity: 0.5"
                 class:rotate-180={selectedPlan?.id === plan.id}>expand_more</span>
-            {:else}
-              <span class="material-symbols-outlined text-lg sm:text-xl shrink-0 mt-1 text-on-surface-variant/30">block</span>
-            {/if}
           </div>
         </div>
 
-        {#if selectedPlan?.id === plan.id && !downgrading}
+        {#if selectedPlan?.id === plan.id}
           <div class="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 fade-in-up">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-xl border-2 border-dashed mb-3"
               style="border-color: {theme.color}40; background: white">
