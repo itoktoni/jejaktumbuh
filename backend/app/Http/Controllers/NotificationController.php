@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationSent;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NotificationSent;
 
 class NotificationController extends Controller
 {
@@ -31,6 +31,7 @@ class NotificationController extends Controller
                 'url' => $n->url,
                 'type' => $n->type,
                 'read' => $n->read,
+                'meta' => $n->meta,
                 'time' => $n->created_at?->diffForHumans() ?? '',
                 'created_at' => $n->created_at->toIso8601String(),
             ]),
@@ -69,9 +70,18 @@ class NotificationController extends Controller
         return response()->json(['message' => 'All cleared']);
     }
 
-    public static function create(int $userId, string $title, ?string $body = null, string $icon = 'info', string $iconColor = 'text-primary', string $type = 'info', ?string $url = null): Notification
-    {
-        return Notification::create([
+    public static function notify(
+        int $userId,
+        string $title,
+        ?string $body = null,
+        string $icon = 'info',
+        string $iconColor = 'text-primary',
+        string $type = 'info',
+        ?string $url = null,
+        ?array $meta = null,
+        bool $broadcast = true,
+    ): Notification {
+        $notification = Notification::create([
             'user_id' => $userId,
             'icon' => $icon,
             'icon_color' => $iconColor,
@@ -79,12 +89,13 @@ class NotificationController extends Controller
             'body' => $body,
             'url' => $url,
             'type' => $type,
+            'meta' => $meta,
         ]);
-    }
 
-    public function broadcast(int $userId, string $title, ?string $body = null): JsonResponse
-    {
-        NotificationSent::dispatch($userId ?? Auth::id(), $title, $body);
-        return response()->json(['message' => 'Notification broadcasted']);
+        if ($broadcast) {
+            NotificationSent::dispatch($userId, $notification);
+        }
+
+        return $notification;
     }
 }

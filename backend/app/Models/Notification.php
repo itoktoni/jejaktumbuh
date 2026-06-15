@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends BaseModel
 {
     protected $table = 'notifications';
+
     protected $keyType = 'int';
+
     protected $primaryKey = 'id';
 
-    public $timestamps = false;
+    public $timestamps = true;
+
     public $incrementing = true;
 
     public static $filterColumns = [
@@ -57,6 +59,8 @@ class Notification extends BaseModel
             'title' => 'required|string|max:255',
         ];
     }
+
+    public function toArray() {}
 
     public static function field_name()
     {

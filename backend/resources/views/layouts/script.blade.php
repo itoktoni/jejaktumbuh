@@ -3,22 +3,87 @@
         return {
             drawerOpen: false,
             sidebarOpen: true,
-            unreadCount: 3,
-            notifications: [
-                { id: 1, icon: 'local_shipping', iconColor: 'text-primary', title: 'Inbound shipment #IN-2024-089 arrived at Dock 4', time: '5 min ago', read: false },
-                { id: 2, icon: 'warning', iconColor: 'text-error', title: 'Low stock alert: Lithium Battery Packs (48V) — 12 units left', time: '23 min ago', read: false },
-                { id: 3, icon: 'assignment_turned_in', iconColor: 'text-secondary', title: 'Putaway task #PW-9842 completed by J. Doe', time: '1 hour ago', read: false },
-                { id: 4, icon: 'sync', iconColor: 'text-on-surface-variant', title: 'Stock relocation Zone C → Zone B finished', time: '2 hours ago', read: true },
-                { id: 5, icon: 'person', iconColor: 'text-on-surface-variant', title: 'S. Lee started shift at 08:00 AM', time: '3 hours ago', read: true },
-            ],
+            notifications: [],
+            unreadCount: 0,
+
+            init() {
+                this.fetchNotifications();
+                const self = this;
+                window.addNotification = function(notif) {
+                    if (self.notifications.find(n => n.id === notif.id)) return;
+                    self.notifications.unshift(notif);
+                    self.unreadCount = self.notifications.filter(n => !n.read).length;
+                    if (window.showToast) {
+                        window.showToast(notif.title, notif.body);
+                    }
+                };
+            },
+
+            async fetchNotifications() {
+                try {
+                    const res = await fetch('/notifications-web', {
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    this.notifications = data.notifications || [];
+                    this.unreadCount = data.unread_count || 0;
+                } catch (e) {
+                    console.warn('Failed to fetch notifications:', e);
+                }
+            },
+
+            async markRead(notif) {
+                if (notif.read) return;
+                notif.read = true;
+                this.unreadCount = this.notifications.filter(n => !n.read).length;
+                try {
+                    await fetch('/notifications-web/' + notif.id + '/read', {
+                        method: 'PUT',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                    });
+                } catch (e) {
+                    console.warn('Failed to mark read:', e);
+                }
+            },
+
+            async markAllRead() {
+                this.notifications.forEach(n => n.read = true);
+                this.unreadCount = 0;
+                try {
+                    await fetch('/notifications-web/read-all', {
+                        method: 'PUT',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                    });
+                } catch (e) {
+                    console.warn('Failed to mark all read:', e);
+                }
+            },
         }
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('nav .bg-primary').forEach(function(el) {
             el.scrollIntoView({ block: 'center', behavior: 'smooth' });
         });
     });
-    // Toast function for real-time notifications
+
     window.showToast = function(title, body) {
         const toast = document.createElement('div');
         toast.className = 'fixed top-20 right-4 z-50 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-lg max-w-sm';

@@ -23,22 +23,26 @@
             <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="absolute right-0 top-full mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg overflow-hidden z-50">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant">
                     <span class="font-headline-md text-headline-md text-on-surface">Notifications</span>
-                    <button class="font-label-caps text-label-caps text-primary hover:underline" @click="unreadCount = 0">Mark all read</button>
+                    <button class="font-label-caps text-label-caps text-primary hover:underline" x-show="unreadCount > 0" @click="markAllRead()">Mark all read</button>
                 </div>
                 <div class="max-h-80 overflow-y-auto">
+                    <template x-if="notifications.length === 0">
+                        <div class="px-4 py-8 text-center">
+                            <span class="material-symbols-outlined text-3xl text-on-surface-variant/40">notifications_off</span>
+                            <p class="font-label-caps text-label-caps text-on-surface-variant mt-2">No notifications</p>
+                        </div>
+                    </template>
                     <template x-for="notif in notifications" :key="notif.id">
-                        <div class="flex items-start gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors border-b border-outline-variant/30 cursor-pointer" :class="{ 'bg-primary-fixed/10': !notif.read }">
-                            <span class="material-symbols-outlined mt-0.5 shrink-0" :class="notif.iconColor" x-text="notif.icon"></span>
+                        <div class="flex items-start gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors border-b border-outline-variant/30 cursor-pointer" :class="{ 'bg-primary-fixed/10': !notif.read }" @click="markRead(notif)">
+                            <span class="material-symbols-outlined mt-0.5 shrink-0" :style="'color:' + (notif.iconColor || '#176c33')" x-text="notif.icon || 'info'"></span>
                             <div class="flex-1 min-w-0">
                                 <p class="font-body-sm text-body-sm text-on-surface" :class="{ 'font-semibold': !notif.read }" x-text="notif.title"></p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 line-clamp-2" x-text="notif.body" x-show="notif.body"></p>
                                 <p class="font-label-caps text-label-caps text-on-surface-variant mt-0.5" x-text="notif.time"></p>
                             </div>
                             <div x-show="!notif.read" class="w-2 h-2 bg-primary rounded-full shrink-0 mt-2"></div>
                         </div>
                     </template>
-                </div>
-                <div class="px-4 py-2 border-t border-outline-variant text-center">
-                    <button class="font-label-caps text-label-caps text-primary hover:underline">View All Notifications</button>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\PlanAction;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AnakController;
 use App\Http\Controllers\AuthController;
@@ -11,26 +12,31 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PilarController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SkillActivityController;
 use App\Http\Controllers\SkillController;
-use App\Http\Controllers\PilarController;
 use App\Http\Controllers\WorksheetController;
 use App\Models\Activity;
+use App\Models\Plan;
+use App\PeriodEnum;
 use App\Services\LocalImageGeneratorService;
 use App\Services\StoryGeneratorService;
-use App\Actions\PlanAction;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 Route::get('/stories/generate', function (Request $request, StoryGeneratorService $stories, LocalImageGeneratorService $images) {
     $theme = (string) $request->query('theme', 'kebersamaan');
     $childName = (string) $request->query('child_name', 'Anak');
     $pagesCount = (int) $request->query('pages_count', 4);
-    if ($pagesCount < 1) $pagesCount = 1;
-    if ($pagesCount > 24) $pagesCount = 24;
+    if ($pagesCount < 1) {
+        $pagesCount = 1;
+    }
+    if ($pagesCount > 24) {
+        $pagesCount = 24;
+    }
     $generateImages = (bool) $request->query('generate_images', false);
     $withAi = (bool) $request->query('with_ai', false);
     $save = (bool) $request->query('save', false);
@@ -51,7 +57,7 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
     }
 
     $title = $generated['title'];
-    $slug = Str::slug($title) . '-' . Str::random(5);
+    $slug = Str::slug($title).'-'.Str::random(5);
     $moral = $generated['moral'];
 
     $response = [
@@ -69,7 +75,7 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
             'type' => 'storytelling',
             'title' => $title,
             'slug' => $slug,
-            'desc' => $title . ' - Cerita tentang ' . $theme . ' untuk anak.',
+            'desc' => $title.' - Cerita tentang '.$theme.' untuk anak.',
             'image' => null,
             'moral' => $moral,
             'ages' => range(3, 8),
@@ -88,11 +94,11 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
                 $savedPages[] = [
                     'num' => $num,
                     'text' => $page['text'],
-                    'image' => 'https://backend.test/storage/images/stories/' . $activity->id . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png',
+                    'image' => 'https://backend.test/storage/images/stories/'.$activity->id.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png',
                 ];
             }
             $activity->data = array_merge($activity->data ?? [], ['pages' => $savedPages]);
-            $activity->image = 'https://backend.test/storage/images/stories/' . $activity->id . '/01.png';
+            $activity->image = 'https://backend.test/storage/images/stories/'.$activity->id.'/01.png';
             $activity->save();
             $pages = $savedPages;
         }
@@ -103,7 +109,7 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
         $tempId = time();
         foreach ($pages as &$page) {
             $num = (int) ($page['num'] ?? 1);
-            $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+            $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
         }
         unset($page);
     }
@@ -113,7 +119,9 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
 
 Route::get('/stories/preview', function (Request $request, LocalImageGeneratorService $images) {
     $pages = $request->query('pages', []);
-    if (!is_array($pages)) $pages = [$pages];
+    if (! is_array($pages)) {
+        $pages = [$pages];
+    }
     $generateImages = (bool) $request->query('generate_images', false);
 
     if ($generateImages) {
@@ -134,7 +142,7 @@ Route::get('/stories/preview', function (Request $request, LocalImageGeneratorSe
 // OpenAI-compatible endpoint for AI tools (Aider, Cursor, Windsurf, Cline, etc.)
 Route::post('/openai/v1/chat/completions', function (Request $request, StoryGeneratorService $stories, LocalImageGeneratorService $images) {
     $body = $request->all();
-    $stream = !empty($body['stream']) && $body['stream'] === true;
+    $stream = ! empty($body['stream']) && $body['stream'] === true;
 
     $messages = $body['messages'] ?? [];
     $lastMessage = end($messages);
@@ -153,15 +161,19 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
     }
     if (preg_match('/pages?[:\s]+(\d+)/i', $userPrompt, $m)) {
         $pagesCount = (int) $m[1];
-        if ($pagesCount < 2) $pagesCount = 2;
-        if ($pagesCount > 8) $pagesCount = 8;
+        if ($pagesCount < 2) {
+            $pagesCount = 2;
+        }
+        if ($pagesCount > 8) {
+            $pagesCount = 8;
+        }
     }
     if (stripos($userPrompt, 'gambar') !== false || stripos($userPrompt, 'image') !== false) {
         $generateImages = true;
     }
 
     if ($stream) {
-        return response()->stream(function () use ($stories, $images, $theme, $childName, $pagesCount, $generateImages) {
+        return response()->stream(function () use ($stories, $theme, $childName, $pagesCount, $generateImages) {
             $generated = $stories->generate($theme, $childName);
             $pages = array_slice($generated['pages'], 0, $pagesCount);
             $renumbered = [];
@@ -175,7 +187,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
                 $tempId = time();
                 foreach ($renumbered as &$page) {
                     $num = (int) ($page['num'] ?? 1);
-                    $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+                    $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
                 }
                 unset($page);
             }
@@ -187,7 +199,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             $chunk = json_encode([
-                'id' => 'chatcmpl-' . Str::random(8),
+                'id' => 'chatcmpl-'.Str::random(8),
                 'object' => 'chat.completion.chunk',
                 'created' => time(),
                 'model' => 'story-generator',
@@ -222,7 +234,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
         $tempId = time();
         foreach ($renumbered as &$page) {
             $num = (int) ($page['num'] ?? 1);
-            $page['image'] = 'https://backend.test/storage/images/stories/' . $tempId . '/' . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . '.png';
+            $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
         }
         unset($page);
     }
@@ -234,7 +246,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
     return response()->json([
-        'id' => 'chatcmpl-' . Str::random(8),
+        'id' => 'chatcmpl-'.Str::random(8),
         'object' => 'chat.completion',
         'created' => time(),
         'model' => 'story-generator',
@@ -269,11 +281,12 @@ Route::get('/config', function () {
 });
 
 Route::get('/plans', function () {
-    $plans = \App\Models\Plan::where('plan_status', 1)
+    $plans = Plan::where('plan_status', 1)
         ->orderBy('plan_harga')
         ->get()
         ->map(function ($p) {
-            $periodEnum = \App\PeriodEnum::tryFrom($p->plan_periode);
+            $periodEnum = PeriodEnum::tryFrom($p->plan_periode);
+
             return [
                 'id' => $p->plan_id,
                 'name' => $p->plan_nama,
@@ -301,6 +314,10 @@ Route::post('/activities/{id}/view', [ActivityController::class, 'trackView'])->
 Route::get('/pilars', [PilarController::class, 'index'])->name('pilars.index');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/broadcasting/auth', function (Request $request) {
+        return Broadcast::auth($request);
+    });
+
     Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
     Route::get('/me', [AuthController::class, 'me'])->name('me');
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -318,8 +335,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts.index');
         Route::post('/discounts', [DiscountController::class, 'store'])->name('discounts.store');
         Route::delete('/discounts/{id}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
-        Route::post('/purchase-plan', PlanAction::class . '@purchase')->name('purchase.plan');
-        Route::get('/validate-plan', PlanAction::class . '@validatePlan')->name('validate.plan');
+        Route::post('/purchase-plan', PlanAction::class.'@purchase')->name('purchase.plan');
+        Route::get('/validate-plan', PlanAction::class.'@validatePlan')->name('validate.plan');
 
         Route::prefix('payments')->group(function () {
             Route::post('/', [PaymentController::class, 'create'])->name('payments.create');
@@ -348,8 +365,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'update'])->name('anak.skills.update');
         Route::delete('/anak/{anakId}/skills/{skillId}', [SkillController::class, 'destroy'])->name('anak.skills.destroy');
 
-    Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
-    Route::post('/activities/{id}/generate-image', [ActivityController::class, 'generateImage'])->name('activities.generate-image');
+        Route::put('/activities/{id}', [ActivityController::class, 'update'])->name('activities.update');
+        Route::post('/activities/{id}/generate-image', [ActivityController::class, 'generateImage'])->name('activities.generate-image');
 
         Route::post('/anak/{anakId}/activities', [SkillActivityController::class, 'store'])->name('anak.activities.store');
         Route::delete('/anak/{anakId}/activities/{activityId}', [SkillActivityController::class, 'destroy'])->name('anak.activities.destroy');

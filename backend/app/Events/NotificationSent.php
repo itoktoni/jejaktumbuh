@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Notification as NotificationModel;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,24 +15,35 @@ class NotificationSent implements ShouldBroadcast
 
     public function __construct(
         public int $userId,
-        public string $title,
-        public ?string $body = null,
-        public ?string $url = null
+        public NotificationModel $notification,
     ) {}
 
     public function broadcastOn(): array
     {
         return [
-            new Channel('notifications'),
+            new PrivateChannel('notifications.'.$this->userId),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'notification.new';
     }
 
     public function broadcastWith(): array
     {
         return [
-            'title' => $this->title,
-            'body' => $this->body,
-            'url' => $this->url,
+            'id' => $this->notification->id,
+            'icon' => $this->notification->icon,
+            'iconColor' => $this->notification->icon_color,
+            'title' => $this->notification->title,
+            'body' => $this->notification->body,
+            'url' => $this->notification->url,
+            'type' => $this->notification->type,
+            'read' => false,
+            'meta' => $this->notification->meta,
+            'time' => 'Baru saja',
+            'created_at' => $this->notification->created_at?->toIso8601String(),
         ];
     }
 }

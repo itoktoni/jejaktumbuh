@@ -7,14 +7,12 @@
 
     <script>
         document.addEventListener('new-notification', event => {
-            const data = event.detail;
-            console.log('Notification received:', data);
-            // Show toast or update UI
-            if (window.showToast) {
-                window.showToast(data.title, data.body);
+            if (typeof window.addNotification === 'function') {
+                window.addNotification(event.detail);
             }
         });
     </script>
+
 
     {{-- Overlay for mobile drawer --}}
     <div class="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity duration-200" :class="drawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'" @click="drawerOpen = false"></div>
