@@ -236,8 +236,15 @@ export async function addChecklist(item) {
     try {
       const serverAnakId = await ensureAnakOnServer(currentId)
       if (!serverAnakId) return
-      const saved = await api.addChecklist(serverAnakId, item)
-      if (saved?.id) item.serverId = saved.id
+      if (item.serverId) {
+        await api.updateChecklist(serverAnakId, item.serverId, { title: item.title, items: item.items })
+      } else {
+        const saved = await api.addChecklist(serverAnakId, item)
+        if (saved?.id) {
+          item.serverId = saved.id
+          dbSaveChecklist({ ...JSON.parse(JSON.stringify(item)), anakId: currentId })
+        }
+      }
     } catch (e) { /* ignore */ }
   }
 }

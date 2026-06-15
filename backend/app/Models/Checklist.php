@@ -54,6 +54,18 @@ class Checklist extends BaseModel
         return 'checklist_title';
     }
 
+    public function toArray()
+    {
+        return [
+            'id' => $this->checklist_id,
+            'anak_id' => $this->checklist_id_anak,
+            'title' => $this->checklist_title,
+            'items' => $this->checklist_items ?? [],
+            'date' => $this->checklist_date,
+            'created_at' => $this->checklist_created_at,
+        ];
+    }
+
     public function has_anak()
     {
         return $this->belongsTo(Anak::class, 'checklist_id_anak', 'anak_id');

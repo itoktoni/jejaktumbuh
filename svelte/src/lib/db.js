@@ -179,14 +179,18 @@ export async function syncServerData(anakList) {
       if (Array.isArray(anak.checklists)) {
         await db.checklists.where('anakId').equals(anakId).delete()
         for (const cl of anak.checklists) {
-          await db.checklists.put(cleanRecord(cl, 'anakId', anakId))
+          const record = cleanRecord(cl, 'anakId', anakId)
+          if (record.id && !record.serverId) record.serverId = record.id
+          await db.checklists.put(record)
         }
       }
 
       if (Array.isArray(anak.schedules)) {
         await db.schedules.where('anakId').equals(anakId).delete()
         for (const s of anak.schedules) {
-          await db.schedules.put(cleanRecord(s, 'anakId', anakId))
+          const record = cleanRecord(s, 'anakId', anakId)
+          if (record.id && !record.serverId) record.serverId = record.id
+          await db.schedules.put(record)
         }
       }
 
