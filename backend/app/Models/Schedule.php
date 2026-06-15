@@ -32,8 +32,8 @@ class Schedule extends BaseModel
     protected $fillable = [
         'schedule_id_anak',
         'schedule_label',
-        'schedule_date',
         'schedule_time',
+        'schedule_created_at',
     ];
 
     protected $casts = [];
@@ -52,7 +52,6 @@ class Schedule extends BaseModel
             'id' => $this->schedule_id,
             'anak_id' => $this->schedule_id_anak,
             'label' => $this->schedule_label,
-            'date' => $this->schedule_date,
             'time' => $this->schedule_time,
             'created_at' => $this->schedule_created_at,
         ];

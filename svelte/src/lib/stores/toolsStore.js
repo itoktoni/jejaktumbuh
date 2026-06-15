@@ -303,10 +303,17 @@ export async function updateSchedule(item, data) {
     dbSaveSchedule({ ...schedules[idx], anakId: currentId })
 
     // Sync to server if autoSync enabled
-    if (isAutoSyncEnabled() && schedules[idx]?.serverId && api.isAuthenticated()) {
+    if (isAutoSyncEnabled() && api.isAuthenticated()) {
       try {
         const serverAnakId = await ensureAnakOnServer(currentId)
-        if (serverAnakId) await api.updateSchedule(serverAnakId, schedules[idx].serverId, data)
+        if (serverAnakId && schedules[idx]?.serverId) {
+          // If done status changed, call toggleDone API
+          if (data.done !== undefined) {
+            await api.toggleScheduleDone(serverAnakId, schedules[idx].serverId, data.done)
+          } else {
+            await api.updateSchedule(serverAnakId, schedules[idx].serverId, data)
+          }
+        }
       } catch (e) { console.warn('[Schedule] Update FAILED:', e.message) }
     }
   }

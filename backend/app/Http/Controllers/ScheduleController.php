@@ -43,6 +43,7 @@ class ScheduleController extends Controller
 
         $schedule = Schedule::create([
             'schedule_id_anak' => $anakId,
+            'schedule_created_at' => now()->toDateTimeString(),
             ...$data,
         ]);
 

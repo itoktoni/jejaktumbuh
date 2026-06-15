@@ -16,10 +16,8 @@
   let showForm = $state(false)
   let showHistory = $state(false)
   let newLabel = $state('')
-  let newDate = $state('')
   let newTime = $state('')
   let labelError = $state('')
-  let dateError = $state('')
   let timeError = $state('')
 
   const undoneSchedules = $derived(schedules.filter(s => !s.done))
@@ -108,24 +106,17 @@
   function closeForm() {
     showForm = false
     newLabel = ''
-    newDate = ''
     newTime = ''
     labelError = ''
-    dateError = ''
     timeError = ''
   }
 
   async function handleAdd() {
     labelError = ''
-    dateError = ''
     timeError = ''
     let valid = true
     if (!newLabel.trim()) {
       labelError = 'Nama aktivitas wajib diisi'
-      valid = false
-    }
-    if (!newDate) {
-      dateError = 'Tanggal wajib diisi'
       valid = false
     }
     if (!newTime) {
@@ -133,7 +124,7 @@
       valid = false
     }
     if (!valid) return
-    await addSchedule({ date: newDate, time: newTime, label: newLabel.trim(), done: false })
+    await addSchedule({ time: newTime, label: newLabel.trim(), done: false })
     closeForm()
   }
 
@@ -252,7 +243,6 @@
 <AppModal show={showForm} title="Tambah Jadwal" onclose={closeForm}>
   <div class="space-y-4">
     <AppInput bind:value={newLabel} label="Nama Aktivitas" placeholder="Contoh: Belajar Membaca" error={labelError} />
-    <AppInput bind:value={newDate} label="Tanggal" type="date" error={dateError} />
     <AppInput bind:value={newTime} label="Waktu" type="time" placeholder="08:00" error={timeError} />
   </div>
   <div class="flex gap-3 mt-6">

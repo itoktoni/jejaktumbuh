@@ -185,6 +185,7 @@ export async function deleteChecklist(anakId, checklistId) { return apiFetch(`/a
 export async function getSchedules(anakId) { return apiFetch(`/anak/${anakId}/schedules`) }
 export async function addSchedule(anakId, schedule) { return apiFetch(`/anak/${anakId}/schedules`, { method: 'POST', body: JSON.stringify(schedule) }) }
 export async function updateSchedule(anakId, scheduleId, data) { return apiFetch(`/anak/${anakId}/schedules/${scheduleId}`, { method: 'PUT', body: JSON.stringify(data) }) }
+export async function toggleScheduleDone(anakId, scheduleId, done) { return apiFetch(`/anak/${anakId}/schedules/${scheduleId}/toggle`, { method: 'PUT', body: JSON.stringify({ done }) }) }
 export async function deleteSchedule(anakId, scheduleId) { return apiFetch(`/anak/${anakId}/schedules/${scheduleId}`, { method: 'DELETE' }) }
 
 export async function addWorksheet(anakId, worksheet) { return apiFetch(`/anak/${anakId}/worksheets`, { method: 'POST', body: JSON.stringify(worksheet) }) }
