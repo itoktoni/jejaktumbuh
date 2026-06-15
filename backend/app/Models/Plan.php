@@ -26,7 +26,8 @@ class Plan extends BaseModel
         'plan_color' => 'Color',
         'plan_recomended' => 'Rekomended',
         'plan_periode' => 'Periode',
-        'plan_interval' => 'Interval'
+        'plan_interval' => 'Interval',
+        'plan_coret' => 'Harga Coret'
     ];
 
     /**
@@ -42,7 +43,8 @@ class Plan extends BaseModel
         'plan_recomended',
         'plan_fee',
         'plan_periode',
-        'plan_interval'
+        'plan_interval',
+        'plan_coret'
     ];
 
     /**
@@ -60,7 +62,8 @@ class Plan extends BaseModel
         'plan_periode',
         'plan_interval',
         'plan_recomended',
-        'plan_color'
+        'plan_color',
+        'plan_coret'
     ];
 
     /**

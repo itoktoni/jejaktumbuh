@@ -261,16 +261,16 @@ class AuthController extends Controller
             'affiliate_reff' => $affiliateReff,
         ]);
 
-        $freePlan = Plan::where('plan_harga', 0)->where('plan_status', 1)->first();
-        if ($freePlan) {
-            $trialDays = (int) config('langkahkecil.trial_days', 10);
+        $plan = Plan::where('plan_status', 1)->first();
+        if ($plan) {
+            $trialDays = (int) config('langkahkecil.trial_days', 3);
             $subscription = Subscribe::create([
                 'subscribe_id_user' => $user->id,
-                'subscribe_harga' => 0,
-                'subscribe_discount' => 0,
+                'subscribe_harga' => $plan->plan_harga,
+                'subscribe_discount' => $plan->plan_harga,
                 'subscribe_total' => 0,
-                'subscribe_id_plan' => $freePlan->plan_id,
-                'subsribe_value' => $freePlan->plan_value ?? 1,
+                'subscribe_id_plan' => $plan->plan_id,
+                'subsribe_value' => $plan->plan_value ?? 1,
                 'subscribe_trial_at' => now(),
                 'subscribe_start_at' => now(),
                 'subscribe_end_at' => now()->addDays($trialDays),
