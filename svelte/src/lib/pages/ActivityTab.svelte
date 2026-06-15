@@ -215,7 +215,7 @@
         activitiesCache.set(serverData)
         setAktivitasData(buildAktivitasDataFromAPI(serverData))
       }
-    } catch (e) { console.warn('Failed to refresh activities from server:', e) }
+    } catch (e) { /* ignore */ }
   })
 
   async function doDownload() {

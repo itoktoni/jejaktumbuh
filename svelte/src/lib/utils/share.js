@@ -137,7 +137,6 @@ async function captureAndShare(html, filename) {
       URL.revokeObjectURL(url)
     }
   } catch (e) {
-    console.warn('[share] Image capture failed, falling back to text:', e)
     return false
   } finally {
     document.body.removeChild(container)

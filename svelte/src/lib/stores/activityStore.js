@@ -25,9 +25,7 @@ export async function checkServer() {
     if (data && typeof data === 'object') {
       serverCount.set(Object.values(data).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0))
     }
-  } catch (e) {
-    console.warn('[ActivityStore] checkServer failed:', e.message)
-  }
+  } catch (e) { /* ignore */ }
 }
 
 export async function downloadActivities() {

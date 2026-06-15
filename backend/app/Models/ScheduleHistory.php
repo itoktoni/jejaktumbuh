@@ -36,6 +36,7 @@ class ScheduleHistory extends BaseModel
         'schedule_history_id_anak',
         'schedule_history_date',
         'schedule_history_time',
+        'schedule_history_created_at',
     ];
 
     protected $casts = [

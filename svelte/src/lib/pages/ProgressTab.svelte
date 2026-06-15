@@ -74,7 +74,7 @@
       completedCount = { ...completedCount }
       totalPoints = { ...totalPoints }
       totalMax = { ...totalMax }
-    } catch (e) { console.warn('Failed to fetch evaluations:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   function getAnakTotal(anakId) {
@@ -115,7 +115,6 @@
       await api.toggleActivity(anakId, act.id)
     } catch (e) {
       act.completed = !act.completed
-      console.warn('Failed to toggle activity:', e)
     }
   }
 
@@ -152,7 +151,7 @@
         notes: `${evalPoints} dari ${evalMax} poin`,
       })
       await fetchEvaluations(evalAnak.id)
-    } catch (e) { console.warn('Auto-save failed:', e) }
+    } catch (e) { /* ignore */ }
     evalSaving = false
   }
 

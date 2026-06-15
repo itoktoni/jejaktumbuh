@@ -183,7 +183,7 @@
             try {
               const me = await api.getMe()
               applyServerData(me)
-            } catch (e) { console.warn('Failed to refresh user:', e) }
+            } catch (e) { /* ignore */ }
             setTimeout(async () => {
               try {
                 const me2 = await api.getMe()
@@ -195,7 +195,6 @@
           }
         }
       } catch (e) {
-        console.warn('Poll error:', e)
       }
     }, 3000)
   }
@@ -218,9 +217,9 @@
           try {
             const me = await api.getMe()
             applyServerData(me)
-          } catch (e) { console.warn('Failed to refresh user:', e) }
+          } catch (e) { /* ignore */ }
         }
-      } catch (e) { console.warn('Failed to check payment:', e) }
+      } catch (e) { /* ignore */ }
     }
     showQrModal = false
     activePayment = null
@@ -247,7 +246,6 @@
         if (pending) activePayment = pending
       }
     } catch (e) {
-      console.warn('Failed to load payments:', e)
     }
   }
 
@@ -260,7 +258,6 @@
       activePayment = null
       await loadHistory()
     } catch (e) {
-      console.warn('Cancel error:', e)
       activePayment = null
     }
   }
@@ -274,7 +271,6 @@
         color: { dark: '#1a1a1a', light: '#ffffff' }
       })
     } catch (e) {
-      console.warn('QR render error:', e)
     }
   }
 </script>

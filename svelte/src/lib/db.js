@@ -12,6 +12,17 @@ db.version(2).stores({
   settings: 'key'
 })
 
+db.version(3).stores({
+  anak: '++id, nama',
+  challenges: '++id, anakId, category',
+  challengeHistory: '++id, anakId, category',
+  checklists: '++id, anakId',
+  schedules: '++id, anakId',
+  scheduleHistories: '++id, anakId, scheduleId, date',
+  worksheets: '++id, anakId',
+  settings: 'key'
+})
+
 export default db
 
 export async function getAnakList() {
@@ -34,12 +45,13 @@ export async function saveAnakBatch(anakList) {
 }
 
 export async function removeAnak(id) {
-  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, async () => {
+  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, db.scheduleHistories, async () => {
     await db.anak.delete(id)
     await db.challenges.where('anakId').equals(id).delete()
     await db.challengeHistory.where('anakId').equals(id).delete()
     await db.checklists.where('anakId').equals(id).delete()
     await db.schedules.where('anakId').equals(id).delete()
+    await db.scheduleHistories.where('anakId').equals(id).delete()
   })
 }
 
@@ -72,6 +84,23 @@ export async function getSchedules(anakId) {
 export async function saveSchedule(item) { return db.schedules.put(item) }
 export async function removeSchedule(id) { return db.schedules.delete(id) }
 
+export async function getScheduleHistories(anakId, date) {
+  let query = db.scheduleHistories.where('anakId').equals(anakId)
+  if (date) {
+    return query.filter(h => h.date === date).toArray()
+  }
+  return query.toArray()
+}
+
+export async function saveScheduleHistory(item) { return db.scheduleHistories.put(item) }
+export async function removeScheduleHistory(scheduleId, date) {
+  const existing = await db.scheduleHistories.where({ scheduleId, date }).first()
+  if (existing) return db.scheduleHistories.delete(existing.id)
+}
+export async function removeScheduleHistories(scheduleId) {
+  return db.scheduleHistories.where('scheduleId').equals(scheduleId).delete()
+}
+
 export async function getSetting(key) {
   const row = await db.settings.get(key)
   return row?.value
@@ -89,12 +118,13 @@ export async function saveWorksheet(item) { return db.worksheets.put(item) }
 export async function removeWorksheet(id) { return db.worksheets.delete(id) }
 
 export async function clearAllUserData() {
-  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, db.worksheets, async () => {
+  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, db.scheduleHistories, db.worksheets, async () => {
     await db.anak.clear()
     await db.challenges.clear()
     await db.challengeHistory.clear()
     await db.checklists.clear()
     await db.schedules.clear()
+    await db.scheduleHistories.clear()
     await db.worksheets.clear()
   })
   localStorage.removeItem('lk_anak_cache')
@@ -108,7 +138,7 @@ function cleanRecord(obj, foreignKey, foreignValue) {
 }
 
 export async function syncServerData(anakList) {
-  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, db.worksheets, async () => {
+  await db.transaction('rw', db.anak, db.challenges, db.challengeHistory, db.checklists, db.schedules, db.scheduleHistories, db.worksheets, async () => {
     for (const anak of anakList) {
       if (!anak.id) continue
       const anakId = anak.id

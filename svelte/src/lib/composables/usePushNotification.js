@@ -8,7 +8,6 @@ export const pushLoading = writable(false)
 export const debugLog = writable([])
 
 function log(msg) {
-  console.log('[Push]', msg)
   debugLog.update(arr => [...arr, `[${new Date().toLocaleTimeString()}] ${msg}`])
 }
 

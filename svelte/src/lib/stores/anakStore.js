@@ -51,9 +51,7 @@ export async function loadAnakList() {
       localStorage.setItem('lk_anak_cache', JSON.stringify(mapped))
       await dbSaveAnakBatch(mapped)
       return
-    } catch (e) {
-      console.warn('Failed to load from server, using local:', e)
-    }
+    } catch (e) { /* ignore */ }
   }
   const localList = await dbGetAnakList()
   const result = localList.map(a => ({ ...a, serverSynced: false }))
@@ -110,16 +108,14 @@ export async function updateAnak(anak) {
       }
       await api.updateAnak(anak.id, payload)
       await loadAnakList()
-    } catch (e) {
-      console.warn('Failed to update on server:', e)
-    }
+    } catch (e) { /* ignore */ }
   }
   await dbSaveAnak(JSON.parse(JSON.stringify(anak)))
 }
 
 export async function deleteAnak(id) {
   if (await shouldAutoSync()) {
-    try { await api.deleteAnak(id) } catch (e) { console.warn('Failed to delete on server:', e) }
+    try { await api.deleteAnak(id) } catch (e) { /* ignore */ }
   }
   await dbRemoveAnak(id)
   anakList.update(list => list.filter(a => a.id !== id))
@@ -134,7 +130,7 @@ export async function resetSkill({ anak, skill }) {
       try {
         await api.deleteCompletedSkill(anak.id, skill.key)
         await api.addSkill(anak.id, { key: skill.key, emoji: skill.emoji, title: skill.title, pilar: skill.pilar, color: skill.color })
-      } catch (e) { console.warn('Sync resetSkill failed:', e.message) }
+      } catch (e) { /* ignore */ }
     }
     await dbSaveAnak(JSON.parse(JSON.stringify(anak)))
     anakList.update(list => list)
@@ -146,7 +142,7 @@ export async function deleteSkill({ anak, skill }) {
   if (idx > -1) {
     anak.skills.splice(idx, 1)
     if (await shouldAutoSync()) {
-      try { await api.deleteSkill(anak.id, skill.key) } catch (e) { console.warn('Failed to delete skill on server:', e) }
+      try { await api.deleteSkill(anak.id, skill.key) } catch (e) { /* ignore */ }
     }
     await dbSaveAnak(JSON.parse(JSON.stringify(anak)))
     anakList.update(list => list)
@@ -170,7 +166,7 @@ export async function addSkill(anakId, skillData) {
     activities: []
   })
   if (await shouldAutoSync()) {
-    try { await api.addSkill(anakId, skillData) } catch (e) { console.warn('Failed to add skill on server:', e) }
+    try { await api.addSkill(anakId, skillData) } catch (e) { /* ignore */ }
   }
   await dbSaveAnak(JSON.parse(JSON.stringify(anak)))
   anakList.update(list => list)
@@ -194,7 +190,7 @@ export async function addActivity(anakId, skillKey, activityData) {
   if (await shouldAutoSync()) {
     try {
       await api.addActivity(anakId, { skill_key: skillKey, title: activityData.title, emoji: activityData.emoji, feature: activityData.feature })
-    } catch (e) { console.warn('Failed to add activity on server:', e) }
+    } catch (e) { /* ignore */ }
   }
   await dbSaveAnak(JSON.parse(JSON.stringify(anak)))
   anakList.update(list => list)

@@ -27,7 +27,6 @@
       const plans = data.plans || data
       selectedPlan = plans.find(p => p.recommended) || plans.find(p => p.price > 0) || plans[0]
     } catch (e) {
-      console.warn('Failed to load plans:', e)
     }
   }
 

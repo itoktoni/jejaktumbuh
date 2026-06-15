@@ -42,7 +42,7 @@
       const pilarData = await api.getPilarsAndSkills()
       if (pilarData.pilars) authStore.pilars.set(pilarData.pilars)
       if (pilarData.skills) authStore.skills.set(pilarData.skills)
-    } catch (e) { console.warn('Failed to refresh pilars/skills:', e) }
+    } catch (e) { /* ignore */ }
 
     try {
       const { saveSetting } = await import('$lib/db.js')
@@ -52,7 +52,7 @@
         activitiesCache.set(serverData)
         setAktivitasData(buildAktivitasDataFromAPI(serverData))
       }
-    } catch (e) { console.warn('Failed to refresh activities:', e) }
+    } catch (e) { /* ignore */ }
   })
 
   $effect(() => {
@@ -111,7 +111,6 @@
         setAktivitasData(buildAktivitasDataFromAPI(serverData))
       }
     } catch (e) {
-      console.warn('Failed to refresh activities:', e)
     }
 
     activeTab.set('activity')

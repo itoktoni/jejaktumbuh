@@ -105,14 +105,15 @@ class ScheduleController extends Controller
             return response()->json(['done' => false, 'date' => $date]);
         }
 
-        ScheduleHistory::create([
+        $history = ScheduleHistory::create([
             'schedule_history_id_schedule' => $scheduleId,
             'schedule_history_id_anak' => $anakId,
             'schedule_history_date' => $date,
             'schedule_history_time' => $time,
+            'schedule_history_created_at' => now()->toDateTimeString(),
         ]);
 
-        return response()->json(['done' => true, 'date' => $date, 'time' => $time]);
+        return response()->json($history->toArray());
     }
 
     public function xgetHistories(Request $request, $anakId)

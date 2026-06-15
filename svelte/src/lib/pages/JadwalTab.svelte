@@ -5,8 +5,6 @@
   import AppInput from '../components/AppInput.svelte'
   import AppButton from '../components/AppButton.svelte'
   import AnakDropdown from '../components/AnakDropdown.svelte'
-  import { onMount } from 'svelte'
-  import { get } from 'svelte/store'
   import { shareJadwalImage } from '../utils/share.js'
 
   let schedules = $state([])
@@ -44,15 +42,12 @@
 
   $effect(() => {
     const u1 = toolsData.subscribe(v => {
-      console.log('[JadwalTab] toolsData update:', JSON.stringify(v?.schedules))
       schedules = v?.schedules || []
     })
     const u2 = toolsAnakId.subscribe(v => {
-      console.log('[JadwalTab] toolsAnakId:', v)
       currentAnakId = v
     })
     const u3 = anakList.subscribe(v => {
-      console.log('[JadwalTab] anakList:', v?.map(a => a.id))
       anakListVal = v
     })
     return () => { u1(); u2(); u3() }
@@ -80,23 +75,6 @@
 
     return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   }
-
-  onMount(() => {
-    const today = getToday()
-    const lastReset = localStorage.getItem('jadwal_last_reset')
-    if (lastReset !== today && schedules.length > 0) {
-      // Reset only today's schedules
-      schedules.forEach(s => {
-        if (s.date === today) s.done = false
-      })
-      anakToolsData.update(map => {
-        const id = get(toolsAnakId)
-        if (map[id]) map[id].schedules = [...schedules]
-        return map
-      })
-      localStorage.setItem('jadwal_last_reset', today)
-    }
-  })
 
   async function toggleDone(item) {
     const newDone = !item.done

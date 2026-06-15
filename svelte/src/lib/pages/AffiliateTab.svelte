@@ -203,7 +203,7 @@
     try {
       await api.deleteDiscount(id)
       myDiscounts = myDiscounts.filter(d => d.id !== id)
-    } catch (e) { console.warn('Failed to delete discount:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   async function copyCode(d) {
@@ -225,14 +225,14 @@
       if (res.komisi !== undefined && userVal) {
         user.update(u => u ? { ...u, komisi: res.komisi } : u)
       }
-    } catch (e) { console.warn('Failed to load referrals:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   async function loadCashouts() {
     try {
       const res = await api.getCashouts()
       cashouts = res.cashouts || []
-    } catch (e) { console.warn('Failed to load cashouts:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   async function loadDiscounts() {
@@ -240,14 +240,14 @@
       const res = await api.getMyDiscounts()
       myDiscounts = res.discounts || []
       if (res.config) discountConfig = res.config
-    } catch (e) { console.warn('Failed to load discounts:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   async function refreshUser() {
     try {
       const me = await api.getMe()
       applyServerData(me)
-    } catch (e) { console.warn('Failed to refresh user:', e) }
+    } catch (e) { /* ignore */ }
   }
 
   onMount(() => {

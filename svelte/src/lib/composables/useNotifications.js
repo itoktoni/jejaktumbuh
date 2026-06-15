@@ -17,9 +17,7 @@ export async function fetchNotifications() {
   try {
     const data = await api.getNotifications()
     notifications.set(data.notifications || [])
-  } catch (e) {
-    console.warn('Failed to fetch notifications:', e)
-  }
+  } catch (e) { /* ignore */ }
   loading.set(false)
 }
 
@@ -56,15 +54,15 @@ export function addNotification(notification) {
 export async function markRead(n) {
   n.read = true
   notifications.update(list => list)
-  try { await api.markNotificationRead(n.id) } catch (e) { console.warn('Failed to mark read:', e) }
+  try { await api.markNotificationRead(n.id) } catch (e) { /* ignore */ }
 }
 
 export async function markAllRead() {
   notifications.update(list => list.map(n => ({ ...n, read: true })))
-  try { await api.markAllNotificationsRead() } catch (e) { console.warn('Failed to mark all read:', e) }
+  try { await api.markAllNotificationsRead() } catch (e) { /* ignore */ }
 }
 
 export async function clearAll() {
   notifications.set([])
-  try { await api.clearAllNotifications() } catch (e) { console.warn('Failed to clear:', e) }
+  try { await api.clearAllNotifications() } catch (e) { /* ignore */ }
 }
