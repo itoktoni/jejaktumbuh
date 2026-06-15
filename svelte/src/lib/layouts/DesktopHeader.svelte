@@ -1,5 +1,6 @@
 <script>
   import NotificationDropdown from '../components/NotificationDropdown.svelte'
+  import { unreadCount } from '../composables/useNotifications.js'
 
   let { title = '', canInstallProp = false, userName = '', userEmail = '', userGender = '', onsync, oninstall, onprofile, onsettings, onbilling, onreferral, onlogout } = $props()
 
@@ -41,7 +42,9 @@
       <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white border-2 border-[#B7D9BC] shadow-sm text-primary hover:opacity-80 transition-opacity duration-200 relative"
         onclick={() => { notifOpen = !notifOpen; profileOpen = false }}>
         <span class="material-symbols-outlined text-xl">notifications</span>
-        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-canvas-cream"></span>
+        {#if $unreadCount > 0}
+          <span style="letter-spacing: 2px;" class="absolute -top-2 -right-2 min-w-[20px] h-[20px] flex items-center justify-center px-1.5 bg-error text-white text-[9px] rounded-full border-2 border-canvas-cream">{$unreadCount > 99 ? '99+' : $unreadCount}</span>
+        {/if}
       </button>
       <NotificationDropdown show={notifOpen} onclose={() => notifOpen = false} />
     </div>

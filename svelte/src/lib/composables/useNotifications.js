@@ -1,10 +1,13 @@
-import { writable, derived } from 'svelte/store'
+import { writable, derived, get } from 'svelte/store'
 import * as api from '../services/api.js'
+import { initEcho, disconnectEcho } from '../services/echo.js'
 
 export const notifications = writable([])
 export const loading = writable(false)
 
 export const unreadCount = derived(notifications, ($n) => $n.filter(n => !n.read).length)
+
+let channel = null
 
 export async function fetchNotifications() {
   if (!api.isAuthenticated()) return
@@ -16,6 +19,34 @@ export async function fetchNotifications() {
     console.warn('Failed to fetch notifications:', e)
   }
   loading.set(false)
+}
+
+export function initRealtime(userId) {
+  const echo = initEcho()
+  if (!echo) return
+
+  channel = echo.private(`notifications.${userId}`)
+  channel.listen('.notification.new', (event) => {
+    notifications.update(list => {
+      if (list.find(n => n.id === event.id)) return list
+      return [event, ...list]
+    })
+  })
+}
+
+export function disconnectRealtime() {
+  if (channel) {
+    channel.stopListening('.notification.new')
+    channel = null
+  }
+  disconnectEcho()
+}
+
+export function addNotification(notification) {
+  notifications.update(list => {
+    if (list.find(n => n.id === notification.id)) return list
+    return [notification, ...list]
+  })
 }
 
 export async function markRead(n) {

@@ -10,6 +10,7 @@
   import * as activityStore from '$lib/stores/activityStore.js'
   import * as api from '$lib/services/api.js'
   import { buildAktivitasDataFromAPI, setAktivitasData } from '$lib/data/activities.js'
+  import { fetchNotifications, initRealtime, disconnectRealtime } from '$lib/composables/useNotifications.js'
 
   import AppHeader from '$lib/layouts/AppHeader.svelte'
   import DesktopHeader from '$lib/layouts/DesktopHeader.svelte'
@@ -164,6 +165,7 @@
   }
 
   function handleLogout() {
+    disconnectRealtime()
     anakStore.anakList.set([])
     toolsStore.anakToolsData.set({})
     toolsStore.toolsAnakId.set(null)
@@ -233,6 +235,9 @@
     } else if (!list.length) {
       appStore.switchTab('profile')
     }
+
+    fetchNotifications()
+    initRealtime(currentUser.id)
   }
 
   function handleProfileMenu(menuId) {

@@ -73,9 +73,9 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api\/pixabay/, '/api')
         },
         '/api': {
-          target: 'https://hermes.itoktoni.com',
+          target: 'https://backend.test',
           changeOrigin: true,
-          secure: true,
+          secure: false,
         }
       }
     },
