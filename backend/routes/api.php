@@ -388,11 +388,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/anak/{anakId}/schedules', [ScheduleController::class, 'store'])->name('anak.schedules.store');
         Route::put('/anak/{anakId}/schedules/{scheduleId}', [ScheduleController::class, 'update'])->name('anak.schedules.update');
         Route::delete('/anak/{anakId}/schedules/{scheduleId}', [ScheduleController::class, 'destroy'])->name('anak.schedules.destroy');
+        Route::post('/anak/{anakId}/schedules/{scheduleId}/toggle', [ScheduleController::class, 'toggleDone'])->name('anak.schedules.toggle');
+        Route::get('/anak/{anakId}/schedule-histories', [ScheduleController::class, 'xgetHistories'])->name('anak.schedules.histories');
 
         Route::post('/anak/{anakId}/worksheets', [WorksheetController::class, 'store'])->name('anak.worksheets.store');
         Route::delete('/anak/{anakId}/worksheets/{worksheetId}', [WorksheetController::class, 'destroy'])->name('anak.worksheets.destroy');
 
         Route::get('/anak/{anakId}/evaluations', [EvaluationController::class, 'index'])->name('anak.evaluations.index');
+        Route::post('/anak/{anakId}/evaluations', [EvaluationController::class, 'store'])->name('anak.evaluations.store');
         Route::get('/evaluations/{evaluationId}', [EvaluationController::class, 'show'])->name('evaluations.show');
         Route::post('/evaluations/{evaluationId}/finalize', [EvaluationController::class, 'finalize'])->name('evaluations.finalize');
     });

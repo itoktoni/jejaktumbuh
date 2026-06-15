@@ -18,8 +18,6 @@ class Schedule extends BaseModel
         'schedule_id_anak' => 'Anak',
         'schedule_label' => 'Label',
         'schedule_time' => 'Time',
-        'schedule_done' => 'Done',
-        'schedule_date' => 'Date',
         'schedule_created_at' => 'Created At',
     ];
 
@@ -28,8 +26,6 @@ class Schedule extends BaseModel
         'schedule_id_anak',
         'schedule_label',
         'schedule_time',
-        'schedule_done',
-        'schedule_date',
         'schedule_created_at',
     ];
 
@@ -37,20 +33,26 @@ class Schedule extends BaseModel
         'schedule_id_anak',
         'schedule_label',
         'schedule_time',
-        'schedule_done',
-        'schedule_date',
     ];
 
-    protected $casts = [
-        'schedule_done' => 'boolean',
-        'schedule_date' => 'date',
-    ];
+    protected $casts = [];
 
     public function rules(): array
     {
         return [
             'schedule_id_anak' => 'required',
             'schedule_label' => 'required|string|max:255',
+        ];
+    }
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->schedule_id,
+            'anak_id' => $this->schedule_id_anak,
+            'label' => $this->schedule_label,
+            'time' => $this->schedule_time,
+            'created_at' => $this->schedule_created_at,
         ];
     }
 
@@ -62,5 +64,10 @@ class Schedule extends BaseModel
     public function has_anak()
     {
         return $this->belongsTo(Anak::class, 'schedule_id_anak', 'anak_id');
+    }
+
+    public function has_histories()
+    {
+        return $this->hasMany(ScheduleHistory::class, 'schedule_history_id_schedule');
     }
 }

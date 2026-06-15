@@ -84,6 +84,7 @@ class Anak extends BaseModel
             'checklists' => $this->relationLoaded('has_checklists') ? $this->getRelation('has_checklists') : [],
             'schedules' => $this->relationLoaded('has_schedules') ? $this->getRelation('has_schedules') : [],
             'worksheets' => $this->relationLoaded('has_worksheets') ? $this->getRelation('has_worksheets') : [],
+            'schedule_histories' => $this->relationLoaded('has_schedule_histories') ? $this->getRelation('has_schedule_histories') : [],
         ];
     }
 
@@ -130,5 +131,10 @@ class Anak extends BaseModel
     public function has_evaluations()
     {
         return $this->hasMany(Evaluation::class, 'evaluation_id_anak');
+    }
+
+    public function has_schedule_histories()
+    {
+        return $this->hasMany(ScheduleHistory::class, 'schedule_history_id_anak');
     }
 }
