@@ -65,7 +65,7 @@ class GenerateImage extends Command
 
     private function processActivity(ImageGeneratorService $generator, Activity $activity): int
     {
-        $this->info("=== [{$activity->id}] {$activity->title} ===");
+        $this->info("=== [{$activity->id}] - {$activity->slug} - {$activity->title} ===");
 
         if (!$activity->prompt) {
             $this->error("  No prompt found. Skipping.");
@@ -82,7 +82,7 @@ class GenerateImage extends Command
             return self::FAILURE;
         }
 
-        $folder = "images/stories/{$activity->id}";
+        $folder = "images/stories/{$activity->slug}";
 
         if (!$this->option('force') && \Illuminate\Support\Facades\Storage::disk('public')->exists($folder)) {
             $this->warn("  Image folder already exists. Use --force to regenerate. Skipping.");
@@ -125,7 +125,7 @@ class GenerateImage extends Command
                 true
             );
 
-            $result = ImageSplitterService::split($file, $activity->id, (int) $pagesCount);
+            $result = ImageSplitterService::split($file, $activity->slug, (int) $pagesCount);
 
             $this->info("  Saved to: {$result['folder']}");
             $this->info("  Files: " . implode(', ', $result['files']));

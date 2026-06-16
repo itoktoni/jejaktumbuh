@@ -32,7 +32,7 @@
             @if(isset($model) && $model->exists && $model->image)
                 <div class="col-span-12 md:col-span-3">
                     <label class="font-body-sm text-body-sm font-bold text-on-surface-variant block mb-1">Current Image</label>
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url('images/stories/' . $model->getKey() . '/' . $model->image) }}" alt="Current" class="object-cover rounded-xl border-2 border-outline-variant">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url('images/stories/' . $model->slug . '/' . $model->image) }}" alt="Current" class="object-cover rounded-xl border-2 border-outline-variant">
                 </div>
             @endif
         </x-card>

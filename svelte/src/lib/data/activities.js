@@ -35,6 +35,7 @@ function normalizeItem(item, type) {
 
   const normalized = {
     id: item.id,
+    slug: item.slug || '',
     title: item.title,
     image: item.image,
     desc: item.desc,

@@ -22,20 +22,19 @@ class ActivityController extends Controller
         $this->model = $model::getModel();
     }
 
-    protected function splitAndStore(Request $request, int $activityId): string
+    protected function splitAndStore(Request $request, int $activityId, string $slug = null): string
     {
         $pages = (int) $request->input('pages', 0);
+        $folderName = $slug ?: $activityId;
 
         if ($pages >= 2) {
-            $result = ImageSplitterService::split($request->file('file'), $activityId, $pages);
-            // return $result['cover'];
+            $result = ImageSplitterService::split($request->file('file'), $activityId, $pages, $folderName);
             return 'cover.png';
         }
 
-        $folder = "images/stories/{$activityId}";
+        $folder = "images/stories/{$folderName}";
         $path = $request->file('file')->store($folder, 'public');
         return 'cover.png';
-        // return basename($path);
     }
 
     public function postCreate(GeneralRequest $request)
@@ -50,7 +49,7 @@ class ActivityController extends Controller
 
         if ($hasFile && $response['status']) {
             $activity = $response['data'];
-            $this->splitAndStore($request, $activity->getKey());
+            $this->splitAndStore($request, $activity->getKey(), $activity->slug);
         }
 
         return $this->response($response);
@@ -58,9 +57,10 @@ class ActivityController extends Controller
 
     public function postUpdate(GeneralRequest $request, $id)
     {
+        $activity = Activity::findOrFail($id);
         if ($request->hasFile('file')) {
-            ImageSplitterService::deleteFolder($id);
-            $request->merge(['image' => $this->splitAndStore($request, $id)]);
+            ImageSplitterService::deleteFolder($id, $activity->slug);
+            $request->merge(['image' => $this->splitAndStore($request, $id, $activity->slug)]);
         }
 
         $response = UpdateAction::run($request, $id, $this->model);
@@ -78,8 +78,8 @@ class ActivityController extends Controller
         $activity = Activity::findOrFail($id);
 
         if ($request->hasFile('image')) {
-            ImageSplitterService::deleteFolder($id);
-            $folder = "images/stories/{$id}";
+            ImageSplitterService::deleteFolder($id, $activity->slug);
+            $folder = "images/stories/{$activity->slug}";
             $request->file('image')->store($folder, 'public');
             $activity->image = 'cover.png';
         }
@@ -272,7 +272,7 @@ class ActivityController extends Controller
                 true
             );
 
-            $result = ImageSplitterService::split($file, $activity->id, $pagesCount);
+            $result = ImageSplitterService::split($file, $activity->id, $pagesCount, $activity->slug);
 
             @unlink($tmpPath);
 

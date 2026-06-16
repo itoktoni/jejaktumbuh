@@ -39,7 +39,8 @@ class ImageSplitterService
     public static function split(
         UploadedFile $file,
         int $activityId,
-        int $pages
+        int $pages,
+        string $folderName = null
     ): array {
 
         $grid = self::getGrid($pages);
@@ -97,7 +98,7 @@ class ImageSplitterService
         $panelWidth  = (int) floor($width / $cols);
         $panelHeight = (int) floor($height / $rows);
 
-        $folder = "images/stories/{$activityId}";
+        $folder = "images/stories/" . ($folderName ?: $activityId);
 
         if (Storage::disk('public')->exists($folder)) {
             Storage::disk('public')->deleteDirectory($folder);
@@ -175,9 +176,9 @@ class ImageSplitterService
         ];
     }
 
-    public static function deleteFolder(int $activityId): void
+    public static function deleteFolder(int $activityId, string $folderName = null): void
     {
-        $folder = "images/stories/{$activityId}";
+        $folder = "images/stories/" . ($folderName ?: $activityId);
 
         if (Storage::disk('public')->exists($folder)) {
             Storage::disk('public')->deleteDirectory($folder);
