@@ -32,7 +32,7 @@ class PlanSeeder extends Seeder
             [
                 'plan_nama' => '🥉 Paket Basic - 1 Bulan',
                 'plan_status' => 1,
-                'plan_keterangan' => 'Semua feature untuk 1 anak',
+                'plan_keterangan' => 'All feature 1 anak',
                 'plan_value' => 1,
                 'plan_harga' => 49000,
                 'plan_coret' => 50000,
@@ -45,7 +45,7 @@ class PlanSeeder extends Seeder
             [
                 'plan_nama' => '🥈 Paket Fokus (3 Bulan)',
                 'plan_status' => 1,
-                'plan_keterangan' => 'Semua feature untuk 2 anak',
+                'plan_keterangan' => 'All feature max 2 anak',
                 'plan_value' => 2,
                 'plan_harga' => 129000,
                 'plan_coret' => 147000,
@@ -71,7 +71,7 @@ class PlanSeeder extends Seeder
             [
                 'plan_nama' => '🥇 Paket Juara (12 Bulan)',
                 'plan_status' => 1,
-                'plan_keterangan' => 'Semua feature untuk 5 anak, Rp 249.000 (Diskon Early Bird) 100 orang pertama di bulan ini',
+                'plan_keterangan' => 'All feature Max 5 anak, (Diskon Early Bird) 100 orang pertama di bulan ini',
                 'plan_value' => 5,
                 'plan_harga' => 249000,
                 'plan_coret' => 516000,

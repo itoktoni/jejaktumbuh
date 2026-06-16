@@ -74,8 +74,12 @@
   }
 
   function planTheme(plan) {
-    const colors = { 0: { color: '#176c33', bg: '#E1F2E5' }, 99000: { color: '#FF9800', bg: '#FFF3E0' }, 159000: { color: '#9C27B0', bg: '#F3E5F5' }, 149000: { color: '#2196F3', bg: '#E3F2FD' } }
-    return colors[plan?.price] || colors[0]
+    const c = plan?.color || 'rgb(23, 108, 51)'
+    const m = c.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/)
+    const r = m ? +m[1] : 23, g = m ? +m[2] : 108, b = m ? +m[3] : 51
+    const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+    const bg = `rgba(${r}, ${g}, ${b}, 0.2)`
+    return { color: hex, bg }
   }
 
   function isCurrentPlan(plan) {
@@ -341,7 +345,7 @@
     {#each plansVal as plan (plan.id)}
       {@const theme = planTheme(plan)}
       <div role="button" tabindex="0" class="w-full text-left rounded-[24px] overflow-hidden transition-all border-4 cursor-pointer"
-        style="background: {selectedPlan?.id === plan.id ? theme.bg : '#FFFBF5'}; border-color: {selectedPlan?.id === plan.id ? theme.color : '#B7D9BC'}; box-shadow: {selectedPlan?.id === plan.id ? `0 6px 24px ${theme.color}30` : `0 2px 12px ${theme.color}10`}"
+        style="background: {selectedPlan?.id === plan.id ? theme.bg : '#FFFBF5'}; border-color: {theme.color}; box-shadow: {selectedPlan?.id === plan.id ? `0 6px 24px ${theme.color}30` : `0 2px 12px ${theme.color}10`}"
         onclick={() => selectPlan(plan)}
         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPlan(plan); } }}>
         <div class="p-4 sm:p-5">
@@ -359,6 +363,9 @@
               </div>
               <p class="text-xs sm:text-sm text-on-surface-variant mt-0.5 line-clamp-2">{plan.description}</p>
               <div class="flex items-center gap-2 sm:gap-3 mt-2">
+                {#if plan.price_strikethrough}
+                  <p class="text-xs sm:text-sm text-on-surface-variant line-through">Rp{plan.price_strikethrough?.toLocaleString('id-ID')}</p>
+                {/if}
                 <p class="font-bold text-sm sm:text-base text-text-main">
                   {plan.price === 0 ? 'Gratis' : `Rp${plan.price?.toLocaleString('id-ID')}`}
                 </p>
@@ -442,9 +449,14 @@
 
   <div class="bg-white rounded-xl p-4 border-2 border-[#B7D9BC] mb-3">
     <p class="text-xs text-on-surface-variant mb-1">Harga</p>
-    <p class="font-bold text-lg text-text-main">
-      {selectedPlan?.price === 0 ? 'Gratis' : `Rp${selectedPlan?.price?.toLocaleString('id-ID')}`}
-    </p>
+    <div class="flex items-center gap-2">
+      {#if selectedPlan?.price_strikethrough}
+        <p class="text-sm text-on-surface-variant line-through">Rp{selectedPlan?.price_strikethrough?.toLocaleString('id-ID')}</p>
+      {/if}
+      <p class="font-bold text-lg text-text-main">
+        {selectedPlan?.price === 0 ? 'Gratis' : `Rp${selectedPlan?.price?.toLocaleString('id-ID')}`}
+      </p>
+    </div>
   </div>
 
   <div class="mb-3">

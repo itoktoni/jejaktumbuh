@@ -269,6 +269,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
 })->name('openai.stories.completions');
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 

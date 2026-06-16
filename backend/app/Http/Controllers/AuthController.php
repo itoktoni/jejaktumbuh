@@ -86,6 +86,7 @@ class AuthController extends Controller
                     'description' => $p->plan_keterangan,
                     'value' => $p->plan_value,
                     'price' => $p->plan_harga,
+                    'price_strikethrough' => $p->plan_coret,
                     'fee' => $p->plan_fee,
                     'color' => $p->plan_color,
                     'recommended' => (bool) $p->plan_recomended,
@@ -221,7 +222,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20|unique:phone',
+            'phone' => 'nullable|string|max:20|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
             'ref' => 'nullable|string|max:30',
         ], [

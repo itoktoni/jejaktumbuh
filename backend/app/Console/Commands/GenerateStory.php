@@ -72,7 +72,7 @@ class GenerateStory extends Command
 
         foreach ($pagesForPrompt as $page) {
             if ($page['num'] === 0) continue;
-            $panelLines[] = "Panel {$page['num']}: {$page['text']}";
+            $panelLines[] = "Page {$page['num']}: {$page['text']}";
         }
 
         $prompt = "A {$pagesCount}-panel comic page storyboard, single image with a {$grid} panel grid.\n\n";
@@ -85,6 +85,7 @@ class GenerateStory extends Command
         $prompt .= "Rules:\n";
         $prompt .= "- Panel 1 is the cover with title text centered\n";
         $prompt .= "- cover title is not to big and small";
+        $prompt .= "- Page 1- {$pagesCount} is story";
         $prompt .= "- No written text in other panels except cover\n";
         $prompt .= "- No speech bubbles allowed\n";
         $prompt .= "- No merged panels, no oversized panels, no rounded corners\n";
