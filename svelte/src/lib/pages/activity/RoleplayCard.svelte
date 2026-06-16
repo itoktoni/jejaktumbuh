@@ -1,5 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
+  import { userRole } from '../../stores/authStore.js'
+  import DevPanel from '../../components/DevPanel.svelte'
 
   let { item, bg, onclick } = $props()
 
@@ -8,6 +10,13 @@
   let isFinished = $state(false)
   let isDragging = $state(false)
   let dragStartX = $state(0)
+  let userRoleVal = $state('')
+  let devPanel = $state(null)
+
+  $effect(() => {
+    const unsub = userRole.subscribe(v => userRoleVal = v)
+    return unsub
+  })
   let dragOffset = $state(0)
   let isSpeakingNarrator = $state(false)
   let autoNarrate = $state(false)
@@ -89,6 +98,7 @@
     colorIndex = 0
     autoNarrate = false
     showReader = true
+    if (devPanel) devPanel.initStatus()
     if (item.id) {
       import('../../services/api.js').then(m => m.trackActivityView(item.id).catch(() => {}))
     }
@@ -185,13 +195,16 @@
   <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center p-2 lg:p-4">
     <div class="w-full max-w-md bg-canvas-cream rounded-[40px] shadow-2xl border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative">
 
-      <div class="px-4 pt-4 pb-2 flex items-center gap-3 z-10 shrink-0">
+      <div class="relative px-4 pt-4 pb-2 flex items-center gap-3 z-20 shrink-0">
         <div class="bg-primary text-on-primary w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center text-xs font-bold shrink-0">
           {isFinished ? '✓' : `${currentPageIndex + 1}/${totalPages}`}
         </div>
         <div class="flex-1 min-w-0 bg-primary text-on-primary px-4 py-2 rounded-2xl border-4 border-white shadow-md">
           <p class="text-base font-semibold truncate">{item.title}</p>
         </div>
+        {#if userRoleVal === 'developer'}
+          <DevPanel bind:this={devPanel} {item} />
+        {/if}
         <button onclick={() => { stopSpeech(); showReader = false }}
           class="w-11 h-11 bg-error border-4 border-white text-white rounded-full flex items-center justify-center text-xl shadow-md hover:scale-105 active:scale-95 transition-all shrink-0">
           ✕

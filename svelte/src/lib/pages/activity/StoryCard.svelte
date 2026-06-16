@@ -1,10 +1,9 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { trackActivityView, updateActivity, getActivitiesGrouped } from '../../services/api.js'
+  import { trackActivityView } from '../../services/api.js'
   import { resolveCoverImage, resolveStoryImage } from '../../utils/images.js'
   import { userRole } from '../../stores/authStore.js'
-  import { activitiesCache } from '../../stores/activityStore.js'
-  import { buildAktivitasDataFromAPI, setAktivitasData } from '../../data/activities.js'
+  import DevPanel from '../../components/DevPanel.svelte'
 
 
   let { item, bg, onclick } = $props()
@@ -18,13 +17,7 @@
   let utterance = null
   let naratorVoice = null
   let userRoleVal = $state('')
-
-  let devStatus = $state('')
-  let devCoverFile = $state(null)
-  let devSaving = $state(false)
-  let devSaveMsg = $state('')
-  let devOpen = $state(false)
-  let copied = $state(false)
+  let devPanel = $state(null)
 
   $effect(() => {
     const unsub = userRole.subscribe(v => userRoleVal = v)
@@ -70,10 +63,7 @@
     currentPage = 0
     isFinished = false
     showReader = true
-    devStatus = item.status || 'approved'
-    devCoverFile = null
-    devSaveMsg = ''
-    devOpen = false
+    if (devPanel) devPanel.initStatus()
     if (item.id) trackActivityView(item.id).catch(() => {})
   }
 
@@ -157,31 +147,6 @@
     isSpeaking = false
     isSpeakingMoral = false
   }
-
-  async function saveDevChanges() {
-    if (!item.id) return
-    devSaving = true
-    devSaveMsg = ''
-    try {
-      const formData = new FormData()
-      formData.append('status', devStatus)
-      if (devCoverFile) formData.append('image', devCoverFile)
-      await updateActivity(item.id, formData)
-      item.status = devStatus
-      devSaveMsg = 'Berhasil!'
-      devCoverFile = null
-      const { saveSetting } = await import('$lib/db.js')
-      const serverData = await getActivitiesGrouped()
-      if (serverData && typeof serverData === 'object') {
-        await saveSetting('activities_cache', serverData)
-        activitiesCache.set(serverData)
-        setAktivitasData(buildAktivitasDataFromAPI(serverData))
-      }
-    } catch (e) {
-      devSaveMsg = 'Gagal: ' + (e.message || 'Error')
-    }
-    devSaving = false
-  }
 </script>
 
 <button class="group cursor-pointer w-full text-left"
@@ -246,7 +211,7 @@
   <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={closeReader}>
     <div class="w-full max-w-md bg-canvas-cream lg:rounded-[40px] lg:shadow-2xl lg:border-8 border-[#B7D9BC] overflow-hidden flex flex-col h-[100dvh] lg:h-[852px] relative" onclick={(e) => e.stopPropagation()}>
 
-      <div class="px-4 pt-4 pb-2 flex items-center gap-3 z-10 shrink-0">
+      <div class="relative px-4 pt-4 pb-2 flex items-center gap-3 z-20 shrink-0">
         <div class="bg-primary text-on-primary w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center text-xs font-bold shrink-0">
           {isFinished ? '✓' : `${currentPage + 1}/${totalPages}`}
         </div>
@@ -254,57 +219,13 @@
           <p class="text-base font-semibold truncate">{item.title}</p>
         </div>
         {#if userRoleVal === 'developer'}
-          <button onclick={(e) => { e.stopPropagation(); devOpen = !devOpen }}
-            class="w-11 h-11 border-4 border-white rounded-full flex items-center justify-center text-lg shadow-md hover:scale-105 active:scale-95 transition-all shrink-0"
-            style="background: {statusColors[item.status]?.bg || '#FFF3E0'}; color: {statusColors[item.status]?.text || '#E65100'}">
-            <span class="material-symbols-outlined text-xl">edit</span>
-          </button>
+          <DevPanel bind:this={devPanel} {item} />
         {/if}
         <button onclick={closeReader}
           class="w-11 h-11 bg-error border-4 border-white text-white rounded-full flex items-center justify-center text-xl shadow-md hover:scale-105 active:scale-95 transition-all shrink-0">
           ✕
         </button>
       </div>
-
-      {#if userRoleVal === 'developer' && devOpen}
-        <div class="mx-4 mb-2 p-3 rounded-2xl border-2 border-[#B7D9BC] bg-white space-y-2 shrink-0">
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-on-surface-variant shrink-0">Status</label>
-            <select bind:value={devStatus}
-              class="flex-1 px-3 py-1.5 rounded-xl border-2 border-[#B7D9BC] text-sm font-bold bg-white focus:border-primary outline-none">
-              <option value="pending">Pending</option>
-              <option value="review">Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-on-surface-variant shrink-0">Cover</label>
-            <label class="flex-1 px-3 py-1.5 rounded-xl border-2 border-dashed border-[#B7D9BC] text-xs text-on-surface-variant bg-white cursor-pointer hover:border-primary transition-colors truncate">
-              {devCoverFile ? devCoverFile.name : 'Pilih gambar...'}
-              <input type="file" accept="image/*" class="hidden" onchange={(e) => devCoverFile = e.target.files[0] || null} />
-            </label>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick={() => { if (item.prompt) { navigator.clipboard.writeText(item.prompt); copied = true; setTimeout(() => copied = false, 2000) } }}
-              class="py-2 px-3 rounded-xl text-xs font-bold border-2 bg-white text-on-surface-variant hover:border-primary transition-all shrink-0 disabled:opacity-40 flex items-center gap-1"
-              style="border-color: {copied ? '#176c33' : '#B7D9BC'}; {copied ? 'background: #E1F2E5; color: #176c33' : ''}"
-              disabled={!item.prompt}
-              title={item.prompt || 'No prompt'}>
-              <span class="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
-              {copied ? 'Copied!' : 'Copy Prompt'}
-            </button>
-            <button onclick={saveDevChanges} disabled={devSaving}
-              class="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-50"
-              style="background: #176C33; box-shadow: 0 3px 0 #0d4a22;">
-              {devSaving ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            {#if devSaveMsg}
-              <p class="text-xs font-bold" class:text-primary={devSaveMsg.includes('!')} class:text-error={devSaveMsg.includes('Gagal')}>{devSaveMsg}</p>
-            {/if}
-          </div>
-        </div>
-      {/if}
 
       {#if !isFinished}
         <div class="flex-1 flex flex-col justify-center px-4 gap-4 overflow-hidden">

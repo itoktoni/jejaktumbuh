@@ -12,6 +12,7 @@
   import AnakDropdown from '../components/AnakDropdown.svelte'
   import { StoryCard, RoleplayCard, GameCard, ScriptCard, ProjectCard, SongCard, PuzzleCard, ExerciseCard, OutdoorCard, ExperimentCard, WorksheetCard } from './activity/index.js'
   import { openWorksheetByType, hasWorksheetTemplate } from '../utils/worksheetRenderer.js'
+  import DevPanel from '../components/DevPanel.svelte'
 
   const cardMap = {
     storytelling: StoryCard,
@@ -51,11 +52,7 @@
   let activeTabVal = $state('activity')
   let hasAutoDownloaded = false
 
-  let devStatus = $state('')
-  let devCoverFile = $state(null)
-  let devSaving = $state(false)
-  let devSaveMsg = $state('')
-  let copied = $state(false)
+  let devPanel = $state(null)
 
   const statusColors = {
     approved: { bg: '#E1F2E5', text: '#176c33', label: 'Approved' },
@@ -247,34 +244,7 @@
     puzzleShowHint = false
     puzzleShowAnswer = false
     puzzleScore = { correct: 0, wrong: 0 }
-    devStatus = item.status || 'approved'
-    devCoverFile = null
-    devSaveMsg = ''
-  }
-
-  async function saveDevChanges() {
-    if (!activeItem?.id) return
-    devSaving = true
-    devSaveMsg = ''
-    try {
-      const formData = new FormData()
-      formData.append('status', devStatus)
-      if (devCoverFile) formData.append('image', devCoverFile)
-      await api.updateActivity(activeItem.id, formData)
-      activeItem.status = devStatus
-      devSaveMsg = 'Berhasil disimpan'
-      devCoverFile = null
-      const { saveSetting } = await import('$lib/db.js')
-      const serverData = await api.getActivitiesGrouped()
-      if (serverData && typeof serverData === 'object') {
-        await saveSetting('activities_cache', serverData)
-        activitiesCache.set(serverData)
-        setAktivitasData(buildAktivitasDataFromAPI(serverData))
-      }
-    } catch (e) {
-      devSaveMsg = 'Gagal: ' + (e.message || 'Error')
-    }
-    devSaving = false
+    if (devPanel) devPanel.initStatus()
   }
 
   function puzzleAnswer(isCorrect) {
@@ -502,8 +472,8 @@
 {#if activeItem}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={() => activeItem = null}>
-    <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col" onclick={(e) => e.stopPropagation()}>
-      <div class="p-5 flex items-center justify-between border-b-2 border-[#B7D9BC]/50 shrink-0">
+    <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col relative">
+      <div class="relative p-5 flex items-center justify-between border-b-2 border-[#B7D9BC]/50 shrink-0 z-10">
         <div class="flex-1 min-w-0 mr-3">
           <h3 class="font-bold text-lg text-text-main truncate">{activeItem.title}</h3>
           {#if userRoleVal === 'developer' && activeItem.status}
@@ -511,50 +481,14 @@
             <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1" style="background: {sc.bg}; color: {sc.text}">{sc.label}</span>
           {/if}
         </div>
+        {#if userRoleVal === 'developer'}
+          <DevPanel bind:this={devPanel} item={activeItem} />
+        {/if}
         <button onclick={() => activeItem = null}
           class="w-10 h-10 rounded-full bg-error text-white flex items-center justify-center text-lg shrink-0 shadow-md">
           ✕
         </button>
       </div>
-
-      {#if userRoleVal === 'developer'}
-        <div class="px-5 py-3 border-b-2 border-[#B7D9BC]/30 bg-white/50 space-y-3 shrink-0">
-          <div class="flex items-center gap-3">
-            <label class="text-xs font-bold text-on-surface-variant shrink-0">Status</label>
-            <select bind:value={devStatus}
-              class="flex-1 px-3 py-2 rounded-xl border-2 border-[#B7D9BC] text-sm font-bold bg-white focus:border-primary outline-none">
-              <option value="pending">Pending</option>
-              <option value="review">Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          <div class="flex items-center gap-3">
-            <label class="text-xs font-bold text-on-surface-variant shrink-0">Cover</label>
-            <label class="flex-1 px-3 py-2 rounded-xl border-2 border-dashed border-[#B7D9BC] text-sm text-on-surface-variant bg-white cursor-pointer hover:border-primary transition-colors text-center truncate">
-              {devCoverFile ? devCoverFile.name : 'Pilih gambar...'}
-              <input type="file" accept="image/*" class="hidden" onchange={(e) => devCoverFile = e.target.files[0] || null} />
-            </label>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick={() => { if (activeItem.prompt) { navigator.clipboard.writeText(activeItem.prompt); copied = true; setTimeout(() => copied = false, 2000) } }}
-              class="py-2.5 px-3 rounded-xl text-xs font-bold border-2 bg-white text-on-surface-variant hover:border-primary transition-all shrink-0 disabled:opacity-40 flex items-center gap-1"
-              style="border-color: {copied ? '#176c33' : '#B7D9BC'}; {copied ? 'background: #E1F2E5; color: #176c33' : ''}"
-              disabled={!activeItem.prompt}
-              title={activeItem.prompt || 'No prompt'}>
-              <span class="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
-              {copied ? 'Copied!' : 'Copy Prompt'}
-            </button>
-            <button onclick={saveDevChanges} disabled={devSaving}
-              class="flex-1 py-2.5 rounded-xl text-white text-sm font-bold btn-pop-green disabled:opacity-50">
-              {devSaving ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            {#if devSaveMsg}
-              <p class="text-xs font-bold" class:text-primary={devSaveMsg.includes('berhasil')} class:text-error={devSaveMsg.includes('Gagal')}>{devSaveMsg}</p>
-            {/if}
-          </div>
-        </div>
-      {/if}
       <div class="flex-1 overflow-y-auto p-5 space-y-4">
 
         {#if activeItem.questions?.length}
