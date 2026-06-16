@@ -68,6 +68,31 @@ class ActivityController extends Controller
         return $this->response($response);
     }
 
+    public function xputUpdate(Request $request, $id)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user || ($user->role !== 'developer' && $user->role !== 'admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $activity = Activity::findOrFail($id);
+
+        if ($request->hasFile('image')) {
+            ImageSplitterService::deleteFolder($id);
+            $folder = "images/stories/{$id}";
+            $request->file('image')->store($folder, 'public');
+            $activity->image = 'cover.png';
+        }
+
+        if ($request->has('status')) {
+            $activity->status = $request->input('status');
+        }
+
+        $activity->save();
+
+        return response()->json($activity);
+    }
+
     public function index(Request $request)
     {
         $user = auth('sanctum')->user();

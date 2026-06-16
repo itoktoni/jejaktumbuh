@@ -24,6 +24,7 @@
   let devSaving = $state(false)
   let devSaveMsg = $state('')
   let devOpen = $state(false)
+  let copied = $state(false)
 
   $effect(() => {
     const unsub = userRole.subscribe(v => userRoleVal = v)
@@ -285,6 +286,14 @@
             </label>
           </div>
           <div class="flex items-center gap-2">
+            <button onclick={() => { if (item.prompt) { navigator.clipboard.writeText(item.prompt); copied = true; setTimeout(() => copied = false, 2000) } }}
+              class="py-2 px-3 rounded-xl text-xs font-bold border-2 bg-white text-on-surface-variant hover:border-primary transition-all shrink-0 disabled:opacity-40 flex items-center gap-1"
+              style="border-color: {copied ? '#176c33' : '#B7D9BC'}; {copied ? 'background: #E1F2E5; color: #176c33' : ''}"
+              disabled={!item.prompt}
+              title={item.prompt || 'No prompt'}>
+              <span class="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
+              {copied ? 'Copied!' : 'Copy Prompt'}
+            </button>
             <button onclick={saveDevChanges} disabled={devSaving}
               class="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-50"
               style="background: #176C33; box-shadow: 0 3px 0 #0d4a22;">

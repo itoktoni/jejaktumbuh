@@ -228,7 +228,7 @@ export async function getPopularActivities(limit = 10) { return apiFetch(`/activ
 export async function updateActivity(id, data) {
   if (data instanceof FormData) {
     data.append('_method', 'PUT')
-    return apiFetch(`/activities/${id}`, { method: 'POST', body: data })
+    return apiFetch(`/activities/${id}/update`, { method: 'POST', body: data })
   }
-  return apiFetch(`/activities/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  return apiFetch(`/activities/${id}/update`, { method: 'PUT', body: JSON.stringify(data) })
 }

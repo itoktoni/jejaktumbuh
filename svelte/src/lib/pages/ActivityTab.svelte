@@ -55,6 +55,7 @@
   let devCoverFile = $state(null)
   let devSaving = $state(false)
   let devSaveMsg = $state('')
+  let copied = $state(false)
 
   const statusColors = {
     approved: { bg: '#E1F2E5', text: '#176c33', label: 'Approved' },
@@ -536,6 +537,14 @@
             </label>
           </div>
           <div class="flex items-center gap-2">
+            <button onclick={() => { if (activeItem.prompt) { navigator.clipboard.writeText(activeItem.prompt); copied = true; setTimeout(() => copied = false, 2000) } }}
+              class="py-2.5 px-3 rounded-xl text-xs font-bold border-2 bg-white text-on-surface-variant hover:border-primary transition-all shrink-0 disabled:opacity-40 flex items-center gap-1"
+              style="border-color: {copied ? '#176c33' : '#B7D9BC'}; {copied ? 'background: #E1F2E5; color: #176c33' : ''}"
+              disabled={!activeItem.prompt}
+              title={activeItem.prompt || 'No prompt'}>
+              <span class="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
+              {copied ? 'Copied!' : 'Copy Prompt'}
+            </button>
             <button onclick={saveDevChanges} disabled={devSaving}
               class="flex-1 py-2.5 rounded-xl text-white text-sm font-bold btn-pop-green disabled:opacity-50">
               {devSaving ? 'Menyimpan...' : 'Simpan'}
