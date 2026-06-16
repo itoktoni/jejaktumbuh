@@ -51,6 +51,11 @@
   let activeTabVal = $state('activity')
   let hasAutoDownloaded = false
 
+  let devStatus = $state('')
+  let devCoverFile = $state(null)
+  let devSaving = $state(false)
+  let devSaveMsg = $state('')
+
   const statusColors = {
     approved: { bg: '#E1F2E5', text: '#176c33', label: 'Approved' },
     pending: { bg: '#FFF3E0', text: '#E65100', label: 'Pending' },
@@ -241,6 +246,34 @@
     puzzleShowHint = false
     puzzleShowAnswer = false
     puzzleScore = { correct: 0, wrong: 0 }
+    devStatus = item.status || 'approved'
+    devCoverFile = null
+    devSaveMsg = ''
+  }
+
+  async function saveDevChanges() {
+    if (!activeItem?.id) return
+    devSaving = true
+    devSaveMsg = ''
+    try {
+      const formData = new FormData()
+      formData.append('status', devStatus)
+      if (devCoverFile) formData.append('image', devCoverFile)
+      await api.updateActivity(activeItem.id, formData)
+      activeItem.status = devStatus
+      devSaveMsg = 'Berhasil disimpan'
+      devCoverFile = null
+      const { saveSetting } = await import('$lib/db.js')
+      const serverData = await api.getActivitiesGrouped()
+      if (serverData && typeof serverData === 'object') {
+        await saveSetting('activities_cache', serverData)
+        activitiesCache.set(serverData)
+        setAktivitasData(buildAktivitasDataFromAPI(serverData))
+      }
+    } catch (e) {
+      devSaveMsg = 'Gagal: ' + (e.message || 'Error')
+    }
+    devSaving = false
   }
 
   function puzzleAnswer(isCorrect) {
@@ -482,6 +515,37 @@
           ✕
         </button>
       </div>
+
+      {#if userRoleVal === 'developer'}
+        <div class="px-5 py-3 border-b-2 border-[#B7D9BC]/30 bg-white/50 space-y-3 shrink-0">
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-bold text-on-surface-variant shrink-0">Status</label>
+            <select bind:value={devStatus}
+              class="flex-1 px-3 py-2 rounded-xl border-2 border-[#B7D9BC] text-sm font-bold bg-white focus:border-primary outline-none">
+              <option value="pending">Pending</option>
+              <option value="review">Review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-bold text-on-surface-variant shrink-0">Cover</label>
+            <label class="flex-1 px-3 py-2 rounded-xl border-2 border-dashed border-[#B7D9BC] text-sm text-on-surface-variant bg-white cursor-pointer hover:border-primary transition-colors text-center truncate">
+              {devCoverFile ? devCoverFile.name : 'Pilih gambar...'}
+              <input type="file" accept="image/*" class="hidden" onchange={(e) => devCoverFile = e.target.files[0] || null} />
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick={saveDevChanges} disabled={devSaving}
+              class="flex-1 py-2.5 rounded-xl text-white text-sm font-bold btn-pop-green disabled:opacity-50">
+              {devSaving ? 'Menyimpan...' : 'Simpan'}
+            </button>
+            {#if devSaveMsg}
+              <p class="text-xs font-bold" class:text-primary={devSaveMsg.includes('berhasil')} class:text-error={devSaveMsg.includes('Gagal')}>{devSaveMsg}</p>
+            {/if}
+          </div>
+        </div>
+      {/if}
       <div class="flex-1 overflow-y-auto p-5 space-y-4">
 
         {#if activeItem.questions?.length}

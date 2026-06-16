@@ -145,7 +145,7 @@
     <div class="bg-white rounded-[24px] overflow-hidden shadow-lg border-4 border-[#B7D9BC] relative">
       <div class="aspect-square p-2 overflow-hidden relative rounded-t-[20px]">
         {#if item.image}
-          <img src={item.image} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 rounded-lg transition-transform duration-700" />
+          <img src={item.image} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 rounded-2xl transition-transform duration-700" />
         {:else}
           <div class="w-full h-full flex items-center justify-center rounded-lg" style="background: {bg}">
             <span class="text-6xl">{item.emoji || '🎭'}</span>

@@ -225,3 +225,10 @@ export async function getActivitiesGrouped() { return apiFetch('/activities?grou
 export async function getActivityTypes() { return apiFetch('/activities/types') }
 export async function trackActivityView(id) { return apiFetch(`/activities/${id}/view`, { method: 'POST' }) }
 export async function getPopularActivities(limit = 10) { return apiFetch(`/activities/popular?limit=${limit}`) }
+export async function updateActivity(id, data) {
+  if (data instanceof FormData) {
+    data.append('_method', 'PUT')
+    return apiFetch(`/activities/${id}`, { method: 'POST', body: data })
+  }
+  return apiFetch(`/activities/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+}
