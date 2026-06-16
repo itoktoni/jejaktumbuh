@@ -206,6 +206,7 @@ class AnakController extends Controller
                                 'skill_pilar' => $s['skill_pilar'] ?? $s['pilar'] ?? null,
                                 'skill_progress' => $s['skill_progress'] ?? $s['progress'] ?? 0,
                                 'skill_color' => $s['skill_color'] ?? $s['color'] ?? null,
+                                'skill_status' => $s['skill_status'] ?? $s['status'] ?? 'pending',
                             ]
                         );
                         if (isset($s['activities']) && is_array($s['activities'])) {
@@ -299,6 +300,7 @@ class AnakController extends Controller
                             'worksheet_type' => $w['worksheet_type'] ?? $w['type'] ?? '',
                             'worksheet_data' => $w['worksheet_data'] ?? $w['data'] ?? [],
                             'worksheet_date' => $w['worksheet_date'] ?? $w['date'] ?? null,
+                            'worksheet_status' => $w['worksheet_status'] ?? $w['status'] ?? 'pending',
                         ]);
                     }
                 }

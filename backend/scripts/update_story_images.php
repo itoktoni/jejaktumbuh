@@ -16,14 +16,16 @@ $pages = $activity->data['pages'] ?? [];
 $total = count($pages);
 $id = $activity->id;
 
+$baseUrl = rtrim(config('app.url'), '/');
+
 foreach ($pages as $index => $page) {
     $num = $index + 1;
-    $page['image'] = "https://backend.test/storage/images/stories/{$id}/" . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . ".png";
+    $page['image'] = "{$baseUrl}/storage/images/stories/{$id}/" . str_pad((string)$num, 2, '0', STR_PAD_LEFT) . ".png";
     $pages[$index] = $page;
 }
 
 $activity->data = array_merge($activity->data ?? [], ['pages' => $pages]);
-$activity->image = 'https://backend.test/storage/images/stories/' . $id . '/01.png';
+$activity->image = $baseUrl . '/storage/images/stories/' . $id . '/01.png';
 $activity->save();
 
 echo "Updated activity ID: {$id}\n";

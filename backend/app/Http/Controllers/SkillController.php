@@ -39,6 +39,7 @@ class SkillController extends Controller
             'skill_title' => $data['skill_title'],
             'skill_pilar' => $data['skill_pilar'] ?? null,
             'skill_color' => $data['skill_color'] ?? null,
+            'skill_status' => 'pending',
         ]);
 
         return response()->json($skill, 201);

@@ -33,6 +33,7 @@ class WorksheetController extends Controller
         $worksheet = Worksheet::create([
             'worksheet_id_anak' => $anakId,
             ...$data,
+            'worksheet_status' => 'pending',
         ]);
 
         return response()->json($worksheet, 201);

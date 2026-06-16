@@ -18,6 +18,7 @@ class Worksheet extends BaseModel
         'worksheet_id_anak' => 'Anak',
         'worksheet_type' => 'Type',
         'worksheet_date' => 'Date',
+        'worksheet_status' => 'Status',
         'worksheet_created_at' => 'Created At',
     ];
 
@@ -26,6 +27,7 @@ class Worksheet extends BaseModel
         'worksheet_id_anak',
         'worksheet_type',
         'worksheet_date',
+        'worksheet_status',
         'worksheet_created_at',
     ];
 
@@ -34,6 +36,7 @@ class Worksheet extends BaseModel
         'worksheet_type',
         'worksheet_data',
         'worksheet_date',
+        'worksheet_status',
     ];
 
     protected $casts = [

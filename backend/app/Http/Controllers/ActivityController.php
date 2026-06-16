@@ -156,7 +156,7 @@ class ActivityController extends Controller
 
         $data['slug'] = Str::slug($data['title']).'-'.Str::random(5);
         $data['active'] = $data['active'] ?? true;
-        $data['status'] = $data['status'] ?? 'approved';
+        $data['status'] = $data['status'] ?? 'pending';
         $data['created_by'] = $data['created_by'] ?? ($request->user()?->id ?? 1);
 
         if ($request->hasFile('image')) {

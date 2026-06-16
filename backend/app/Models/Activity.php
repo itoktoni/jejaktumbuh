@@ -80,7 +80,7 @@ class Activity extends BaseModel
             'type' => 'required|string|max:100',
             'slug' => 'required|string|max:255',
             'image' => 'string|max:255',
-            'status' => 'max:255',
+            'status' => 'string|max:255',
             'active' => 'integer|max:255',
             'moral' => 'string|max:255',
         ];

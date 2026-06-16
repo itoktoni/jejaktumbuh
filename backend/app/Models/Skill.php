@@ -18,6 +18,7 @@ class Skill extends BaseModel
         'skill_id_anak' => 'Anak',
         'skill_key' => 'Key',
         'skill_title' => 'Title',
+        'skill_status' => 'Status',
     ];
 
     public static $sortColumns = [
@@ -25,6 +26,7 @@ class Skill extends BaseModel
         'skill_id_anak',
         'skill_key',
         'skill_title',
+        'skill_status',
     ];
 
     protected $fillable = [
@@ -35,6 +37,7 @@ class Skill extends BaseModel
         'skill_pilar',
         'skill_progress',
         'skill_color',
+        'skill_status',
     ];
 
     public function toArray()
@@ -47,6 +50,7 @@ class Skill extends BaseModel
             'pilar' => $this->skill_pilar,
             'progress' => $this->skill_progress,
             'color' => $this->skill_color,
+            'status' => $this->skill_status,
             'activities' => $this->relationLoaded('has_activities') ? $this->getRelation('has_activities') : [],
         ];
     }

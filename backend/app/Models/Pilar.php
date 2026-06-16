@@ -17,6 +17,7 @@ class Pilar extends BaseModel
         'pilar_id' => 'Id',
         'pilar_key' => 'Key',
         'pilar_title' => 'Title',
+        'pilar_status' => 'Status',
     ];
 
     public static $sortColumns = [
@@ -24,6 +25,7 @@ class Pilar extends BaseModel
         'pilar_key',
         'pilar_title',
         'pilar_sort_order',
+        'pilar_status',
     ];
 
     protected $fillable = [
@@ -38,6 +40,7 @@ class Pilar extends BaseModel
         'pilar_plans',
         'pilar_sort_order',
         'pilar_active',
+        'pilar_status',
     ];
 
     protected $casts = [
@@ -70,6 +73,7 @@ class Pilar extends BaseModel
             'plans' => $this->pilar_plans ?? [],
             'sort_order' => $this->pilar_sort_order,
             'active' => (bool) $this->pilar_active,
+            'status' => $this->pilar_status,
         ];
     }
 

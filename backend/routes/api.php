@@ -8,6 +8,7 @@ use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\ChallengeHistoryController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\CompletedSkillController;
+use App\Http\Controllers\ContentApprovalController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\NotificationController;
@@ -94,11 +95,11 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
                 $savedPages[] = [
                     'num' => $num,
                     'text' => $page['text'],
-                    'image' => 'https://backend.test/storage/images/stories/'.$activity->id.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png',
+                    'image' => rtrim(config('app.url'), '/') . '/storage/images/stories/' . $activity->id . '/' . str_pad((string) $num, 2, '0', STR_PAD_LEFT) . '.png',
                 ];
             }
             $activity->data = array_merge($activity->data ?? [], ['pages' => $savedPages]);
-            $activity->image = 'https://backend.test/storage/images/stories/'.$activity->id.'/01.png';
+            $activity->image = rtrim(config('app.url'), '/') . '/storage/images/stories/' . $activity->id . '/01.png';
             $activity->save();
             $pages = $savedPages;
         }
@@ -109,7 +110,7 @@ Route::get('/stories/generate', function (Request $request, StoryGeneratorServic
         $tempId = time();
         foreach ($pages as &$page) {
             $num = (int) ($page['num'] ?? 1);
-            $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
+            $page['image'] = rtrim(config('app.url'), '/') . '/storage/images/stories/' . $tempId . '/' . str_pad((string) $num, 2, '0', STR_PAD_LEFT) . '.png';
         }
         unset($page);
     }
@@ -187,7 +188,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
                 $tempId = time();
                 foreach ($renumbered as &$page) {
                     $num = (int) ($page['num'] ?? 1);
-                    $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
+                    $page['image'] = rtrim(config('app.url'), '/') . '/storage/images/stories/' . $tempId . '/' . str_pad((string) $num, 2, '0', STR_PAD_LEFT) . '.png';
                 }
                 unset($page);
             }
@@ -234,7 +235,7 @@ Route::post('/openai/v1/chat/completions', function (Request $request, StoryGene
         $tempId = time();
         foreach ($renumbered as &$page) {
             $num = (int) ($page['num'] ?? 1);
-            $page['image'] = 'https://backend.test/storage/images/stories/'.$tempId.'/'.str_pad((string) $num, 2, '0', STR_PAD_LEFT).'.png';
+            $page['image'] = rtrim(config('app.url'), '/') . '/storage/images/stories/' . $tempId . '/' . str_pad((string) $num, 2, '0', STR_PAD_LEFT) . '.png';
         }
         unset($page);
     }
@@ -402,4 +403,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/evaluations/{evaluationId}', [EvaluationController::class, 'show'])->name('evaluations.show');
         Route::post('/evaluations/{evaluationId}/finalize', [EvaluationController::class, 'finalize'])->name('evaluations.finalize');
     });
+
+    Route::get('/content/pending', [ContentApprovalController::class, 'xgetPending'])->name('content.pending');
+    Route::put('/content/{type}/{id}/approve', [ContentApprovalController::class, 'xputApprove'])->name('content.approve');
+    Route::put('/content/{type}/{id}/reject', [ContentApprovalController::class, 'xputReject'])->name('content.reject');
+    Route::put('/content/{type}/{id}/review', [ContentApprovalController::class, 'xputReview'])->name('content.review');
 });
