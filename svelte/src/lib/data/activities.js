@@ -44,6 +44,7 @@ function normalizeItem(item, type) {
     agama: item.agama || [],
     plans: item.plans || [],
     views: item.views || 0,
+    status: item.status || 'approved',
   }
 
   if (contentKey && contentKey === 'stories') {

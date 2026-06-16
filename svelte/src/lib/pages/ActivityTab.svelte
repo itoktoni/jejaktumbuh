@@ -51,6 +51,13 @@
   let activeTabVal = $state('activity')
   let hasAutoDownloaded = false
 
+  const statusColors = {
+    approved: { bg: '#E1F2E5', text: '#176c33', label: 'Approved' },
+    pending: { bg: '#FFF3E0', text: '#E65100', label: 'Pending' },
+    review: { bg: '#E3F2FD', text: '#0D47A1', label: 'Review' },
+    rejected: { bg: '#FFEBEE', text: '#C62828', label: 'Rejected' },
+  }
+
   $effect(() => {
     const u1 = aktivitasData.subscribe(v => aktData = v)
     const u2 = isAuthenticated.subscribe(v => isAuth = v)
@@ -416,13 +423,18 @@
           {#if Card}
             <Card {item} bg={selectedType.bg} onclick={() => handleItemClick(item)} />
           {:else}
-            <button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 border-[#B7D9BC] shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+            <button class="bento-card group bg-canvas-cream rounded-[24px] overflow-hidden border-4 shadow-md cursor-pointer transition-all hover:shadow-lg flex flex-col text-left w-full"
+              style="border-color: {userRoleVal === 'developer' && item.status && item.status !== 'approved' ? (statusColors[item.status]?.text || '#E65100') + '80' : '#B7D9BC'}"
               onclick={() => handleItemClick(item)}>
               <div class="p-5 flex flex-col flex-1">
                 <div class="flex items-start justify-between mb-3">
                   <div class="w-12 h-12 rounded-[16px] flex items-center justify-center text-2xl border-2 border-white shadow-sm" style="background: {selectedType.bg}">
                     {item.emoji || selectedType.emoji}
                   </div>
+                  {#if userRoleVal === 'developer' && item.status && item.status !== 'approved'}
+                    {@const sc = statusColors[item.status] || statusColors.pending}
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: {sc.bg}; color: {sc.text}">{sc.label}</span>
+                  {/if}
                 </div>
                 <h3 class="font-headline-md text-headline-md mb-2">{item.title}</h3>
                 {#if item.desc}
@@ -458,7 +470,13 @@
   <div class="fixed inset-0 z-[100] bg-black/40 flex items-end lg:items-center justify-center lg:p-4" onclick={() => activeItem = null}>
     <div class="w-full max-w-md bg-canvas-cream rounded-t-[32px] lg:rounded-[32px] shadow-2xl border-4 border-[#B7D9BC] overflow-hidden max-h-[85vh] flex flex-col" onclick={(e) => e.stopPropagation()}>
       <div class="p-5 flex items-center justify-between border-b-2 border-[#B7D9BC]/50 shrink-0">
-        <h3 class="font-bold text-lg text-text-main truncate flex-1 mr-3">{activeItem.title}</h3>
+        <div class="flex-1 min-w-0 mr-3">
+          <h3 class="font-bold text-lg text-text-main truncate">{activeItem.title}</h3>
+          {#if userRoleVal === 'developer' && activeItem.status}
+            {@const sc = statusColors[activeItem.status] || statusColors.pending}
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1" style="background: {sc.bg}; color: {sc.text}">{sc.label}</span>
+          {/if}
+        </div>
         <button onclick={() => activeItem = null}
           class="w-10 h-10 rounded-full bg-error text-white flex items-center justify-center text-lg shrink-0 shadow-md">
           ✕
