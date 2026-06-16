@@ -367,6 +367,18 @@
               </button>
             </div>
           {/if}
+
+          {#if item.creator}
+            <div class="bg-white rounded-[24px] border-2 border-[#B7D9BC] p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-sm text-primary">person</span>
+                </span>
+                <p class="text-xs font-bold text-primary">Dibuat oleh</p>
+              </div>
+              <p class="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">{item.creator}</p>
+            </div>
+          {/if}
         </div>
       {/if}
 

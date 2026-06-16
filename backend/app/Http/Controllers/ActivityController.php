@@ -179,7 +179,7 @@ class ActivityController extends Controller
             'creator' => 'nullable|string|max:255',
         ]);
 
-        $data['slug'] = Str::slug($data['title']).'-'.Str::random(5);
+        $data['slug'] = Str::slug($data['title']);
         $data['active'] = $data['active'] ?? true;
         $data['status'] = $data['status'] ?? 'pending';
         $data['created_by'] = $data['created_by'] ?? ($request->user()?->id ?? 1);

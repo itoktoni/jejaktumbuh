@@ -183,7 +183,7 @@ class ActivitySeeder extends Seeder
                 Activity::create([
                     'type' => $type,
                     'title' => $item['title'],
-                    'slug' => Str::slug($item['title']).'-'.Str::random(5),
+                    'slug' => Str::slug($item['title']),
                     'desc' => $item['desc'] ?? null,
                     'image' => $item['image'] ?? null,
                     'moral' => $item['moral'] ?? null,

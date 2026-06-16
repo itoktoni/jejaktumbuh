@@ -50,7 +50,7 @@ class StoryGeneratorController extends Controller
         }
 
         $title = $generated['title'];
-        $slug = Str::slug($title) . '-' . Str::random(5);
+        $slug = Str::slug($title);
 
         return response()->json([
             'title' => $title,

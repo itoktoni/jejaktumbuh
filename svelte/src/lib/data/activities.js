@@ -46,6 +46,7 @@ function normalizeItem(item, type) {
     views: item.views || 0,
     status: item.status || 'approved',
     prompt: item.prompt || '',
+    creator: item.creator || '',
   }
 
   if (contentKey && contentKey === 'stories') {

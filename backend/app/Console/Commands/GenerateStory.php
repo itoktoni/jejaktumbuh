@@ -41,7 +41,7 @@ class GenerateStory extends Command
         $moral = $result['moral'] ?? '';
         $desc = $result['desc'] ?? '';
 
-        $slug = Str::slug($title) . '-' . Str::random(5);
+        $slug = Str::slug($title);
 
         $pages = [];
         $pagesForPrompt = [];
